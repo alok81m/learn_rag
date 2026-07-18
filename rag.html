@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive RAG Architecture Simulator</title>
+    <style>
+        :root {
+            --bg-base: #0f172a;
+            --bg-surface: #1e293b;
+            --bg-modifier: #334155;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-primary: #38bdf8;
+            --accent-success: #34d399;
+            --accent-warning: #fbbf24;
+            --border-color: #475569;
+            --font-stack: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: var(--font-stack);
+        }
+
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            padding: 2rem;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1.5rem;
+        }
+
+        header h1 {
+            font-size: 2.25rem;
+            font-weight: 800;
+            color: var(--accent-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .grid-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 1024px) {
+            .grid-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel {
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .panel-title {
+            font-size: 1.35rem;
+            font-weight: 700;
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border-bottom: 2px solid var(--bg-modifier);
+            padding-bottom: 0.5rem;
+        }
+
+        .badge {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            padding: 0.25rem 0.6rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+        }
+
+        .badge-offline { background-color: #ef4444; color: white; }
+        .badge-runtime { background-color: var(--accent-primary); color: var(--bg-base); }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        textarea, input[type="text"], select {
+            width: 100%;
+            background-color: var(--bg-base);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-main);
+            padding: 0.75rem;
+            font-size: 0.95rem;
+            transition: border-color 0.2s;
+        }
+
+        textarea:focus, input[type="text"]:focus, select:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        input[type="range"] {
+            flex: 1;
+            accent-color: var(--accent-primary);
+        }
+
+        .slider-val {
+            font-weight: bold;
+            min-width: 2rem;
+            text-align: right;
+            color: var(--accent-primary);
+        }
+
+        button {
+            background-color: var(--accent-primary);
+            color: var(--bg-base);
+            border: none;
+            border-radius: 6px;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            width: 100%;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .chunks-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 1rem;
+            padding-right: 0.5rem;
+        }
+
+        .chunk-card {
+            background-color: var(--bg-base);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .chunk-card.selected {
+            border-color: var(--accent-success);
+            box-shadow: 0 0 12px rgba(52, 211, 153, 0.2);
+        }
+
+        .chunk-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .vector-tag {
+            font-family: monospace;
+            background-color: var(--bg-modifier);
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            color: var(--accent-warning);
+        }
+
+        .similarity-score {
+            font-weight: 700;
+            color: var(--accent-success);
+        }
+
+        .prompt-preview {
+            background-color: var(--bg-base);
+            font-family: monospace;
+            font-size: 0.85rem;
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            white-space: pre-wrap;
+            max-height: 250px;
+            overflow-y: auto;
+            color: #cbd5e1;
+        }
+
+        .llm-output-box {
+            background-color: #020617;
+            border-left: 4px solid var(--accent-success);
+            padding: 1rem;
+            border-radius: 0 8px 8px 0;
+            min-height: 100px;
+            font-size: 1rem;
+            color: #e2e8f0;
+        }
+
+        .step-indicator {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            background-color: var(--accent-primary);
+            color: var(--bg-base);
+            border-radius: 50%;
+            font-weight: bold;
+            font-size: 0.85rem;
+            margin-right: 0.5rem;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-base);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Retrieval-Augmented Generation (RAG) Architecture Simulator</h1>
+        <p>An interactive execution environment designed for AI Product Managers to inspect Chunking, Vector Embeddings, Semantic Matching, and Prompt Augmentation.</p>
+    </header>
+
+    <div class="grid-layout">
+        <!-- PHASE 1: INGESTION -->
+        <div class="panel">
+            <div class="panel-title">
+                <span class="step-indicator">1</span>
+                Phase 1: Knowledge Base Ingestion
+                <span class="badge badge-offline">Offline Pipeline</span>
+            </div>
+
+            <div class="form-group">
+                <label for="kbInput">Source Knowledge Document</label>
+                <textarea id="kbInput" rows="6">Globe Teleservices provides high-grade enterprise CPaaS solutions globally. Their architecture includes advanced SMS Firewalls, WhatsApp Business API endpoints, and comprehensive RCS messaging tools. The automated SMS Firewalls actively safeguard Mobile Network Operators (MNOs) from highly complex A2P tracking fraud and dynamic grey-route scanning. Meanwhile, their WhatsApp Business API module handles rapid delivery of mission-critical utility templates, transaction status updates, and interactive customer journeys. RCS channels provide visually interactive rich media cards directly inside a customer's native device inbox without external downloads.</textarea>
+            </div>
+
+            <div class="form-group">
+                <div class="slider-container">
+                    <div style="flex: 1;">
+                        <label for="chunkSize">Chunk Size Strategy (Approx. Characters)</label>
+                        <input type="range" id="chunkSize" min="60" max="250" value="120" step="10">
+                    </div>
+                    <div class="slider-val" id="chunkSizeVal">120</div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Generated Vector Index & Chunks</label>
+                <div class="chunks-container" id="chunksContainer"></div>
+            </div>
+        </div>
+
+        <!-- PHASE 2: RUNTIME SEARCH -->
+        <div class="panel">
+            <div class="panel-title">
+                <span class="step-indicator">2</span>
+                Phase 2: Semantic Retrieval & Generation
+                <span class="badge badge-runtime">Real-time Pipeline</span>
+            </div>
+
+            <div class="form-group">
+                <label for="queryInput">User Search Request (Natural Language)</label>
+                <input type="text" id="queryInput" value="How do MNOs protect themselves against SMS fraud?">
+            </div>
+
+            <div class="form-group">
+                <div class="slider-container">
+                    <div style="flex: 1;">
+                        <label for="topN">Top-N Context Retrieval Configuration ($K$ Overlap Factor)</label>
+                        <input type="range" id="topN" min="1" max="4" value="2" step="1">
+                    </div>
+                    <div class="slider-val" id="topNVal">2</div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <button id="runButton">Execute RAG Inference Cycle</button>
+            </div>
+
+            <div class="form-group">
+                <label>System Query Vector Representation</label>
+                <div id="queryVectorDisplay" class="vector-tag" style="display: block; padding: 0.5rem;">[ 0.00, 0.00, 0.00 ]</div>
+            </div>
+
+            <div class="form-group">
+                <label>Augmented Context Payload (Sent directly to LLM context window)</label>
+                <div id="promptPreview" class="prompt-preview">Click Execute to construct the prompt...</div>
+            </div>
+
+            <div class="form-group">
+                <label>Grounded LLM Output Stream</label>
+                <div id="llmOutput" class="llm-output-box">Awaiting prompt submission...</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Keyword dictionary mapping to generate pseudo-deterministic embeddings/scores for visual alignment
+    const semanticKeywords = {
+        "mno": [0.85, -0.12, 0.44],
+        "sms": [0.62, 0.71, -0.22],
+        "fraud": [0.78, -0.45, 0.31],
+        "firewall": [0.91, -0.33, 0.25],
+        "cpaas": [0.41, 0.55, 0.68],
+        "whatsapp": [-0.15, 0.88, 0.41],
+        "rcs": [0.11, 0.92, -0.15],
+        "template": [-0.31, 0.64, 0.52]
+    };
+
+    function generateMockVector(text) {
+        let baseVector = [0.12, -0.23, 0.34];
+        const normalizedText = text.toLowerCase();
+        
+        let matches = 0;
+        Object.keys(semanticKeywords).forEach(key => {
+            if (normalizedText.includes(key)) {
+                baseVector[0] += semanticKeywords[key][0];
+                baseVector[1] += semanticKeywords[key][1];
+                baseVector[2] += semanticKeywords[key][2];
+                matches++;
+            }
+        });
+
+        // Normalize vector visually
+        const magnitude = Math.sqrt(baseVector[0]**2 + baseVector[1]**2 + baseVector[2]**2) || 1;
+        return baseVector.map(v => (v / magnitude).toFixed(2));
+    }
+
+    function calculateCosineSimilarity(v1, v2) {
+        let dotProduct = 0;
+        let mA = 0;
+        let mB = 0;
+        for(let i=0; i<3; i++) {
+            dotProduct += (parseFloat(v1[i]) * parseFloat(v2[i]));
+            mA += (parseFloat(v1[i]) * parseFloat(v1[i]));
+            mB += (parseFloat(v2[i]) * parseFloat(v2[i]));
+        }
+        mA = Math.sqrt(mA);
+        mB = Math.sqrt(mB);
+        if((mA * mB) === 0) return 0;
+        let score = (dotProduct / (mA * mB));
+        // Remap to a realistic positive scale for visual feedback [0.35, 0.98]
+        return Math.min(Math.max((score + 1) / 2 * 100, 35), 98).toFixed(1);
+    }
+
+    function chunkText(text, size) {
+        const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
+        let chunks = [];
+        let currentChunk = "";
+
+        sentences.forEach(sentence => {
+            if ((currentChunk + sentence).length > size && currentChunk.trim().length > 0) {
+                chunks.push(currentChunk.trim());
+                currentChunk = sentence;
+            } else {
+                currentChunk += " " + sentence;
+            }
+        });
+        if (currentChunk.trim().length > 0) {
+            chunks.push(currentChunk.trim());
+        }
+        return chunks;
+    }
+
+    // DOM Elements
+    const kbInput = document.getElementById('kbInput');
+    const chunkSize = document.getElementById('chunkSize');
+    const chunkSizeVal = document.getElementById('chunkSizeVal');
+    const chunksContainer = document.getElementById('chunksContainer');
+    const queryInput = document.getElementById('queryInput');
+    const topN = document.getElementById('topN');
+    const topNVal = document.getElementById('topNVal');
+    const queryVectorDisplay = document.getElementById('queryVectorDisplay');
+    const promptPreview = document.getElementById('promptPreview');
+    const llmOutput = document.getElementById('llmOutput');
+    const runButton = document.getElementById('runButton');
+
+    let currentChunksData = [];
+
+    function updateIngestion() {
+        chunkSizeVal.textContent = chunkSize.value;
+        const text = kbInput.value;
+        const size = parseInt(chunkSize.value);
+        const rawChunks = chunkText(text, size);
+        
+        chunksContainer.innerHTML = '';
+        currentChunksData = rawChunks.map((chunkText, index) => {
+            const vector = generateMockVector(chunkText);
+            
+            const card = document.createElement('div');
+            card.className = 'chunk-card';
+            card.id = `chunk-${index}`;
+            card.innerHTML = `
+                <div class="chunk-header">
+                    <span>Chunk Node ID: 00${index + 1}</span>
+                    <span class="vector-tag">Embedding: [${vector.join(', ')}]</span>
+                </div>
+                <div>${chunkText}</div>
+                <div class="chunk-header" style="margin-top: 0.5rem; margin-bottom: 0;">
+                    <span class="sim-label" style="display:none;">Match Score: <span class="similarity-score" id="score-${index}">0%</span></span>
+                </div>
+            `;
+            chunksContainer.appendChild(card);
+
+            return {
+                index: index,
+                text: chunkText,
+                vector: vector,
+                element: card
+            };
+        });
+    }
+
+    function executeRAGPipeline() {
+        const queryText = queryInput.value;
+        const queryVector = generateMockVector(queryText);
+        queryVectorDisplay.textContent = `[ ${queryVector.join(', ')} ]`;
+
+        // Calculate similarity scores for all items
+        currentChunksData.forEach(chunk => {
+            const score = calculateCosineSimilarity(queryVector, chunk.vector);
+            chunk.score = parseFloat(score);
+            
+            const scoreEl = document.getElementById(`score-${chunk.index}`);
+            scoreEl.textContent = `${score}%`;
+            scoreEl.closest('.sim-label').style.display = 'inline';
+        });
+
+        // Sort copy to find the top matching nodes
+        const sortedChunks = [...currentChunksData].sort((a, b) => b.score - a.score);
+        const kLimit = parseInt(topN.value);
+
+        // Reset display selections
+        currentChunksData.forEach(c => c.element.classList.remove('selected'));
+
+        let selectedContexts = [];
+        for (let i = 0; i < kLimit && i < sortedChunks.length; i++) {
+            sortedChunks[i].element.classList.add('selected');
+            selectedContexts.push(sortedChunks[i]);
+            // Scroll matching parent container safely into view if needed
+            sortedChunks[i].element.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        // Build the precise prompt construction context block
+        const contextPayload = selectedContexts.map((c, idx) => `[Source Reference Node 00${c.index + 1} | Relevancy: ${c.score}%]
+${c.text}`).join('
+
+');
+        
+        const fullPrompt = `System Context / Grounding Instructions:
+You are a deterministic assistant. System context contains strictly verified information. Answer the inquiry accurately using only the given sources. Do not hallucinate fields outside this boundary.
+
+---- BEGIN KNOWLEDGE SEGMENTS ----
+${contextPayload}
+---- END KNOWLEDGE SEGMENTS ----
+
+User Question: ${queryText}
+Answer Output:`;
+        
+        promptPreview.textContent = fullPrompt;
+
+        // Simulate targeted generation block matching typical prompt contexts
+        simulateLLMGeneration(queryText, selectedContexts);
+    }
+
+    function simulateLLMGeneration(query, contexts) {
+        llmOutput.textContent = '';
+        let targetResponse = "Based on the internal verified knowledge documents, I cannot find clear parameters to securely fulfill this specific prompt. Please refine the query vocabulary.";
+        
+        const normalizedQuery = query.toLowerCase();
+        
+        // Dynamic contextual generation rule adjustments matching data boundaries
+        if (normalizedQuery.includes('mno') || normalizedQuery.includes('fraud') || normalizedQuery.includes('sms')) {
+            targetResponse = "According to verified records, Mobile Network Operators (MNOs) actively protect their networks against complex security threats using Globe Teleservices' automated SMS Firewalls. These infrastructure assets work by continuously tracking A2P messaging delivery profiles and blocking grey-route scanning patterns or tracking fraud schemes.";
+        } else if (normalizedQuery.includes('whatsapp') || normalizedQuery.includes('template')) {
+            targetResponse = "Based on the retrieved operational context, the WhatsApp Business API endpoints streamline interaction frameworks through dynamic utility templates. These configurations support secure delivery mechanisms for mission-critical transactional items, status triggers, and predefined automated user journeys.";
+        } else if (normalizedQuery.includes('rcs')) {
+            targetResponse = "The documents indicate that RCS messaging bypasses external download requirements entirely. It features rich media visual interface layouts directly structured within the mobile device's native inbox ecosystem to scale interactive enterprise messaging pipelines.";
+        } else if (contexts.length > 0) {
+            targetResponse = `Extracted Summary based on active references: ${contexts[0].text.substring(0, 120)}... The system successfully verified relevant contextual data clusters with an average similarity factor of ${contexts[0].score}%.`;
+        }
+
+        let i = 0;
+        function typeWriter() {
+            if (i < targetResponse.length) {
+                llmOutput.textContent += targetResponse.charAt(i);
+                i++;
+                setTimeout(typeWriter, 12);
+            }
+        }
+        typeWriter();
+    }
+
+    // Event Triggers
+    kbInput.addEventListener('input', updateIngestion);
+    chunkSize.addEventListener('input', updateIngestion);
+    topN.addEventListener('input', () => { topNVal.textContent = topN.value; });
+
+    runButton.addEventListener('click', executeRAGPipeline);
+
+    // Bootstrap Initiation
+    updateIngestion();
+</script>
+
+</body>
+</html>
