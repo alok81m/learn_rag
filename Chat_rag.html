@@ -1,0 +1,2428 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NeuroDesk RAG — Voice & Text Knowledge Assistant</title>
+<!-- Optional CDN libs: charts + PDF text extraction. App still works without them (with reduced features). -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<style>
+:root{
+  --radius:14px;
+  --radius-sm:8px;
+  --shadow:0 8px 24px rgba(0,0,0,.18);
+  --transition:all .18s ease;
+}
+html[data-theme="dark"]{
+  --bg:#0f1220;
+  --bg-alt:#161a2e;
+  --panel:#1b1f36;
+  --panel-2:#212645;
+  --border:#2c3157;
+  --text:#eef0fb;
+  --text-dim:#9aa0c3;
+  --accent:#7c5cff;
+  --accent-2:#22d3c9;
+  --accent-3:#ff5c9e;
+  --success:#2fd987;
+  --warn:#ffb84d;
+  --danger:#ff5c72;
+  --chip-bg:#252a4a;
+}
+html[data-theme="light"]{
+  --bg:#f3f4fc;
+  --bg-alt:#ffffff;
+  --panel:#ffffff;
+  --panel-2:#f1f2fb;
+  --border:#e1e3f3;
+  --text:#1a1c2e;
+  --text-dim:#5c6086;
+  --accent:#6a3ffb;
+  --accent-2:#0ea99e;
+  --accent-3:#e6397e;
+  --success:#12a866;
+  --warn:#c97a08;
+  --danger:#e0324a;
+  --chip-bg:#eceefb;
+}
+*{box-sizing:border-box;}
+body{
+  margin:0;
+  font-family:'Segoe UI',ui-sans-serif,system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  transition:var(--transition);
+}
+a{color:var(--accent-2);}
+.app{display:flex;min-height:100vh;}
+/* ---------- Sidebar ---------- */
+.sidebar{
+  width:230px;
+  flex-shrink:0;
+  background:var(--bg-alt);
+  border-right:1px solid var(--border);
+  padding:20px 14px;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+.brand{
+  display:flex;align-items:center;gap:10px;
+  padding:6px 8px 22px 8px;
+}
+.brand-logo{
+  width:34px;height:34px;border-radius:10px;
+  background:linear-gradient(135deg,var(--accent),var(--accent-3));
+  display:flex;align-items:center;justify-content:center;
+  font-weight:800;color:#fff;font-size:15px;
+}
+.brand-name{font-weight:700;font-size:15px;letter-spacing:.2px;}
+.brand-sub{font-size:11px;color:var(--text-dim);}
+.nav-item{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 12px;border-radius:var(--radius-sm);
+  cursor:pointer;color:var(--text-dim);font-size:14px;font-weight:600;
+  transition:var(--transition);
+  user-select:none;
+}
+.nav-item:hover{background:var(--panel-2);color:var(--text);}
+.nav-item.active{
+  background:linear-gradient(90deg,rgba(124,92,255,.18),rgba(34,211,201,.10));
+  color:var(--text);
+  box-shadow:inset 3px 0 0 var(--accent);
+}
+.nav-icon{width:18px;text-align:center;}
+.sidebar-footer{
+  margin-top:auto;font-size:11px;color:var(--text-dim);
+  padding:10px 8px;border-top:1px solid var(--border);
+}
+/* ---------- Main ---------- */
+.main{flex:1;display:flex;flex-direction:column;min-width:0;}
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 24px;border-bottom:1px solid var(--border);
+  background:var(--bg-alt);
+}
+.topbar-title{font-size:18px;font-weight:700;}
+.topbar-right{display:flex;align-items:center;gap:14px;}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--success);display:inline-block;margin-right:6px;box-shadow:0 0 0 3px rgba(47,217,135,.18);}
+.status-chip{
+  font-size:12px;color:var(--text-dim);background:var(--panel-2);
+  padding:6px 10px;border-radius:999px;display:flex;align-items:center;border:1px solid var(--border);
+}
+.theme-toggle{
+  width:52px;height:28px;border-radius:999px;background:var(--panel-2);
+  border:1px solid var(--border);position:relative;cursor:pointer;
+}
+.theme-toggle .knob{
+  position:absolute;top:2px;left:2px;width:22px;height:22px;border-radius:50%;
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  transition:var(--transition);
+  display:flex;align-items:center;justify-content:center;font-size:12px;
+}
+html[data-theme="light"] .theme-toggle .knob{left:28px;}
+.content{padding:22px 26px;overflow-y:auto;flex:1;}
+.tab-section{display:none;}
+.tab-section.active{display:block;animation:fadeIn .2s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+.grid{display:grid;gap:16px;}
+.grid-4{grid-template-columns:repeat(4,1fr);}
+.grid-2{grid-template-columns:1.3fr .7fr;}
+.grid-3{grid-template-columns:repeat(3,1fr);}
+@media (max-width:1050px){.grid-4{grid-template-columns:repeat(2,1fr);}.grid-2{grid-template-columns:1fr;}.grid-3{grid-template-columns:1fr;}}
+.card{
+  background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);
+  padding:18px;box-shadow:var(--shadow);
+}
+.card h3{margin:0 0 12px 0;font-size:14px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px;}
+.stat-card{padding:16px 18px;}
+.stat-value{font-size:26px;font-weight:800;margin-top:2px;}
+.stat-label{font-size:12px;color:var(--text-dim);margin-top:4px;}
+.stat-icon{
+  width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+  font-size:16px;margin-bottom:10px;color:#fff;
+}
+.ic-1{background:linear-gradient(135deg,#7c5cff,#a78bfa);}
+.ic-2{background:linear-gradient(135deg,#22d3c9,#0ea5e9);}
+.ic-3{background:linear-gradient(135deg,#ff5c9e,#fb7185);}
+.ic-4{background:linear-gradient(135deg,#2fd987,#34d399);}
+.btn{
+  border:none;border-radius:var(--radius-sm);padding:9px 16px;font-weight:600;font-size:13px;
+  cursor:pointer;transition:var(--transition);background:var(--panel-2);color:var(--text);border:1px solid var(--border);
+}
+.btn:hover{transform:translateY(-1px);}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent-3));color:#fff;}
+.btn-accent{background:linear-gradient(135deg,var(--accent-2),#38bdf8);color:#04211f;}
+.btn-danger{background:var(--danger);color:#fff;}
+.btn-sm{padding:6px 10px;font-size:12px;}
+.btn-block{width:100%;}
+.btn[disabled]{opacity:.5;cursor:not-allowed;transform:none;}
+label{font-size:12px;font-weight:600;color:var(--text-dim);display:block;margin-bottom:6px;}
+input[type=text],input[type=password],input[type=number],select,textarea{
+  width:100%;padding:9px 11px;border-radius:var(--radius-sm);border:1px solid var(--border);
+  background:var(--bg);color:var(--text);font-size:13px;font-family:inherit;
+}
+textarea{resize:vertical;}
+input[type=range]{width:100%;accent-color:var(--accent);}
+.field{margin-bottom:14px;}
+.row{display:flex;gap:12px;}
+.row > *{flex:1;}
+.hint{font-size:11.5px;color:var(--text-dim);margin-top:5px;line-height:1.5;}
+.pill{
+  display:inline-flex;align-items:center;gap:5px;background:var(--chip-bg);color:var(--text-dim);
+  padding:3px 9px;border-radius:999px;font-size:11px;font-weight:600;
+}
+.pill.success{color:var(--success);}
+.pill.warn{color:var(--warn);}
+.pill.danger{color:var(--danger);}
+.pill.accent{color:var(--accent-2);}
+table{width:100%;border-collapse:collapse;font-size:12.5px;}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--border);}
+th{color:var(--text-dim);font-weight:600;text-transform:uppercase;font-size:10.5px;letter-spacing:.4px;}
+tr:hover td{background:var(--panel-2);}
+.dropzone{
+  border:2px dashed var(--border);border-radius:var(--radius);padding:30px;text-align:center;
+  color:var(--text-dim);cursor:pointer;transition:var(--transition);
+}
+.dropzone:hover, .dropzone.drag{border-color:var(--accent);background:rgba(124,92,255,.06);color:var(--text);}
+.dropzone .big{font-size:30px;margin-bottom:8px;}
+/* Chat */
+.chat-wrap{display:flex;flex-direction:column;height:calc(100vh - 190px);}
+.chat-window{
+  flex:1;overflow-y:auto;padding:6px 4px 16px 4px;display:flex;flex-direction:column;gap:14px;
+}
+.msg{max-width:74%;padding:12px 14px;border-radius:14px;font-size:13.5px;line-height:1.55;position:relative;}
+.msg.user{align-self:flex-end;background:linear-gradient(135deg,var(--accent),var(--accent-3));color:#fff;border-bottom-right-radius:4px;}
+.msg.bot{align-self:flex-start;background:var(--panel);border:1px solid var(--border);border-bottom-left-radius:4px;}
+.msg.system{align-self:center;background:transparent;color:var(--text-dim);font-size:12px;}
+.msg-badges{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;}
+.msg-sources{margin-top:10px;padding-top:10px;border-top:1px dashed var(--border);}
+.msg-sources-title{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-dim);margin-bottom:6px;}
+.msg-sources ul{margin:0;padding-left:18px;}
+.msg-sources li{font-size:11.5px;color:var(--text-dim);margin-bottom:6px;}
+.msg-sources li strong{color:var(--text);font-weight:600;}
+.msg-sources .src-snippet{font-size:11px;color:var(--text-dim);font-style:italic;margin-top:2px;}
+/* Workflow diagram
+   Structure per step: .wf-node-wrap (unbounded width, holds everything for that step
+   and its whole subtree) > .wf-node (the fixed-width visible "card": header/text/form)
+   followed by a sibling .wf-branches (unbounded width row of child subtrees). Keeping
+   the card's fixed width OFF the wrap is what stops a wide options row from being
+   clipped by / overlapping a narrower parent box. */
+.wf-diagram{overflow-x:auto;overflow-y:hidden;padding:14px 6px 16px 6px;}
+.wf-node-wrap{display:inline-flex;flex-direction:column;align-items:flex-start;vertical-align:top;flex-shrink:0;}
+.wf-node{
+  display:block;background:var(--panel-2);border:1px solid var(--border);
+  border-radius:10px;padding:10px;width:250px;flex-shrink:0;box-shadow:var(--shadow);
+  box-sizing:border-box;
+}
+.wf-node-question{border-left:4px solid var(--accent);}
+.wf-node-answer{border-left:4px solid var(--success);}
+.wf-node-input{border-left:4px solid var(--warn);}
+.wf-node-api_call{border-left:4px solid var(--accent-2);}
+.wf-node-header{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:8px;}
+.wf-node-id{font-size:10px;font-family:ui-monospace,Consolas,monospace;color:var(--text-dim);background:var(--chip-bg);padding:2px 7px;border-radius:999px;white-space:nowrap;}
+.wf-node-type-select{width:auto;padding:3px 6px;font-size:11px;}
+.wf-node-text{width:100%;box-sizing:border-box;font-size:12.5px;min-height:44px;resize:vertical;}
+.wf-input-row, .wf-api-form .field{margin-top:8px;}
+.wf-input-row label, .wf-api-form label{font-size:11px;display:block;margin-bottom:3px;color:var(--text-dim);}
+.wf-input-row input{width:100%;box-sizing:border-box;}
+.wf-api-form{width:100%;box-sizing:border-box;}
+.wf-api-form .row{gap:6px;margin-bottom:8px;}
+.wf-api-form input, .wf-api-form select, .wf-api-form textarea{font-size:12px;box-sizing:border-box;max-width:100%;}
+.wf-api-advanced{margin-top:8px;font-size:11.5px;}
+.wf-api-advanced summary{cursor:pointer;color:var(--text-dim);}
+.wf-api-advanced textarea{width:100%;box-sizing:border-box;margin:4px 0 8px 0;font-family:ui-monospace,Consolas,monospace;font-size:11px;}
+.wf-api-test-result{word-break:break-word;margin-top:4px;}
+.wf-branches{display:flex;gap:24px;margin-top:14px;padding-top:14px;border-top:1px dashed var(--border);flex-wrap:nowrap;align-items:flex-start;}
+.wf-branch{display:flex;flex-direction:column;align-items:flex-start;flex-shrink:0;position:relative;}
+.wf-branch::before{content:"";position:absolute;top:-14px;left:50%;width:1px;height:14px;background:var(--border);}
+.wf-branch-label-row{display:flex;gap:6px;align-items:center;margin-bottom:8px;width:250px;box-sizing:border-box;}
+.wf-branch-label-row input{font-size:12px;padding:5px 8px;flex:1;min-width:0;}
+.wf-branch-label{display:inline-block;font-size:10.5px;color:var(--text-dim);background:var(--chip-bg);padding:2px 8px;border-radius:999px;margin-bottom:8px;}
+.wf-branch-label.warn{color:var(--warn);}
+.wf-add-branch{justify-content:center;align-self:center;}
+.wf-jump-chip{display:inline-block;font-size:11px;color:var(--text-dim);background:var(--chip-bg);border:1px dashed var(--border);border-radius:8px;padding:8px 10px;width:250px;box-sizing:border-box;flex-shrink:0;}
+.wf-node-missing{color:var(--danger);font-size:11px;padding:8px;border:1px dashed var(--danger);border-radius:8px;width:250px;box-sizing:border-box;flex-shrink:0;}
+.wf-json-details{margin-top:14px;}
+.wf-json-details summary{cursor:pointer;font-size:12.5px;color:var(--text-dim);font-weight:600;}
+.chat-input-bar{
+  display:flex;gap:10px;align-items:center;padding:12px;background:var(--panel);
+  border:1px solid var(--border);border-radius:var(--radius);margin-top:12px;
+}
+.chat-input-bar textarea{border:none;background:transparent;resize:none;min-height:22px;max-height:120px;}
+.icon-btn{
+  width:38px;height:38px;border-radius:50%;border:1px solid var(--border);background:var(--panel-2);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;font-size:15px;color:var(--text);
+}
+.icon-btn.mic.listening{background:var(--danger);color:#fff;animation:pulse 1.2s infinite;}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,92,114,.5);}70%{box-shadow:0 0 0 10px rgba(255,92,114,0);}100%{box-shadow:0 0 0 0 rgba(255,92,114,0);}}
+.tag-list{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;}
+.file-row{display:flex;align-items:center;justify-content:between;gap:10px;}
+.section-title{font-size:20px;font-weight:800;margin-bottom:4px;}
+.section-sub{color:var(--text-dim);font-size:13px;margin-bottom:18px;}
+.prose h4{margin:18px 0 6px 0;font-size:14.5px;}
+.prose p, .prose li{font-size:13.2px;line-height:1.65;color:var(--text);}
+.prose code{background:var(--panel-2);padding:1px 6px;border-radius:5px;font-size:12px;}
+.prose .card{margin-bottom:14px;}
+::-webkit-scrollbar{width:9px;height:9px;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:8px;}
+.toast-wrap{position:fixed;bottom:20px;right:20px;display:flex;flex-direction:column;gap:8px;z-index:999;}
+.toast{background:var(--panel);border:1px solid var(--border);padding:10px 16px;border-radius:10px;box-shadow:var(--shadow);font-size:13px;}
+.toast.ok{border-left:4px solid var(--success);}
+.toast.err{border-left:4px solid var(--danger);}
+canvas{max-height:230px;}
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- ============ SIDEBAR ============ -->
+  <div class="sidebar">
+    <div class="brand">
+      <div class="brand-logo">ND</div>
+      <div>
+        <div class="brand-name">NeuroDesk RAG</div>
+        <div class="brand-sub">Voice & Text KB Assistant</div>
+      </div>
+    </div>
+    <div class="nav-item active" data-tab="dashboard"><span class="nav-icon">📊</span>Dashboard</div>
+    <div class="nav-item" data-tab="kb"><span class="nav-icon">📚</span>Knowledge Base</div>
+    <div class="nav-item" data-tab="workflows"><span class="nav-icon">🔀</span>Workflows</div>
+    <div class="nav-item" data-tab="chat"><span class="nav-icon">💬</span>Chat</div>
+    <div class="nav-item" data-tab="mis"><span class="nav-icon">🧾</span>MIS Reports</div>
+    <div class="nav-item" data-tab="settings"><span class="nav-icon">⚙️</span>Settings</div>
+    <div class="nav-item" data-tab="arch"><span class="nav-icon">🏗️</span>Architecture & Scale</div>
+    <div class="sidebar-footer">Client-side prototype · data stored locally in this browser (IndexedDB)</div>
+  </div>
+  <!-- ============ MAIN ============ -->
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-title" id="pageTitle">Dashboard</div>
+      <div class="topbar-right">
+        <div class="status-chip"><span class="status-dot"></span><span id="providerStatus">Provider: Gemini (no key set)</span></div>
+        <div class="theme-toggle" id="themeToggle" title="Toggle dark / light"><div class="knob">🌙</div></div>
+      </div>
+    </div>
+    <div class="content">
+      <!-- ================= DASHBOARD ================= -->
+      <section class="tab-section active" id="tab-dashboard">
+        <div class="section-title">Overview</div>
+        <div class="section-sub">Live snapshot of knowledge base health and assistant performance.</div>
+        <div class="grid grid-4" style="margin-bottom:16px;">
+          <div class="card stat-card"><div class="stat-icon ic-1">📄</div><div class="stat-value" id="statDocs">0</div><div class="stat-label">Documents in KB</div></div>
+          <div class="card stat-card"><div class="stat-icon ic-2">🧩</div><div class="stat-value" id="statChunks">0</div><div class="stat-label">Total Chunks Indexed</div></div>
+          <div class="card stat-card"><div class="stat-icon ic-3">💬</div><div class="stat-value" id="statQueries">0</div><div class="stat-label">Queries Served</div></div>
+          <div class="card stat-card"><div class="stat-icon ic-4">⚡</div><div class="stat-value" id="statCacheRate">0%</div><div class="stat-label">Cache Hit Rate (cost saved)</div></div>
+        </div>
+        <div class="grid grid-4" style="margin-bottom:16px;">
+          <div class="card stat-card"><div class="stat-icon" style="background:linear-gradient(135deg,#ffb84d,#fbbf24);">🔀</div><div class="stat-value" id="statWorkflows">0</div><div class="stat-label">Active Workflows</div></div>
+          <div class="card stat-card"><div class="stat-icon" style="background:linear-gradient(135deg,#38bdf8,#22d3c9);">⚡</div><div class="stat-value" id="statWorkflowRate">0%</div><div class="stat-label">Workflow-served (no LLM call)</div></div>
+          <div class="card stat-card"><div class="stat-icon" style="background:linear-gradient(135deg,#94a3b8,#64748b);">🚫</div><div class="stat-value" id="statFallbackRate">0%</div><div class="stat-label">Out-of-KB (standard response)</div></div>
+        </div>
+        <div class="grid grid-2" style="margin-bottom:16px;">
+          <div class="card"><h3>Query Volume (last 14 days)</h3><canvas id="chartVolume"></canvas></div>
+          <div class="card"><h3>Response Source</h3><canvas id="chartSource"></canvas></div>
+        </div>
+        <div class="grid grid-2">
+          <div class="card"><h3>Detected Languages</h3><canvas id="chartLang"></canvas></div>
+          <div class="card"><h3>Detected Sentiment</h3><canvas id="chartSentiment"></canvas></div>
+        </div>
+      </section>
+      <!-- ================= KNOWLEDGE BASE ================= -->
+      <section class="tab-section" id="tab-kb">
+        <div class="section-title">Knowledge Base</div>
+        <div class="section-sub">Upload source documents, tune chunking, and manage what the assistant can retrieve.</div>
+        <div class="grid grid-2">
+          <div>
+            <div class="card" style="margin-bottom:16px;">
+              <h3>Upload Documents</h3>
+              <div class="dropzone" id="dropzone">
+                <div class="big">⬆️</div>
+                <div><strong>Drag & drop files</strong> or click to browse</div>
+                <div class="hint">Supported: .txt · .md · .csv · .json · .log · .pdf (text-based)</div>
+              </div>
+              <input type="file" id="fileInput" multiple hidden accept=".txt,.md,.csv,.json,.log,.pdf">
+            </div>
+            <div class="card">
+              <h3>Documents</h3>
+              <table id="docTable">
+                <thead><tr><th>Name</th><th>Type</th><th>Size</th><th>Chunks</th><th>Chunk/Overlap</th><th></th></tr></thead>
+                <tbody id="docTableBody"><tr><td colspan="6" class="hint">No documents yet.</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+          <div>
+            <div class="card" style="margin-bottom:16px;">
+              <h3>Chunking Configuration</h3>
+              <div class="field">
+                <label>Chunk size: <span id="chunkSizeVal">800</span> characters</label>
+                <input type="range" id="chunkSizeSlider" min="150" max="3000" step="50" value="800">
+              </div>
+              <div class="field">
+                <label>Chunk overlap: <span id="chunkOverlapVal">100</span> characters</label>
+                <input type="range" id="chunkOverlapSlider" min="0" max="600" step="10" value="100">
+              </div>
+              <button class="btn btn-accent btn-block" id="btnRecommend">✨ Auto-recommend from last uploaded file</button>
+              <div class="hint" id="recommendExplain">Upload a file to get a tailored chunk size/overlap suggestion based on its length and type.</div>
+            </div>
+            <div class="card">
+              <h3>Index Status</h3>
+              <div class="hint" style="margin-bottom:10px;">Retrieval uses an in-browser TF‑IDF vector index rebuilt automatically whenever the knowledge base changes.</div>
+              <div class="pill accent" id="indexStatus">Index: 0 chunks ready</div>
+              <div style="margin-top:14px;display:flex;gap:8px;">
+                <button class="btn btn-sm" id="btnRebuild">Rebuild Index</button>
+                <button class="btn btn-sm btn-danger" id="btnClearKB">Clear Knowledge Base</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- ================= WORKFLOWS ================= -->
+      <section class="tab-section" id="tab-workflows">
+        <div class="section-title">Workflow Builder</div>
+        <div class="section-sub">Build multi-step, decision-tree workflows from a plain-language prompt. When a user's question matches a workflow's triggers, they get guided through quick-reply steps to a canned answer instead of hitting the knowledge base and an LLM.</div>
+        <div class="grid grid-2" style="margin-bottom:16px;">
+          <div>
+            <div class="card">
+              <h3>Generate a Workflow from a Prompt</h3>
+              <div class="field">
+                <label>Describe the workflow</label>
+                <textarea id="wfPrompt" rows="5" placeholder="e.g. Build a workflow for password reset requests. Ask whether it's for email or VPN account, then give the correct reset link/steps for each."></textarea>
+                <div class="hint">Only your <strong>knowledge base</strong> is used to write the questions/answers — the generator retrieves relevant chunks first and refuses to build a workflow if there isn't enough coverage, instead of inventing a plausible-sounding but ungrounded scenario. Upload the source documents first if needed.</div>
+              </div>
+              <div class="row">
+                <div class="field">
+                  <label>Generation provider</label>
+                  <select id="wfProvider">
+                    <option value="gemini">Google Gemini</option>
+                    <option value="groq">Groq</option>
+                    <option value="openrouter">OpenRouter (free models)</option>
+                    <option value="huggingface">Hugging Face Inference</option>
+                  </select>
+                </div>
+              </div>
+              <button class="btn btn-primary btn-block" id="btnGenerateWorkflow">✨ Generate Workflow</button>
+              <div class="hint" id="wfGenStatus" style="margin-top:8px;"></div>
+            </div>
+          </div>
+          <div>
+            <div class="card" style="margin-bottom:16px;">
+              <h3>Matching</h3>
+              <div class="field">
+                <label>Trigger match threshold: <span id="wfThreshVal">0.35</span></label>
+                <input type="range" id="wfThreshSlider" min="0.1" max="0.9" step="0.05" value="0.35">
+                <div class="hint">Keyword/phrase overlap (Jaccard) between the user's message and a workflow's trigger phrases. Lower = looser matching, more queries get routed to workflows before the LLM.</div>
+              </div>
+            </div>
+            <div class="card">
+              <h3>Saved Workflows</h3>
+              <table id="wfTable">
+                <thead><tr><th>Name</th><th>Triggers</th><th>Steps</th><th>Status</th><th></th></tr></thead>
+                <tbody id="wfTableBody"><tr><td colspan="5" class="hint">No workflows yet.</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="card" id="wfPreviewCard" style="display:none;">
+          <h3>Preview / Edit</h3>
+          <div class="row">
+            <div class="field">
+              <label>Workflow name</label>
+              <input type="text" id="wfName" placeholder="Password Reset">
+            </div>
+            <div class="field">
+              <label>Trigger phrases (comma-separated)</label>
+              <input type="text" id="wfTriggers" placeholder="reset password, forgot password, can't log in">
+            </div>
+          </div>
+          <div class="hint" id="wfGroundedIn" style="display:none;margin-bottom:12px;"></div>
+          <div class="field">
+            <label>Diagram — click any text to edit, use the buttons to branch/remove steps</label>
+            <div class="wf-diagram" id="wfDiagram"></div>
+          </div>
+          <details class="wf-json-details">
+            <summary>Advanced: edit raw JSON</summary>
+            <div class="field" style="margin-top:10px;">
+              <textarea id="wfJson" rows="12" style="font-family:ui-monospace,Consolas,monospace;font-size:12px;"></textarea>
+              <div class="hint" id="wfJsonError" style="color:var(--danger);"></div>
+              <div class="hint">Node types: <code>question</code> (branches to options), <code>answer</code> (terminal), <code>input</code> (collects typed text into a variable), <code>api_call</code> (calls an external API and stores the response in a variable). Reference collected values anywhere with <code>{{variableName}}</code>.</div>
+            </div>
+          </details>
+          <div style="display:flex;gap:8px;margin-top:12px;">
+            <button class="btn btn-accent" id="btnValidateWorkflow">Validate</button>
+            <button class="btn btn-primary" id="btnSaveWorkflow">Save Workflow</button>
+            <button class="btn btn-sm" id="btnDiscardWorkflow">Discard</button>
+          </div>
+        </div>
+      </section>
+      <!-- ================= CHAT ================= -->
+      <section class="tab-section" id="tab-chat">
+        <div class="section-title">Chat</div>
+        <div class="section-sub">Order of operations: workflows first, then any past question ≥80% similar (from any user) is reused straight from the knowledge base — no LLM call. Only a genuinely new question reaches retrieval; if the KB doesn't cover it, the standard response is used instead of guessing. The assistant never answers from outside/general knowledge.</div>
+        <div class="grid" style="grid-template-columns:1fr 260px;gap:16px;">
+          <div class="chat-wrap">
+            <div class="chat-window" id="chatWindow">
+              <div class="msg system">Hi! Ask me anything about your uploaded documents, by text or voice.</div>
+            </div>
+            <div class="chat-input-bar">
+              <div class="icon-btn mic" id="micBtn" title="Voice input">🎤</div>
+              <textarea id="chatInput" rows="1" placeholder="Type your question... (Enter to send, Shift+Enter for newline)"></textarea>
+              <div class="icon-btn" id="sendBtn" title="Send">➤</div>
+            </div>
+          </div>
+          <div>
+            <div class="card" style="margin-bottom:14px;">
+              <h3>Session</h3>
+              <div class="field">
+                <label>AI Provider</label>
+                <select id="providerSelect">
+                  <option value="gemini">Google Gemini</option>
+                  <option value="groq">Groq</option>
+                  <option value="openrouter">OpenRouter (free models)</option>
+                  <option value="huggingface">Hugging Face Inference</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Voice output</label>
+                <select id="voiceOutputSelect">
+                  <option value="on">On — speak responses</option>
+                  <option value="off" selected>Off</option>
+                </select>
+              </div>
+              <div class="hint">Set API keys in <strong>Settings</strong>. Nothing is sent anywhere until you configure a key.</div>
+            </div>
+            <div class="card" id="activeWorkflowCard" style="display:none;margin-bottom:14px;">
+              <h3>Active Workflow</h3>
+              <div class="hint" id="activeWorkflowName">-</div>
+              <button class="btn btn-sm btn-danger btn-block" id="btnExitWorkflow" style="margin-top:10px;">Exit Workflow</button>
+            </div>
+            <div class="card">
+              <h3>Last Response</h3>
+              <div id="lastMeta" class="hint">No queries yet.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- ================= MIS REPORTS ================= -->
+      <section class="tab-section" id="tab-mis">
+        <div class="section-title">MIS Reports</div>
+        <div class="section-sub">Historical log of every service request — delivered from a workflow, from cache, via a grounded LLM answer, as the standard out-of-KB response, or failed.</div>
+        <div class="card" style="margin-bottom:16px;">
+          <div class="row" style="align-items:flex-end;">
+            <div class="field" style="margin-bottom:0;">
+              <label>Status</label>
+              <select id="misFilterStatus">
+                <option value="all">All</option>
+                <option value="workflow">Workflow</option>
+                <option value="cache">Cache hit</option>
+                <option value="llm">LLM success (grounded)</option>
+                <option value="fallback">Standard response (no KB match)</option>
+                <option value="fail">Failed</option>
+              </select>
+            </div>
+            <div class="field" style="margin-bottom:0;">
+              <label>Provider</label>
+              <select id="misFilterProvider">
+                <option value="all">All</option>
+                <option value="gemini">Gemini</option>
+                <option value="groq">Groq</option>
+                <option value="openrouter">OpenRouter</option>
+                <option value="huggingface">Hugging Face</option>
+                <option value="cache">Cache</option>
+                <option value="workflow">Workflow</option>
+                <option value="none">None (fallback)</option>
+              </select>
+            </div>
+            <div class="field" style="margin-bottom:0;flex:2;">
+              <label>Search query text</label>
+              <input type="text" id="misSearch" placeholder="Filter by keyword...">
+            </div>
+            <button class="btn btn-sm" id="btnExportCSV" style="margin-bottom:1px;">⬇ Export CSV</button>
+            <button class="btn btn-sm btn-danger" id="btnClearHistory" style="margin-bottom:1px;">Clear History</button>
+          </div>
+        </div>
+        <div class="card">
+          <table id="misTable">
+            <thead><tr><th>Time</th><th>Query</th><th>Source</th><th>Provider</th><th>Language</th><th>Sentiment</th><th>Status</th><th>Latency</th></tr></thead>
+            <tbody id="misTableBody"><tr><td colspan="8" class="hint">No history yet.</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+      <!-- ================= SETTINGS ================= -->
+      <section class="tab-section" id="tab-settings">
+        <div class="section-title">Settings</div>
+        <div class="section-sub">Connectors, retrieval, and caching behavior. Keys are stored only in this browser's localStorage.</div>
+        <div class="grid grid-2">
+          <div>
+            <div class="card" style="margin-bottom:16px;">
+              <h3>AI Connectors (free-tier friendly)</h3>
+              <div class="field">
+                <label>Google Gemini — API key</label>
+                <input type="password" id="keyGemini" placeholder="AIza...">
+                <div class="hint">Get a free key: <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">aistudio.google.com/app/apikey ↗</a> — sign in with a Google account, click "Create API key". Then pick a free-tier model below.</div>
+              </div>
+              <div class="field">
+                <label>Gemini model (free-tier)</label>
+                <select id="modelGeminiPreset">
+                  <option value="gemini-3-flash">Gemini 3 Flash — recommended, free tier (10 RPM / 1,500 RPD)</option>
+                  <option value="gemini-2.5-flash">Gemini 2.5 Flash — free tier (10 RPM / 250 RPD)</option>
+                  <option value="gemini-2.5-flash-lite">Gemini 2.5 Flash-Lite — free tier (15 RPM / 1,000 RPD)</option>
+                  <option value="gemini-2.5-pro">Gemini 2.5 Pro — free tier, low quota (5 RPM)</option>
+                  <option value="custom">Custom / other model id…</option>
+                </select>
+                <input type="text" id="modelGemini" placeholder="gemini-3-flash" value="gemini-3-flash" style="margin-top:8px;">
+                <div class="hint">Google's free-tier lineup shifts (Pro-series models are periodically moved to paid-only). If a model stops responding, pick "Custom" and check the current list in Google AI Studio.</div>
+              </div>
+              <hr style="border-color:var(--border);margin:16px 0;">
+              <div class="field">
+                <label>Groq — API key</label>
+                <input type="password" id="keyGroq" placeholder="gsk_...">
+                <div class="hint">Get a free key: <a href="https://console.groq.com/keys" target="_blank" rel="noopener">console.groq.com/keys ↗</a> — sign in, click "Create API Key". OpenAI-compatible endpoint, very fast free tier, no credit card required.</div>
+              </div>
+              <div class="field">
+                <label>Groq model (free-tier)</label>
+                <select id="modelGroqPreset">
+                  <option value="llama-3.3-70b-versatile">Llama 3.3 70B Versatile — most popular free option</option>
+                  <option value="llama-3.1-8b-instant">Llama 3.1 8B Instant — fastest, lightweight</option>
+                  <option value="meta-llama/llama-4-scout-17b-16e-instruct">Llama 4 Scout 17B</option>
+                  <option value="qwen/qwen3-32b">Qwen3 32B</option>
+                  <option value="deepseek-r1-distill-llama-70b">DeepSeek R1 Distill Llama 70B</option>
+                  <option value="custom">Custom / other model id…</option>
+                </select>
+                <input type="text" id="modelGroq" placeholder="llama-3.1-8b-instant" value="llama-3.1-8b-instant" style="margin-top:8px;">
+                <div class="hint">Groq's whole catalog is available on its free developer tier (rate-limited, no credit card). Full current list: <code>GET https://api.groq.com/openai/v1/models</code>.</div>
+              </div>
+              <hr style="border-color:var(--border);margin:16px 0;">
+              <div class="field">
+                <label>OpenRouter — API key</label>
+                <input type="password" id="keyOpenrouter" placeholder="sk-or-...">
+                <div class="hint">Get a free key: <a href="https://openrouter.ai/keys" target="_blank" rel="noopener">openrouter.ai/keys ↗</a> — sign up with just an email, click "Create Key". Use one of OpenRouter's <code>:free</code> tagged models.</div>
+              </div>
+              <div class="field">
+                <label>OpenRouter model (free-tier)</label>
+                <select id="modelOpenrouterPreset">
+                  <option value="qwen/qwen3-coder:free">Qwen3 Coder (free) — strong for code, 1M context</option>
+                  <option value="meta-llama/llama-3.3-70b-instruct:free">Llama 3.3 70B Instruct (free) — general chat</option>
+                  <option value="meta-llama/llama-3.1-8b-instruct:free">Llama 3.1 8B Instruct (free) — lightweight</option>
+                  <option value="custom">Custom / other model id…</option>
+                </select>
+                <input type="text" id="modelOpenrouter" placeholder="meta-llama/llama-3.1-8b-instruct:free" value="meta-llama/llama-3.1-8b-instruct:free" style="margin-top:8px;">
+                <div class="hint">OpenRouter's <code>:free</code> roster rotates (~20-30 models at a time, capped at 20 req/min and 50/day without credits). Browse the live list at openrouter.ai/models?max_price=0 and pick "Custom" to use one not listed here.</div>
+              </div>
+              <hr style="border-color:var(--border);margin:16px 0;">
+              <div class="field">
+                <label>Hugging Face Inference — API token</label>
+                <input type="password" id="keyHf" placeholder="hf_...">
+                <div class="hint">Get a free token: <a href="https://huggingface.co/settings/tokens" target="_blank" rel="noopener">huggingface.co/settings/tokens ↗</a> — sign in, click "New token" (Read access is enough for inference).</div>
+              </div>
+              <div class="field">
+                <label>Hugging Face model (free-tier)</label>
+                <select id="modelHfPreset">
+                  <option value="HuggingFaceH4/zephyr-7b-beta">Zephyr 7B Beta — chat-tuned, widely available free</option>
+                  <option value="meta-llama/Llama-3.1-8B-Instruct">Llama 3.1 8B Instruct</option>
+                  <option value="mistralai/Mistral-7B-Instruct-v0.3">Mistral 7B Instruct v0.3</option>
+                  <option value="Qwen/Qwen2.5-7B-Instruct">Qwen2.5 7B Instruct</option>
+                  <option value="custom">Custom / other model id…</option>
+                </select>
+                <input type="text" id="modelHf" placeholder="HuggingFaceH4/zephyr-7b-beta" value="HuggingFaceH4/zephyr-7b-beta" style="margin-top:8px;">
+                <div class="hint">Free serverless Inference API access varies per model/provider routing and can change without notice — if a model 404s or errors, switch to "Custom" and try another id from huggingface.co/models.</div>
+              </div>
+              <button class="btn btn-primary btn-block" id="btnSaveKeys">Save Connector Settings</button>
+            </div>
+          </div>
+          <div>
+            <div class="card" style="margin-bottom:16px;">
+              <h3>Cache-first Behavior</h3>
+              <div class="field">
+                <label>Similarity threshold to reuse a prior answer: <span id="cacheThreshVal">0.80</span> (80%)</label>
+                <input type="range" id="cacheThreshSlider" min="0.5" max="0.98" step="0.01" value="0.8">
+                <div class="hint">If a new question is at or above this % similar to <em>any</em> past question (from any user), it's answered straight from that history entry — no LLM call, no fresh RAG lookup. Answers grounded in documents that have since been removed from the KB are automatically skipped so this always reflects your current, regularly-updated knowledge base.</div>
+              </div>
+              <div class="field">
+                <label>Auto-enrich KB from new LLM answers</label>
+                <select id="autoEnrichSelect">
+                  <option value="on" selected>On</option>
+                  <option value="off">Off</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Top-K retrieved chunks per query</label>
+                <input type="number" id="topKInput" min="1" max="10" value="4">
+              </div>
+            </div>
+            <div class="card" style="margin-bottom:16px;">
+              <h3>Grounding & Fallback</h3>
+              <div class="hint" style="margin-bottom:12px;">The assistant is strictly grounded: it only answers from your uploaded documents and never falls back to general/web knowledge. When a query isn't covered by the knowledge base, it gets the standard response below instead — no LLM call is made, so nothing is ever "made up".</div>
+              <div class="field">
+                <label>Minimum KB relevance to attempt an answer: <span id="minRelevanceVal">0.12</span></label>
+                <input type="range" id="minRelevanceSlider" min="0.02" max="0.6" step="0.01" value="0.12">
+                <div class="hint">Below this retrieval-relevance score, the query is treated as out-of-knowledge-base and the standard response is used directly — the LLM is never called. Lower = more queries get attempted; higher = stricter, more queries fall back.</div>
+              </div>
+              <div class="field">
+                <label>Standard response for out-of-knowledge-base queries</label>
+                <textarea id="fallbackResponseInput" rows="3" placeholder="I don't have information about that in the knowledge base..."></textarea>
+                <div class="hint">Shown verbatim whenever a question has no adequate match in the knowledge base (either by relevance score, or because the model itself reports the context is insufficient).</div>
+              </div>
+              <button class="btn btn-primary btn-block" id="btnSaveFallback">Save Grounding Settings</button>
+            </div>
+            <div class="card">
+              <h3>Data Management</h3>
+              <div class="hint" style="margin-bottom:10px;">Everything (KB, chat history, workflows, settings) lives in this browser only. Export a backup or move it to another device.</div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <button class="btn btn-sm" id="btnExportAll">Export All (JSON)</button>
+                <button class="btn btn-sm" id="btnImportAll">Import JSON</button>
+                <input type="file" id="importFile" accept=".json" hidden>
+                <button class="btn btn-sm btn-danger" id="btnResetAll">Reset Everything</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- ================= ARCHITECTURE & SCALE ================= -->
+      <section class="tab-section" id="tab-arch">
+        <div class="section-title">Architecture, Integration APIs & Scaling to Telco-Grade</div>
+        <div class="section-sub">This build is a self-contained browser prototype. This page documents how a production/telco deployment differs.</div>
+        <div class="prose">
+          <div class="card">
+            <h4>What this prototype actually is</h4>
+            <p>Everything runs client-side in this one HTML file: chunking, TF‑IDF retrieval, language/sentiment heuristics, the workflow engine, and the "database" (browser IndexedDB standing in for MySQL). LLM calls go straight from your browser to Gemini/Groq/OpenRouter/HuggingFace using a key you paste into Settings — fine for personal/demo use, not for production (keys are exposed client-side, and IndexedDB doesn't survive across devices or browsers).</p>
+          </div>
+          <div class="card">
+            <h4>Workflow module</h4>
+            <p>Workflows are decision trees (<code>{start, nodes:{...}}</code>) generated from a natural-language prompt, but only using the operator's own knowledge base as context — the generator retrieves relevant chunks first and refuses to build anything if there isn't enough KB coverage, so it can't invent an ungrounded scenario. Nodes can be <code>question</code> (branches to buttons), <code>answer</code> (terminal), <code>input</code> (collects a typed value into a variable), or <code>api_call</code> (a real <code>fetch()</code> to an external API, with the response stored in a variable and interpolated into later node text via <code>{{variable}}</code>) — letting a workflow reach outside the chatbot into the operator's own systems (order status, ticket creation, etc.), subject to that API's CORS policy since calls run directly from the browser here. Workflows are stored as plain JSON in IndexedDB (<code>workflows</code> store), edited visually as a diagram or via raw JSON, and matched to incoming queries client-side via keyword/phrase (Jaccard) overlap against each workflow's trigger list — no LLM call is needed to route a query into a workflow, which is what keeps simple, repetitive questions off the RAG/LLM path entirely. In a production backend this becomes its own service: <code>POST /v1/workflows/generate</code> (prompt → draft JSON, still human-reviewed before publish), <code>POST /v1/workflows</code> / <code>PUT /v1/workflows/{id}</code> to publish, a server-side proxy for <code>api_call</code> steps (so CORS and credentials are handled off the client), and the query router calls an intent-matching step (could stay lexical, or upgrade to a small classifier/embedding lookup) before falling back to vector retrieval + LLM.</p>
+          </div>
+          <div class="card">
+            <h4>External integration API surface (for a real backend)</h4>
+            <p>To let other systems (IVR, CRM, mobile apps, agent desktops) push input and receive output at scale, expose a thin REST/webhook layer in front of the RAG pipeline:</p>
+            <ul>
+              <li><code>POST /v1/documents</code> — ingest a file or raw text into the knowledge base; accepts chunk_size/overlap or "auto".</li>
+              <li><code>GET /v1/documents/{id}</code>, <code>DELETE /v1/documents/{id}</code> — manage KB entries.</li>
+              <li><code>POST /v1/workflows/generate</code> — prompt → draft workflow JSON for review.</li>
+              <li><code>POST /v1/workflows</code>, <code>PUT /v1/workflows/{id}</code>, <code>DELETE /v1/workflows/{id}</code> — publish/manage workflows.</li>
+              <li><code>POST /v1/query</code> — synchronous text query → { answer, source: workflow|cache|llm, language, sentiment, latency_ms, citations[] }.</li>
+              <li><code>POST /v1/query/stream</code> — Server-Sent Events / WebSocket variant for token-by-token streaming (needed for natural voice/chat UX).</li>
+              <li><code>POST /v1/voice</code> — audio in (multipart or streaming) → STT → same pipeline → TTS audio out.</li>
+              <li><code>POST /v1/webhooks/subscribe</code> — register a callback URL to receive async answers (useful for long-running or queued requests).</li>
+              <li><code>GET /v1/reports/mis?from=&to=&status=</code> — MIS/analytics export, paginated, CSV/JSON.</li>
+              <li><code>POST /v1/feedback</code> — thumbs up/down or corrected answer, used to curate what gets promoted into the historic-answer cache or a workflow.</li>
+            </ul>
+            <p>Auth: OAuth2 client-credentials or signed API keys per tenant, rate-limited per key; all endpoints versioned and behind an API gateway.</p>
+          </div>
+          <div class="card">
+            <h4>What changes to run this at telco scale</h4>
+            <ul>
+              <li><strong>Database:</strong> real MySQL (or Postgres) cluster with read replicas for chat history/MIS/workflow definitions, not IndexedDB — plus a proper vector store (pgvector, Milvus, or a managed vector DB) replacing the in-browser TF‑IDF index once corpus size grows past what brute-force cosine similarity can handle in real time.</li>
+              <li><strong>Caching layer:</strong> Redis (or similar) in front of MySQL for the "check history before calling the LLM" lookup, so cache hits stay sub-50ms under load.</li>
+              <li><strong>LLM gateway:</strong> a backend service holds provider API keys (never the client), load-balances across providers/models, handles retries, timeouts, and fallback ordering (e.g., Groq first for latency, Gemini as fallback).</li>
+              <li><strong>Async/queueing:</strong> Kafka or SQS/RabbitMQ to decouple ingestion (large document/PDF processing, embedding generation) and bursty voice traffic from the request path.</li>
+              <li><strong>Compute:</strong> containerized microservices on Kubernetes with autoscaling (HPA) for the API layer, STT/TTS workers, and embedding workers sized independently.</li>
+              <li><strong>Telephony/voice integration:</strong> SIP/IVR gateway or WebRTC bridge in front of the voice endpoint; dedicated STT (e.g., streaming ASR) and TTS services sized for concurrent call volumes, not browser Web Speech API. Workflows map naturally onto IVR menu trees here.</li>
+              <li><strong>Multi-tenancy:</strong> tenant isolation at the DB and vector-index level (per-tenant schema or partition key) so one telco business unit's KB or workflows never leak into another's answers.</li>
+              <li><strong>Observability:</strong> centralized logging, distributed tracing (OpenTelemetry), and dashboards (Prometheus/Grafana) tracking cache-hit rate, workflow-deflection rate, LLM cost per query, latency percentiles, and failure rate — this MIS page becomes a real-time ops dashboard fed by the same pipeline.</li>
+              <li><strong>Reliability:</strong> multi-AZ/multi-region deployment, DB failover, circuit breakers around each LLM provider, graceful degradation to workflows/cached/FAQ answers if all providers are down — telco environments typically target 99.99%+ availability.</li>
+              <li><strong>Security & compliance:</strong> encryption at rest/in transit, PII detection/redaction before data reaches a third-party LLM, audit logs, data residency controls, and role-based access (e.g., only certain roles can publish workflows) — especially important given telco regulatory obligations (e.g., call/customer data handling rules).</li>
+              <li><strong>Cost governance:</strong> per-tenant/per-query budget caps, model routing by query complexity (workflow first, then cheap/fast model, escalate only if confidence is low), and the cache-first + workflow-first pattern already in this prototype — which is exactly the right instinct for controlling LLM spend at volume.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+<div class="toast-wrap" id="toastWrap"></div>
+<script>
+/* =========================================================================
+   NeuroDesk RAG — client-side prototype
+   Sections: DB layer, chunking, TF-IDF retrieval, NLP heuristics,
+   LLM connectors, cache-first orchestration, voice, UI wiring, charts.
+   ========================================================================= */
+/* ---------------------------- Toast helper ---------------------------- */
+function toast(msg, type){
+  const wrap = document.getElementById('toastWrap');
+  const el = document.createElement('div');
+  el.className = 'toast ' + (type === 'err' ? 'err' : 'ok');
+  el.textContent = msg;
+  wrap.appendChild(el);
+  setTimeout(()=>el.remove(), 4000);
+}
+/* ---------------------------- IndexedDB layer -------------------------- */
+const DB_NAME = 'neurodesk_rag_db';
+const DB_VERSION = 2;
+let dbPromise = null;
+function idbOpen(){
+  if (dbPromise) return dbPromise;
+  dbPromise = new Promise((resolve, reject)=>{
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onupgradeneeded = (e)=>{
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains('docs')) db.createObjectStore('docs', { keyPath:'id', autoIncrement:true });
+      if (!db.objectStoreNames.contains('chunks')) db.createObjectStore('chunks', { keyPath:'id', autoIncrement:true });
+      if (!db.objectStoreNames.contains('history')) db.createObjectStore('history', { keyPath:'id', autoIncrement:true });
+      if (!db.objectStoreNames.contains('workflows')) db.createObjectStore('workflows', { keyPath:'id', autoIncrement:true });
+    };
+    req.onsuccess = (e)=>resolve(e.target.result);
+    req.onerror = (e)=>reject(e.target.error);
+  });
+  return dbPromise;
+}
+async function idbAdd(store, obj){
+  const db = await idbOpen();
+  return new Promise((resolve,reject)=>{
+    const tx = db.transaction(store,'readwrite');
+    const r = tx.objectStore(store).add(obj);
+    r.onsuccess = ()=>resolve(r.result);
+    r.onerror = ()=>reject(r.error);
+  });
+}
+async function idbPut(store, obj){
+  const db = await idbOpen();
+  return new Promise((resolve,reject)=>{
+    const tx = db.transaction(store,'readwrite');
+    const r = tx.objectStore(store).put(obj);
+    r.onsuccess = ()=>resolve(r.result);
+    r.onerror = ()=>reject(r.error);
+  });
+}
+async function idbGetAll(store){
+  const db = await idbOpen();
+  return new Promise((resolve,reject)=>{
+    const tx = db.transaction(store,'readonly');
+    const r = tx.objectStore(store).getAll();
+    r.onsuccess = ()=>resolve(r.result);
+    r.onerror = ()=>reject(r.error);
+  });
+}
+async function idbDelete(store, id){
+  const db = await idbOpen();
+  return new Promise((resolve,reject)=>{
+    const tx = db.transaction(store,'readwrite');
+    const r = tx.objectStore(store).delete(id);
+    r.onsuccess = ()=>resolve();
+    r.onerror = ()=>reject(r.error);
+  });
+}
+async function idbClear(store){
+  const db = await idbOpen();
+  return new Promise((resolve,reject)=>{
+    const tx = db.transaction(store,'readwrite');
+    const r = tx.objectStore(store).clear();
+    r.onsuccess = ()=>resolve();
+    r.onerror = ()=>reject(r.error);
+  });
+}
+/* ---------------------------- Settings (localStorage) ------------------ */
+const DEFAULT_SETTINGS = {
+  keys:{ gemini:'', groq:'', openrouter:'', huggingface:'' },
+  models:{ gemini:'gemini-3-flash', groq:'llama-3.1-8b-instant', openrouter:'meta-llama/llama-3.1-8b-instruct:free', huggingface:'HuggingFaceH4/zephyr-7b-beta' },
+  cacheThreshold:0.8,
+  autoEnrich:true,
+  topK:4,
+  theme:'dark',
+  provider:'gemini',
+  voiceOutput:false,
+  workflowThreshold:0.35,
+  workflowProvider:'gemini',
+  minRelevance:0.12,
+  fallbackResponse:"I don't have information about that in the knowledge base right now. Please try rephrasing your question, or reach out to support for further help."
+};
+function loadSettings(){
+  try{
+    const raw = localStorage.getItem('neurodesk_settings');
+    if (!raw) return structuredClone(DEFAULT_SETTINGS);
+    return Object.assign(structuredClone(DEFAULT_SETTINGS), JSON.parse(raw));
+  }catch(e){ return structuredClone(DEFAULT_SETTINGS); }
+}
+function saveSettings(s){ localStorage.setItem('neurodesk_settings', JSON.stringify(s)); }
+let settings = loadSettings();
+/* ---------------------------- Chunking ---------------------------------- */
+function chunkText(text, size, overlap){
+  size = Math.max(50, size|0);
+  overlap = Math.max(0, Math.min(overlap|0, size-10));
+  const step = size - overlap;
+  const chunks = [];
+  for (let start=0; start<text.length; start += step){
+    const piece = text.slice(start, start+size).trim();
+    if (piece) chunks.push(piece);
+    if (start+size >= text.length) break;
+  }
+  return chunks;
+}
+function recommendChunking(charCount, ext){
+  let size, overlap, reason;
+  if (charCount < 3000){ size=400; overlap=50; reason='Short document — small chunks keep each piece focused; a large chunk size would just be the whole doc.'; }
+  else if (charCount < 15000){ size=800; overlap=100; reason='Medium-length document — 800-char chunks balance context completeness with retrieval precision.'; }
+  else if (charCount < 60000){ size=1200; overlap=150; reason='Long document — larger chunks reduce the total chunk count and preserve more surrounding context per retrieval.'; }
+  else { size=1800; overlap=200; reason='Very large document — bigger chunks keep the index manageable; overlap prevents losing context at chunk boundaries.'; }
+  const structuredExts = ['csv','json','log'];
+  if (structuredExts.includes(ext)){
+    size = Math.round(size*0.6);
+    overlap = Math.round(size*0.1);
+    reason += ' Reduced further because structured/tabular data (' + ext + ') benefits from smaller, self-contained chunks (e.g. a few rows/records) rather than large free-text spans.';
+  }
+  overlap = Math.min(overlap, Math.round(size*0.3));
+  return { size, overlap, reason };
+}
+/* ---------------------------- Tokenize / NLP ---------------------------- */
+const GENERIC_STOP = new Set(['the','a','an','and','or','of','to','in','is','it','this','that','for','on','with','as','are','was','be']);
+function tokenize(text){
+  return (text.toLowerCase().match(/[\p{L}\p{N}]+/gu) || []);
+}
+/* Stopword-filtered tokens, used specifically for Jaccard similarity matching (cache
+   reuse, workflow trigger/option matching) so near-duplicate phrasing ("what is the
+   refund policy" vs "can you tell me about your refund policy") still overlaps on the
+   words that actually carry meaning. NOT used for the TF-IDF retrieval index (IDF
+   weighting already downweights common words there) or sentiment analysis (negation
+   detection needs "not"/"no" to stay in the token stream). */
+function contentTokens(text){
+  return tokenize(text).filter(t => !GENERIC_STOP.has(t));
+}
+/* Language detection: script-based first, then Latin-language stopword overlap */
+const STOPWORDS = {
+  en:['the','and','is','are','was','were','you','your','have','has','with','this','that','for','not','but'],
+  es:['el','la','de','que','y','en','un','una','es','por','para','con','no','se','los','las'],
+  fr:['le','la','de','et','un','une','est','pour','avec','ne','pas','les','des','que','ce'],
+  de:['der','die','das','und','ist','ein','eine','nicht','mit','für','ich','sie','auf','sind'],
+  pt:['o','a','de','que','e','em','um','uma','para','com','não','os','as','é','por'],
+  it:['il','la','di','che','e','un','una','per','con','non','sono','gli','le','è']
+};
+function detectLanguage(text){
+  const trimmed = text.trim();
+  if (!trimmed) return 'en';
+  if (/[ऀ-ॿ]/.test(trimmed)) return 'hi';
+  if (/[؀-ۿ]/.test(trimmed)) return 'ar';
+  if (/[Ѐ-ӿ]/.test(trimmed)) return 'ru';
+  if (/[一-鿿]/.test(trimmed)) return 'zh';
+  if (/[぀-ヿ]/.test(trimmed)) return 'ja';
+  if (/[가-힯]/.test(trimmed)) return 'ko';
+  const tokens = tokenize(trimmed);
+  if (tokens.length === 0) return 'en';
+  let best = 'en', bestScore = -1;
+  for (const [lang, words] of Object.entries(STOPWORDS)){
+    const set = new Set(words);
+    let hits = 0;
+    for (const t of tokens) if (set.has(t)) hits++;
+    const score = hits / tokens.length;
+    if (score > bestScore){ bestScore = score; best = lang; }
+  }
+  return bestScore > 0 ? best : 'en';
+}
+const LANG_NAMES = {en:'English',es:'Spanish',fr:'French',de:'German',pt:'Portuguese',it:'Italian',hi:'Hindi',ar:'Arabic',ru:'Russian',zh:'Chinese',ja:'Japanese',ko:'Korean'};
+/* Lexicon-based sentiment (small embedded AFINN-style list) */
+const SENTIMENT_LEXICON = {
+  good:2, great:3, excellent:3, amazing:4, love:3, happy:2, awesome:4, perfect:3, thanks:2, thank:2, helpful:2,
+  nice:2, wonderful:3, best:3, easy:1, fast:1, works:1, resolved:2, satisfied:2, pleased:2, appreciate:2,
+  bad:-2, terrible:-3, awful:-3, hate:-3, worst:-3, broken:-2, useless:-2, slow:-1, confusing:-2, frustrated:-3,
+  frustrating:-3, angry:-3, annoyed:-2, disappointed:-2, problem:-1, issue:-1, error:-1, fail:-2, failed:-2,
+  wrong:-2, poor:-2, complain:-2, complaint:-2, delay:-1, delayed:-1, waiting:-1, unacceptable:-3, refund:-1,
+  cancel:-1, stuck:-1, crash:-2, crashed:-2, sorry:-1, urgent:-1, disconnect:-1, disconnected:-2
+};
+const NEGATORS = new Set(['not','no',"n't",'never','without']);
+function analyzeSentiment(text){
+  const tokens = tokenize(text);
+  let score = 0, matched = 0;
+  for (let i=0;i<tokens.length;i++){
+    const t = tokens[i];
+    if (t in SENTIMENT_LEXICON){
+      let val = SENTIMENT_LEXICON[t];
+      const prev1 = tokens[i-1], prev2 = tokens[i-2];
+      if (NEGATORS.has(prev1) || NEGATORS.has(prev2)) val = -val;
+      score += val; matched++;
+    }
+  }
+  const norm = matched ? score / Math.max(matched,1) : 0;
+  let label = 'neutral';
+  if (norm > 0.4) label = 'positive';
+  else if (norm < -0.4) label = 'negative';
+  return { label, score: Math.round(score*100)/100 };
+}
+/* ---------------------------- TF-IDF retrieval index --------------------- */
+let ragIndex = { chunks:[], df:new Map(), N:0 };
+async function rebuildIndex(){
+  const chunks = await idbGetAll('chunks');
+  const df = new Map();
+  const prepared = chunks.map(c=>{
+    const toks = tokenize(c.text);
+    const tf = new Map();
+    for (const t of toks) tf.set(t, (tf.get(t)||0)+1);
+    for (const t of tf.keys()) df.set(t, (df.get(t)||0)+1);
+    return { ...c, tf, len: toks.length || 1 };
+  });
+  ragIndex = { chunks: prepared, df, N: prepared.length };
+  document.getElementById('indexStatus').textContent = 'Index: ' + prepared.length + ' chunks ready';
+  return ragIndex;
+}
+function vecFromTf(tf, len, df, N){
+  const vec = new Map();
+  for (const [term, count] of tf.entries()){
+    const idf = Math.log((N+1)/((df.get(term)||0)+1)) + 1;
+    vec.set(term, (count/len) * idf);
+  }
+  return vec;
+}
+function cosineSim(a,b){
+  let dot=0, na=0, nb=0;
+  for (const v of a.values()) na += v*v;
+  for (const v of b.values()) nb += v*v;
+  const [small,large] = a.size < b.size ? [a,b] : [b,a];
+  for (const [k,v] of small.entries()) if (large.has(k)) dot += v*large.get(k);
+  if (na===0||nb===0) return 0;
+  return dot / (Math.sqrt(na)*Math.sqrt(nb));
+}
+function retrieveTopK(query, k){
+  if (ragIndex.N === 0) return [];
+  const toks = tokenize(query);
+  const tf = new Map();
+  for (const t of toks) tf.set(t,(tf.get(t)||0)+1);
+  const qVec = vecFromTf(tf, toks.length||1, ragIndex.df, ragIndex.N);
+  const scored = ragIndex.chunks.map(c=>{
+    const cVec = vecFromTf(c.tf, c.len, ragIndex.df, ragIndex.N);
+    return { ...c, score: cosineSim(qVec, cVec) };
+  });
+  scored.sort((a,b)=>b.score-a.score);
+  return scored.filter(s=>s.score>0).slice(0,k);
+}
+/* ---------------------------- History similarity (cache lookup) --------- */
+function jaccard(aTokens, bTokens){
+  const a = new Set(aTokens), b = new Set(bTokens);
+  let inter=0;
+  for (const t of a) if (b.has(t)) inter++;
+  const union = a.size + b.size - inter;
+  return union===0 ? 0 : inter/union;
+}
+/* Cache-first lookup: reuse a prior answer (no LLM call) for anything jaccard-similar
+   to a past query above the configured threshold (default 0.80 = 80%), regardless of
+   which user/session asked it — history is shared across the whole KB.
+   Freshness guard: if the cached answer was grounded in specific KB documents and any
+   of those documents have since been removed/changed, the entry is skipped so cache
+   reuse always reflects the *current* knowledge base rather than a stale snapshot. */
+async function findCachedAnswer(query, threshold){
+  const history = await idbGetAll('history');
+  const docs = await idbGetAll('docs');
+  const currentDocNames = new Set(docs.map(d=>d.name));
+  const qTokens = contentTokens(query);
+  let best = null, bestScore = 0;
+  for (const h of history){
+    if (h.status !== 'success') continue;
+    if (h.source === 'workflow') continue; // workflow turns aren't generic Q&A, don't reuse them as cache
+    // A fallback answer means "not covered" at the time it was asked — it's not a real
+    // KB-sourced answer, so it must never be treated as a durable cache hit. Otherwise a
+    // single early "no coverage" result (e.g. before a grounding/language fix, or before
+    // more docs were uploaded) gets permanently replayed for every similar-worded
+    // question afterward, even once the underlying answer would now succeed.
+    if (h.source === 'fallback') continue;
+    if (h.source === 'llm' && Array.isArray(h.citations) && h.citations.length){
+      const stillGrounded = h.citations.every(c => currentDocNames.has(c.docName));
+      if (!stillGrounded) continue; // KB changed since this answer was generated — re-retrieve instead of reusing stale grounding
+    }
+    const score = jaccard(qTokens, contentTokens(h.query));
+    if (score > bestScore){ bestScore = score; best = h; }
+  }
+  if (best && bestScore >= threshold) return { entry: best, score: bestScore };
+  return null;
+}
+/* ---------------------------- Prompt construction ------------------------ */
+const NO_KB_MATCH_TOKEN = '[[NO_KB_MATCH]]';
+function buildSystemPrompt(chunks, language, sentiment){
+  const langName = LANG_NAMES[language] || language;
+  let toneGuidance = 'Be clear, direct, and informative.';
+  if (sentiment === 'negative') toneGuidance = 'The user seems frustrated or unhappy — respond with extra empathy, acknowledge the issue briefly, and prioritize a clear, actionable answer.';
+  if (sentiment === 'positive') toneGuidance = 'The user seems positive — keep an upbeat, friendly tone while staying accurate.';
+  const context = chunks.map((c,i)=>'[Source '+(i+1)+' — '+ (c.docName||'document') +']\n'+c.text).join('\n\n---\n\n');
+  return [
+    'You are a strictly grounded knowledge-base assistant. You may ONLY use the CONTEXT below to answer — never your own general/world knowledge, never information you recall from training, and never a guess.',
+    'Respond in ' + langName + ', matching the user\'s language.',
+    toneGuidance,
+    'If, and only if, the CONTEXT does not contain enough information to answer the question, reply with EXACTLY this token and nothing else: ' + NO_KB_MATCH_TOKEN,
+    'Do not say things like "I don\'t have that in my documents, but generally..." — if the context is insufficient, output only the token above.',
+    'Never refer to "Source 1", "Source 2", "the context", or "the documents" in your answer — answer naturally, as if you simply knew it.',
+    'Keep answers concise unless the user asks for detail.',
+    '',
+    'CONTEXT:',
+    context
+  ].join('\n');
+}
+/* ---------------------------- LLM connectors ----------------------------- */
+async function callGemini(apiKey, model, systemPrompt, userMessage){
+  const url = 'https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(model)+':generateContent?key='+encodeURIComponent(apiKey);
+  const body = { contents:[{ role:'user', parts:[{ text: systemPrompt + '\n\nUser: ' + userMessage }]}] };
+  const res = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+  if (!res.ok) throw new Error('Gemini API error ' + res.status + ': ' + (await res.text()).slice(0,200));
+  const data = await res.json();
+  const text = data?.candidates?.[0]?.content?.parts?.map(p=>p.text).join('') || '';
+  if (!text) throw new Error('Gemini returned an empty response.');
+  return text;
+}
+async function callGroq(apiKey, model, systemPrompt, userMessage){
+  const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method:'POST',
+    headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer '+apiKey },
+    body: JSON.stringify({ model, messages:[{role:'system',content:systemPrompt},{role:'user',content:userMessage}], temperature:0.6 })
+  });
+  if (!res.ok) throw new Error('Groq API error ' + res.status + ': ' + (await res.text()).slice(0,200));
+  const data = await res.json();
+  const text = data?.choices?.[0]?.message?.content || '';
+  if (!text) throw new Error('Groq returned an empty response.');
+  return text;
+}
+async function callOpenRouter(apiKey, model, systemPrompt, userMessage){
+  const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    method:'POST',
+    headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer '+apiKey },
+    body: JSON.stringify({ model, messages:[{role:'system',content:systemPrompt},{role:'user',content:userMessage}] })
+  });
+  if (!res.ok) throw new Error('OpenRouter API error ' + res.status + ': ' + (await res.text()).slice(0,200));
+  const data = await res.json();
+  const text = data?.choices?.[0]?.message?.content || '';
+  if (!text) throw new Error('OpenRouter returned an empty response.');
+  return text;
+}
+async function callHuggingFace(apiKey, model, systemPrompt, userMessage){
+  const res = await fetch('https://api-inference.huggingface.co/models/'+encodeURIComponent(model), {
+    method:'POST',
+    headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer '+apiKey },
+    body: JSON.stringify({ inputs: systemPrompt + '\n\nUser: ' + userMessage })
+  });
+  if (!res.ok) throw new Error('HuggingFace API error ' + res.status + ': ' + (await res.text()).slice(0,200));
+  const data = await res.json();
+  let text = '';
+  if (Array.isArray(data)) text = data[0]?.generated_text || '';
+  else text = data?.generated_text || data?.[0]?.summary_text || '';
+  if (!text) throw new Error('HuggingFace returned an empty/unsupported response for this model.');
+  return text;
+}
+async function callProvider(provider, systemPrompt, userMessage){
+  const key = settings.keys[provider];
+  const model = settings.models[provider];
+  if (!key) throw new Error('No API key set for ' + provider + '. Add one in Settings.');
+  if (provider==='gemini') return callGemini(key, model, systemPrompt, userMessage);
+  if (provider==='groq') return callGroq(key, model, systemPrompt, userMessage);
+  if (provider==='openrouter') return callOpenRouter(key, model, systemPrompt, userMessage);
+  if (provider==='huggingface') return callHuggingFace(key, model, systemPrompt, userMessage);
+  throw new Error('Unknown provider ' + provider);
+}
+/* ---------------------------- Workflow engine ------------------------------ */
+/*
+  Workflow shape (stored in the 'workflows' IndexedDB store):
+  {
+    id, name, triggers: string[], active: bool, createdAt, groundedDocs: string[],
+    flow: {
+      start: "n1",
+      nodes: {
+        n1: { type:"question", text:"...", options:[{label:"...", next:"n2"}, ...] },
+        n2: { type:"input", text:"...", variable:"orderId", next:"n3" },
+        n3: { type:"api_call", text:"Looking that up…", api:{ url, method, headers, body, responseVar, timeoutMs }, next:"n4", onErrorNext:"n5" },
+        n4: { type:"answer",   text:"Your status is {{orderStatus.state}}." }
+      }
+    }
+  }
+  "question" nodes render as quick-reply buttons and wait for a click. "input" nodes ask
+  the user to type a value and store it under "variable". "api_call" nodes fire a real
+  fetch() to an external API (subject to the target's CORS policy — see Architecture tab)
+  and auto-advance with no user interaction. "answer" nodes are terminal. Node text can
+  reference {{variableName}} (or {{variable.path}}) to interpolate collected input/API
+  response data. Matching a user query to a workflow, and matching typed text to a
+  question's option labels, is done client-side with the Jaccard token-overlap function
+  used for the answer cache — no LLM call needed to route into or advance a workflow.
+*/
+function workflowGenSystemPrompt(context){
+  return [
+    'You design short decision-tree workflows for a customer-support chatbot. This chatbot is STRICTLY GROUNDED: every question, option, and especially every final answer must be built ONLY from the CONTEXT below, which was retrieved from the operator\'s own knowledge base.',
+    'Never invent policies, numbers, links, prices, procedures, timeframes, or contact details that are not present in the CONTEXT. If the CONTEXT only covers some branches of what was asked for, keep the uncovered branches minimal/conservative rather than making details up.',
+    'Given a description, output ONLY strict JSON (no markdown fences, no commentary) with this exact shape:',
+    '{',
+    '  "name": "Short Workflow Name",',
+    '  "triggers": ["phrase a user might type to start this", "..."],',
+    '  "start": "n1",',
+    '  "nodes": {',
+    '    "n1": { "type": "question", "text": "Question shown to the user", "options": [ { "label": "Choice shown on a button", "next": "n2" }, { "label": "Another choice", "next": "n3" } ] },',
+    '    "n2": { "type": "answer", "text": "Final answer text for this branch, grounded in CONTEXT." },',
+    '    "n3": { "type": "answer", "text": "Final answer text for this branch, grounded in CONTEXT." }',
+    '  }',
+    '}',
+    'Available node types (use "question" and "answer" unless the description clearly calls for the others):',
+    '- "question": needs "options" (2-5), each option needs "label" and "next".',
+    '- "answer": terminal, needs only "text". No "options".',
+    '- "input": asks the user to type a free-text value; needs "variable" (a short snake_case name) and "next". Only use this if the description explicitly says to collect something from the user (like an order number).',
+    '- "api_call": calls an external API; needs "api":{"url","method","responseVar"} and "next" (and optionally "onErrorNext"). ONLY produce this if the description explicitly names a real API/URL to call — never invent an endpoint. Leave this type out entirely otherwise.',
+    'Rules:',
+    '- 3 to 8 varied trigger phrases, lowercase, no punctuation beyond apostrophes.',
+    '- Keep the tree shallow: at most 3 question levels before every branch reaches an answer.',
+    '- Keep node text concise (under 240 characters).',
+    '- Node keys are short ids like n1, n2, n3 (no spaces).',
+    '- Output valid JSON only — it will be parsed directly with JSON.parse.',
+    '',
+    'CONTEXT (this is the ONLY source of truth for question/answer content):',
+    context
+  ].join('\n');
+}
+function extractJsonObject(text){
+  const start = text.indexOf('{');
+  const end = text.lastIndexOf('}');
+  if (start === -1 || end === -1 || end < start) throw new Error('No JSON object found in the model response.');
+  return text.slice(start, end+1);
+}
+const WORKFLOW_NODE_TYPES = ['question','answer','input','api_call'];
+function validateWorkflowFlow(flow){
+  if (!flow || typeof flow !== 'object') throw new Error('Workflow must be an object.');
+  if (!flow.start || typeof flow.start !== 'string') throw new Error('Workflow is missing a "start" node id.');
+  if (!flow.nodes || typeof flow.nodes !== 'object') throw new Error('Workflow is missing a "nodes" object.');
+  const nodeIds = Object.keys(flow.nodes);
+  if (!nodeIds.length) throw new Error('Workflow has no nodes.');
+  if (!flow.nodes[flow.start]) throw new Error('"start" ('+flow.start+') does not match any node id.');
+  for (const id of nodeIds){
+    const node = flow.nodes[id];
+    if (!node || typeof node !== 'object') throw new Error('Node "'+id+'" is not an object.');
+    if (!WORKFLOW_NODE_TYPES.includes(node.type)) throw new Error('Node "'+id+'" has invalid type "'+node.type+'" (must be one of '+WORKFLOW_NODE_TYPES.join(', ')+').');
+    if (node.type !== 'api_call' && (!node.text || typeof node.text !== 'string')) throw new Error('Node "'+id+'" is missing "text".');
+    if (node.type === 'question'){
+      if (!Array.isArray(node.options) || node.options.length < 1) throw new Error('Question node "'+id+'" needs at least one option.');
+      for (const opt of node.options){
+        if (!opt.label || typeof opt.label !== 'string') throw new Error('An option on node "'+id+'" is missing a "label".');
+        if (!opt.next || !flow.nodes[opt.next]) throw new Error('Option "'+opt.label+'" on node "'+id+'" points to a non-existent node "'+opt.next+'".');
+      }
+    }
+    if (node.type === 'input'){
+      if (!node.variable || typeof node.variable !== 'string') throw new Error('Input node "'+id+'" needs a "variable" name to store the typed answer under.');
+      if (!node.next || !flow.nodes[node.next]) throw new Error('Input node "'+id+'" needs a valid "next".');
+    }
+    if (node.type === 'api_call'){
+      if (!node.api || typeof node.api !== 'object' || !node.api.url) throw new Error('API node "'+id+'" needs "api.url".');
+      if (!node.next || !flow.nodes[node.next]) throw new Error('API node "'+id+'" needs a valid "next".');
+      if (node.onErrorNext && !flow.nodes[node.onErrorNext]) throw new Error('API node "'+id+'" "onErrorNext" points to a non-existent node.');
+    }
+  }
+  return true;
+}
+/* Generation is gated on the knowledge base, the same way chat answers are: retrieve
+   the most relevant chunks for the prompt, and if coverage is too thin, refuse outright
+   rather than let the model invent a plausible-sounding but ungrounded workflow. */
+async function generateWorkflowFromPrompt(userPrompt, provider){
+  const topChunks = retrieveTopK(userPrompt, Math.max(settings.topK, 6));
+  const bestScore = topChunks.length ? topChunks[0].score : 0;
+  if (bestScore < settings.minRelevance){
+    throw new Error('The knowledge base doesn\'t have enough relevant content on this topic yet (best match score '+bestScore.toFixed(2)+', needs ≥ '+settings.minRelevance.toFixed(2)+'). Upload documents that cover it in the Knowledge Base tab, or lower the "Minimum KB relevance" setting, then try again.');
+  }
+  const context = topChunks.map((c,i)=>'[Source '+(i+1)+' — '+ (c.docName||'document') +']\n'+c.text).join('\n\n---\n\n');
+  const raw = await callProvider(provider, workflowGenSystemPrompt(context), userPrompt);
+  let parsed;
+  try{
+    parsed = JSON.parse(extractJsonObject(raw));
+  } catch(err){
+    throw new Error('Could not parse the model output as JSON: ' + err.message);
+  }
+  if (!parsed.name) parsed.name = 'Untitled Workflow';
+  if (!Array.isArray(parsed.triggers)) parsed.triggers = [];
+  validateWorkflowFlow({ start: parsed.start, nodes: parsed.nodes });
+  parsed.groundedDocs = Array.from(new Set(topChunks.map(c=>c.docName || 'document')));
+  return parsed;
+}
+/* ---------------------------- Workflow variables / templating -------------- */
+function resolveVarPath(obj, path){
+  return path.split('.').reduce((acc,key)=> (acc && typeof acc==='object' && acc[key]!==undefined) ? acc[key] : undefined, obj);
+}
+function applyTemplate(text, variables){
+  if (!text) return text;
+  return text.replace(/\{\{\s*([\w.]+)\s*\}\}/g, (m, path)=>{
+    const val = resolveVarPath(variables||{}, path);
+    if (val === undefined) return m;
+    return typeof val === 'object' ? JSON.stringify(val) : String(val);
+  });
+}
+/* ---------------------------- External API node ----------------------------- */
+/* Real fetch() call from the browser to whatever URL the workflow author configured.
+   This is genuinely calling out to the operator's own systems (order lookups, ticket
+   creation, etc.) — subject to that API's CORS policy, since there's no server-side
+   proxy in this prototype (see Architecture & Scale for the production pattern). */
+async function performApiCall(apiCfg, variables){
+  try{
+    const url = applyTemplate(apiCfg.url, variables);
+    const method = (apiCfg.method || 'GET').toUpperCase();
+    const headers = {};
+    if (apiCfg.headers && typeof apiCfg.headers === 'object'){
+      for (const [k,v] of Object.entries(apiCfg.headers)) headers[k] = applyTemplate(String(v), variables);
+    }
+    const opts = { method, headers };
+    if (!['GET','HEAD'].includes(method) && apiCfg.body){
+      opts.body = applyTemplate(apiCfg.body, variables);
+      if (!Object.keys(headers).some(h=>h.toLowerCase()==='content-type')) headers['Content-Type'] = 'application/json';
+    }
+    const controller = new AbortController();
+    const timer = setTimeout(()=>controller.abort(), apiCfg.timeoutMs || 8000);
+    opts.signal = controller.signal;
+    const res = await fetch(url, opts);
+    clearTimeout(timer);
+    const ct = res.headers.get('content-type') || '';
+    const data = ct.includes('application/json') ? await res.json().catch(()=>null) : await res.text();
+    if (!res.ok) return { ok:false, error:'HTTP '+res.status, data };
+    return { ok:true, data };
+  } catch(err){
+    return { ok:false, error: err.name==='AbortError' ? 'Request timed out' : err.message };
+  }
+}
+/* Trigger matching: score a user query against each active workflow's trigger phrases
+   using the same Jaccard token-overlap approach as the answer cache, and pick the best
+   match above the configured threshold. Purely client-side, no LLM call. */
+async function findMatchingWorkflow(query, threshold){
+  const workflows = await idbGetAll('workflows');
+  const qTokens = contentTokens(query);
+  let best = null, bestScore = 0;
+  for (const wf of workflows){
+    if (wf.active === false) continue;
+    for (const trigger of (wf.triggers||[])){
+      const score = jaccard(qTokens, contentTokens(trigger));
+      if (score > bestScore){ bestScore = score; best = wf; }
+    }
+  }
+  if (best && bestScore >= threshold) return { workflow: best, score: bestScore };
+  return null;
+}
+/* Active workflow session state for the chat tab (one active flow at a time).
+   `variables` accumulates input-node answers and api_call responses so later node
+   text/URLs can reference them via {{varName}} or {{varName.path}}. */
+let activeWorkflowSession = null; // { workflow, nodeId, variables, awaitingInputVar? }
+function setActiveWorkflowSession(session){
+  activeWorkflowSession = session;
+  const card = document.getElementById('activeWorkflowCard');
+  const nameEl = document.getElementById('activeWorkflowName');
+  if (session){
+    card.style.display = '';
+    nameEl.textContent = session.workflow.name;
+  } else {
+    card.style.display = 'none';
+    nameEl.textContent = '-';
+  }
+}
+async function logWorkflowTurn(query, answerText, startTime){
+  const latencyMs = Math.round(performance.now() - startTime);
+  const language = detectLanguage(query);
+  const sentiment = analyzeSentiment(query);
+  await idbAdd('history', {
+    query, response: answerText, source:'workflow', provider:'workflow',
+    language, sentiment: sentiment.label, status:'success', latencyMs, ts: Date.now(), citations: []
+  });
+  document.getElementById('lastMeta').innerHTML =
+    '<span class="pill success">success</span> <span class="pill accent">workflow</span> '+
+    '<span class="pill">'+ (LANG_NAMES[language]||language) +'</span> <span class="pill">'+sentiment.label+'</span> <span class="pill">'+latencyMs+' ms</span>';
+  refreshDashboard();
+  refreshMIS();
+}
+function workflowMsgBadges(workflow, extra){
+  const badges = document.createElement('div');
+  badges.className = 'msg-badges';
+  badges.innerHTML = '<span class="pill accent">workflow</span><span class="pill">'+escapeHtml(workflow.name)+'</span>'+(extra||'');
+  return badges;
+}
+function renderWorkflowQuestion(workflow, nodeId, node, variables){
+  const el = addMessage('bot', applyTemplate(node.text, variables));
+  el.appendChild(workflowMsgBadges(workflow));
+  const btnWrap = document.createElement('div');
+  btnWrap.className = 'tag-list';
+  node.options.forEach(opt=>{
+    const b = document.createElement('button');
+    b.className = 'btn btn-sm btn-accent';
+    b.textContent = opt.label;
+    b.onclick = ()=>handleWorkflowOptionClick(opt);
+    btnWrap.appendChild(b);
+  });
+  el.appendChild(btnWrap);
+  setActiveWorkflowSession({ workflow, nodeId, variables });
+  const win = document.getElementById('chatWindow');
+  win.scrollTop = win.scrollHeight;
+}
+function renderWorkflowInputPrompt(workflow, nodeId, node, variables){
+  const el = addMessage('bot', applyTemplate(node.text, variables));
+  el.appendChild(workflowMsgBadges(workflow, '<span class="pill warn">type your answer</span>'));
+  setActiveWorkflowSession({ workflow, nodeId, variables, awaitingInputVar: node.variable });
+  const win = document.getElementById('chatWindow');
+  win.scrollTop = win.scrollHeight;
+}
+/* Walks the flow starting at nodeId, auto-executing api_call nodes (real fetch() calls to
+   whatever URL the workflow author configured — no user interaction, but subject to that
+   API's CORS policy) until it reaches a question (wait for a button click), an input node
+   (wait for typed text), or a terminal answer. `variables` accumulates along the way and
+   is interpolated into node text via {{varName}}. */
+async function advanceWorkflow(workflow, nodeId, variables, turnStartTime, turnQuery){
+  let node = workflow.flow.nodes[nodeId];
+  while (node && node.type === 'api_call'){
+    if (node.text) addMessage('system', applyTemplate(node.text, variables));
+    const result = await performApiCall(node.api, variables);
+    if (result.ok){
+      if (node.api.responseVar) variables[node.api.responseVar] = result.data;
+      nodeId = node.next;
+    } else {
+      addMessage('system', '⚠ API call failed: ' + result.error);
+      nodeId = node.onErrorNext || null;
+      if (!nodeId){
+        addMessage('bot', settings.fallbackResponse);
+        setActiveWorkflowSession(null);
+        if (turnStartTime) logWorkflowTurn(turnQuery||'', settings.fallbackResponse, turnStartTime);
+        return;
+      }
+    }
+    node = workflow.flow.nodes[nodeId];
+  }
+  if (!node){
+    addMessage('system', 'Workflow "'+workflow.name+'" hit a broken step and stopped.');
+    setActiveWorkflowSession(null);
+    return;
+  }
+  if (node.type === 'question'){ renderWorkflowQuestion(workflow, nodeId, node, variables); return; }
+  if (node.type === 'input'){ renderWorkflowInputPrompt(workflow, nodeId, node, variables); return; }
+  // 'answer' — terminal step
+  const answerText = applyTemplate(node.text, variables);
+  const el = addMessage('bot', answerText);
+  el.appendChild(workflowMsgBadges(workflow));
+  const win = document.getElementById('chatWindow');
+  win.scrollTop = win.scrollHeight;
+  setActiveWorkflowSession(null);
+  if (turnStartTime) logWorkflowTurn(turnQuery||'', answerText, turnStartTime);
+}
+function handleWorkflowOptionClick(opt){
+  if (!activeWorkflowSession) return;
+  const { workflow, variables } = activeWorkflowSession;
+  const startTime = performance.now();
+  addMessage('user', opt.label);
+  advanceWorkflow(workflow, opt.next, variables, startTime, opt.label);
+}
+document.getElementById('btnExitWorkflow').addEventListener('click', ()=>{
+  setActiveWorkflowSession(null);
+  addMessage('system', 'Workflow exited.');
+});
+/* ---------------------------- Chat orchestration -------------------------- */
+async function handleUserQuery(rawText){
+  const text = rawText.trim();
+  if (!text) return;
+
+  // 1) If a workflow session is mid-flow, handle it before anything else.
+  if (activeWorkflowSession){
+    const { workflow, nodeId, variables, awaitingInputVar } = activeWorkflowSession;
+    const node = workflow.flow.nodes[nodeId];
+    if (awaitingInputVar){
+      // An 'input' node is waiting for free text — take it verbatim as the variable value.
+      const startTime = performance.now();
+      addMessage('user', text);
+      variables[awaitingInputVar] = text;
+      advanceWorkflow(workflow, node.next, variables, startTime, text);
+      return;
+    }
+    if (node && node.type === 'question'){
+      const qTokens = contentTokens(text);
+      let bestOpt = null, bestScore = 0;
+      for (const opt of node.options){
+        const score = Math.max(
+          jaccard(qTokens, contentTokens(opt.label)),
+          opt.label.trim().toLowerCase() === text.toLowerCase() ? 1 : 0
+        );
+        if (score > bestScore){ bestScore = score; bestOpt = opt; }
+      }
+      if (bestOpt && bestScore >= 0.3){
+        const startTime = performance.now();
+        addMessage('user', text);
+        advanceWorkflow(workflow, bestOpt.next, variables, startTime, text);
+        return;
+      }
+      addMessage('user', text);
+      addMessage('system', 'Didn\'t match a step in "'+workflow.name+'" — pick one of the buttons above, or use "Exit Workflow" to ask something else.');
+      return;
+    }
+  }
+
+  addMessage('user', text);
+
+  // 2) No active session — see if this query starts a workflow. Purely client-side
+  //    keyword/phrase matching, no LLM call, so it stays fast and free.
+  const wfMatch = await findMatchingWorkflow(text, settings.workflowThreshold);
+  if (wfMatch){
+    const startTime = performance.now();
+    advanceWorkflow(wfMatch.workflow, wfMatch.workflow.flow.start, {}, startTime, text);
+    return;
+  }
+
+  const thinkingEl = addMessage('bot', 'Thinking…', { pending:true });
+  const startTime = performance.now();
+  const language = detectLanguage(text);
+  const sentiment = analyzeSentiment(text);
+  const provider = document.getElementById('providerSelect').value;
+  let source, answer, providerUsed = provider, status = 'success', citations = [];
+  try{
+    const cached = await findCachedAnswer(text, settings.cacheThreshold);
+    if (cached){
+      // 80%+ match to a prior query (any user) — served straight from history/KB,
+      // no LLM or fresh RAG call at all.
+      source = cached.entry.source === 'fallback' ? 'fallback' : 'cache';
+      answer = cached.entry.response;
+      providerUsed = cached.entry.provider || 'cache';
+      citations = Array.isArray(cached.entry.citations) ? cached.entry.citations : [];
+    } else {
+      const topChunks = retrieveTopK(text, settings.topK);
+      const bestScore = topChunks.length ? topChunks[0].score : 0;
+      if (bestScore < settings.minRelevance){
+        // Not enough KB coverage to ground an answer — use the standard response and
+        // skip the LLM entirely (no cost, no risk of it reaching for outside knowledge).
+        source = 'fallback';
+        providerUsed = 'none';
+        answer = settings.fallbackResponse;
+      } else {
+        const systemPrompt = buildSystemPrompt(topChunks, language, sentiment.label);
+        const raw = await callProvider(provider, systemPrompt, text);
+        if (raw.trim().includes(NO_KB_MATCH_TOKEN)){
+          // Model itself confirmed the context wasn't enough — still fall back rather
+          // than let it reach for general/world knowledge.
+          source = 'fallback';
+          answer = settings.fallbackResponse;
+        } else {
+          source = 'llm';
+          answer = raw;
+          citations = topChunks.map(c=>({ docName: c.docName || 'document', snippet: c.text.slice(0,180), score: Math.round(c.score*1000)/1000 }));
+        }
+      }
+    }
+  } catch(err){
+    status = 'fail';
+    source = 'llm';
+    answer = 'Sorry — I could not get a response (' + err.message + ').';
+  }
+  const latencyMs = Math.round(performance.now() - startTime);
+  updateMessage(thinkingEl, answer, { source, provider: providerUsed, language, sentiment: sentiment.label, status, latencyMs, citations });
+  await idbAdd('history', {
+    query: text, response: answer, source, provider: providerUsed,
+    language, sentiment: sentiment.label, status, latencyMs, ts: Date.now(), citations
+  });
+  if (source==='llm' && status==='success' && settings.autoEnrich){
+    // IMPORTANT: the chunk's docName must exactly match the doc record's name — the
+    // cache freshness check in findCachedAnswer() looks up citations by that name, and
+    // a mismatch here silently makes any answer that cites this chunk un-cacheable forever.
+    const enrichDocName = 'Chat enrichment: '+text.slice(0,40);
+    await idbAdd('docs', { name:enrichDocName, type:'chat', size:answer.length, chunkCount:1, chunkSize:answer.length, overlap:0, addedAt:Date.now() }).then(async (docId)=>{
+      await idbAdd('chunks', { docId, docName:enrichDocName, text: 'Q: '+text+'\nA: '+answer, addedAt:Date.now() });
+      await rebuildIndex();
+    });
+  }
+  if (document.getElementById('voiceOutputSelect').value === 'on'){
+    speak(answer, language);
+  }
+  document.getElementById('lastMeta').innerHTML =
+    '<span class="pill '+(status==='success'?'success':'danger')+'">'+status+'</span> '+
+    '<span class="pill '+(source==='fallback'?'warn':(source==='cache'?'accent':''))+'">'+source+'</span> '+
+    '<span class="pill accent">'+ (LANG_NAMES[language]||language) +'</span> '+
+    '<span class="pill">'+sentiment.label+'</span> '+
+    '<span class="pill">'+latencyMs+' ms</span>';
+  refreshDashboard();
+  refreshMIS();
+}
+function speak(text, language){
+  if (!('speechSynthesis' in window)) return;
+  const utter = new SpeechSynthesisUtterance(text);
+  const langMap = {en:'en-US',es:'es-ES',fr:'fr-FR',de:'de-DE',pt:'pt-PT',it:'it-IT',hi:'hi-IN',ar:'ar-SA',ru:'ru-RU',zh:'zh-CN',ja:'ja-JP',ko:'ko-KR'};
+  utter.lang = langMap[language] || 'en-US';
+  speechSynthesis.cancel();
+  speechSynthesis.speak(utter);
+}
+/* ---------------------------- Chat UI helpers ---------------------------- */
+function addMessage(role, text, meta){
+  const win = document.getElementById('chatWindow');
+  const div = document.createElement('div');
+  div.className = 'msg ' + role;
+  div.innerHTML = '<div class="msg-text">'+escapeHtml(text)+'</div>';
+  win.appendChild(div);
+  win.scrollTop = win.scrollHeight;
+  return div;
+}
+/* Source attribution is intentionally kept OUT of the assistant's answer text
+   (msg-text) and out of the generic status badges — it lives in its own clearly
+   labeled "Sources" block, built from the actual retrieved chunks, never from
+   anything the model said. Fallback/cache-with-no-citation answers show no
+   Sources block at all, since nothing from the KB grounded that specific reply. */
+function sourceLabel(source){
+  if (source==='workflow') return 'workflow';
+  if (source==='cache') return 'knowledge base (cached match)';
+  if (source==='fallback') return 'standard response (no KB match)';
+  if (source==='llm') return 'knowledge base + LLM';
+  return source;
+}
+function buildSourcesBlock(citations){
+  if (!citations || !citations.length) return '';
+  const byDoc = new Map();
+  citations.forEach(c=>{
+    const key = c.docName || 'document';
+    if (!byDoc.has(key)) byDoc.set(key, []);
+    if (c.snippet) byDoc.get(key).push(c.snippet);
+  });
+  const items = Array.from(byDoc.entries()).map(([doc, snippets])=>{
+    const snippet = snippets[0] ? snippets[0].slice(0,140) + (snippets[0].length>140?'…':'') : '';
+    return '<li><strong>'+escapeHtml(doc)+'</strong>'+(snippet ? '<div class="src-snippet">"'+escapeHtml(snippet)+'"</div>' : '')+'</li>';
+  }).join('');
+  return '<div class="msg-sources"><div class="msg-sources-title">Sources</div><ul>'+items+'</ul></div>';
+}
+function updateMessage(el, text, meta){
+  let badges = '';
+  let sourcesBlock = '';
+  if (meta){
+    badges = '<div class="msg-badges">'+
+      '<span class="pill '+(meta.status==='success'?'success':'danger')+'">'+meta.status+'</span>'+
+      '<span class="pill '+(meta.source==='fallback'?'warn':(meta.source==='cache'?'accent':''))+'">'+sourceLabel(meta.source)+(meta.provider && meta.provider!=='none' && meta.source==='llm'? ' · '+meta.provider:'')+'</span>'+
+      '<span class="pill accent">'+(LANG_NAMES[meta.language]||meta.language)+'</span>'+
+      '<span class="pill">'+meta.sentiment+'</span>'+
+      '<span class="pill">'+meta.latencyMs+' ms</span>'+
+    '</div>';
+    sourcesBlock = buildSourcesBlock(meta.citations);
+  }
+  el.innerHTML = '<div class="msg-text">'+escapeHtml(text)+'</div>' + badges + sourcesBlock;
+  const win = document.getElementById('chatWindow');
+  win.scrollTop = win.scrollHeight;
+}
+function escapeHtml(s){
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML.replace(/\n/g,'<br>');
+}
+/* ---------------------------- File ingestion ------------------------------ */
+let lastUploadedFile = null;
+async function extractText(file){
+  const ext = file.name.split('.').pop().toLowerCase();
+  if (ext === 'pdf'){
+    if (typeof pdfjsLib === 'undefined') throw new Error('PDF library failed to load (offline?). Try a .txt file instead.');
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    const buf = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+    let text = '';
+    for (let i=1;i<=pdf.numPages;i++){
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      text += content.items.map(it=>it.str).join(' ') + '\n';
+    }
+    return text;
+  }
+  return await file.text();
+}
+async function ingestFile(file){
+  const ext = file.name.split('.').pop().toLowerCase();
+  let text;
+  try{
+    text = await extractText(file);
+  } catch(err){
+    toast('Failed to read ' + file.name + ': ' + err.message, 'err');
+    return;
+  }
+  if (!text || !text.trim()){
+    toast(file.name + ' has no extractable text.', 'err');
+    return;
+  }
+  lastUploadedFile = { name:file.name, ext, charCount:text.length };
+  const rec = recommendChunking(text.length, ext);
+  document.getElementById('chunkSizeSlider').value = rec.size;
+  document.getElementById('chunkOverlapSlider').value = rec.overlap;
+  document.getElementById('chunkSizeVal').textContent = rec.size;
+  document.getElementById('chunkOverlapVal').textContent = rec.overlap;
+  document.getElementById('recommendExplain').textContent = 'Recommended for "'+file.name+'" ('+text.length+' chars): size='+rec.size+', overlap='+rec.overlap+'. '+rec.reason;
+  const size = parseInt(document.getElementById('chunkSizeSlider').value,10);
+  const overlap = parseInt(document.getElementById('chunkOverlapSlider').value,10);
+  const pieces = chunkText(text, size, overlap);
+  const docId = await idbAdd('docs', { name:file.name, type:ext, size:text.length, chunkCount:pieces.length, chunkSize:size, overlap, addedAt:Date.now() });
+  for (const p of pieces){
+    await idbAdd('chunks', { docId, docName:file.name, text:p, addedAt:Date.now() });
+  }
+  await rebuildIndex();
+  await renderDocTable();
+  toast('Ingested "'+file.name+'" — '+pieces.length+' chunks added.', 'ok');
+}
+async function renderDocTable(){
+  const docs = await idbGetAll('docs');
+  const tbody = document.getElementById('docTableBody');
+  if (!docs.length){ tbody.innerHTML = '<tr><td colspan="6" class="hint">No documents yet.</td></tr>'; return; }
+  tbody.innerHTML = docs.map(d=>
+    '<tr><td>'+escapeHtml(d.name)+'</td><td>'+d.type+'</td><td>'+d.size.toLocaleString()+' ch</td><td>'+d.chunkCount+'</td>'+
+    '<td>'+d.chunkSize+' / '+d.overlap+'</td>'+
+    '<td><button class="btn btn-sm btn-danger" data-del-doc="'+d.id+'">Remove</button></td></tr>'
+  ).join('');
+  tbody.querySelectorAll('[data-del-doc]').forEach(btn=>{
+    btn.onclick = async ()=>{
+      const id = parseInt(btn.getAttribute('data-del-doc'),10);
+      const chunks = await idbGetAll('chunks');
+      for (const c of chunks) if (c.docId === id) await idbDelete('chunks', c.id);
+      await idbDelete('docs', id);
+      await rebuildIndex();
+      await renderDocTable();
+      refreshDashboard();
+      toast('Document removed.', 'ok');
+    };
+  });
+}
+/* ---------------------------- Dashboard & charts --------------------------- */
+let charts = {};
+function upsertChart(id, config){
+  if (typeof Chart === 'undefined') return;
+  const ctx = document.getElementById(id);
+  if (!ctx) return;
+  if (charts[id]) charts[id].destroy();
+  charts[id] = new Chart(ctx, config);
+}
+async function refreshDashboard(){
+  const docs = await idbGetAll('docs');
+  const chunks = await idbGetAll('chunks');
+  const history = await idbGetAll('history');
+  const workflows = await idbGetAll('workflows');
+  document.getElementById('statDocs').textContent = docs.length;
+  document.getElementById('statChunks').textContent = chunks.length;
+  document.getElementById('statQueries').textContent = history.length;
+  const cacheHits = history.filter(h=>h.source==='cache').length;
+  document.getElementById('statCacheRate').textContent = history.length ? Math.round(100*cacheHits/history.length)+'%' : '0%';
+  document.getElementById('statWorkflows').textContent = workflows.filter(w=>w.active!==false).length;
+  const workflowHits = history.filter(h=>h.source==='workflow').length;
+  document.getElementById('statWorkflowRate').textContent = history.length ? Math.round(100*workflowHits/history.length)+'%' : '0%';
+  const fallbackHits = history.filter(h=>h.source==='fallback').length;
+  document.getElementById('statFallbackRate').textContent = history.length ? Math.round(100*fallbackHits/history.length)+'%' : '0%';
+  const themeText = getComputedStyle(document.documentElement).getPropertyValue('--text').trim();
+  const gridColor = getComputedStyle(document.documentElement).getPropertyValue('--border').trim();
+  Chart.defaults.color = themeText;
+  Chart.defaults.borderColor = gridColor;
+  // Volume last 14 days
+  const days = [];
+  const counts = [];
+  for (let i=13;i>=0;i--){
+    const d = new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate()-i);
+    days.push((d.getMonth()+1)+'/'+d.getDate());
+    const next = d.getTime()+86400000;
+    counts.push(history.filter(h=>h.ts>=d.getTime() && h.ts<next).length);
+  }
+  upsertChart('chartVolume', { type:'line', data:{ labels:days, datasets:[{ label:'Queries', data:counts, borderColor:'#7c5cff', backgroundColor:'rgba(124,92,255,.15)', fill:true, tension:.35 }]}, options:{ plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true, ticks:{precision:0}}} } });
+  const wfN = history.filter(h=>h.source==='workflow').length;
+  const cacheN = history.filter(h=>h.source==='cache').length;
+  const llmN = history.filter(h=>h.source==='llm' && h.status==='success').length;
+  const fallbackN = history.filter(h=>h.source==='fallback').length;
+  const failN = history.filter(h=>h.status==='fail').length;
+  upsertChart('chartSource', { type:'doughnut', data:{ labels:['Workflow','Cache hit','LLM (grounded)','Standard response (no match)','Failed'], datasets:[{ data:[wfN,cacheN,llmN,fallbackN,failN], backgroundColor:['#ffb84d','#22d3c9','#7c5cff','#94a3b8','#ff5c72'] }]} });
+  const langCounts = {};
+  history.forEach(h=>{ const l = LANG_NAMES[h.language]||h.language; langCounts[l]=(langCounts[l]||0)+1; });
+  upsertChart('chartLang', { type:'bar', data:{ labels:Object.keys(langCounts), datasets:[{ label:'Queries', data:Object.values(langCounts), backgroundColor:'#22d3c9' }]}, options:{ plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true, ticks:{precision:0}}} } });
+  const sentCounts = { positive:0, neutral:0, negative:0 };
+  history.forEach(h=>{ if (sentCounts[h.sentiment]!==undefined) sentCounts[h.sentiment]++; });
+  upsertChart('chartSentiment', { type:'pie', data:{ labels:['Positive','Neutral','Negative'], datasets:[{ data:[sentCounts.positive,sentCounts.neutral,sentCounts.negative], backgroundColor:['#2fd987','#94a3b8','#ff5c72'] }]} });
+}
+/* ---------------------------- MIS table ------------------------------------ */
+async function refreshMIS(){
+  let history = await idbGetAll('history');
+  history.sort((a,b)=>b.ts-a.ts);
+  const statusFilter = document.getElementById('misFilterStatus').value;
+  const providerFilter = document.getElementById('misFilterProvider').value;
+  const search = document.getElementById('misSearch').value.toLowerCase();
+  history = history.filter(h=>{
+    if (statusFilter==='workflow' && h.source!=='workflow') return false;
+    if (statusFilter==='cache' && h.source!=='cache') return false;
+    if (statusFilter==='llm' && !(h.source==='llm' && h.status==='success')) return false;
+    if (statusFilter==='fallback' && h.source!=='fallback') return false;
+    if (statusFilter==='fail' && h.status!=='fail') return false;
+    if (providerFilter!=='all' && h.provider!==providerFilter) return false;
+    if (search && !h.query.toLowerCase().includes(search)) return false;
+    return true;
+  });
+  const tbody = document.getElementById('misTableBody');
+  if (!history.length){ tbody.innerHTML = '<tr><td colspan="8" class="hint">No matching history.</td></tr>'; return; }
+  tbody.innerHTML = history.slice(0,300).map(h=>
+    '<tr><td>'+new Date(h.ts).toLocaleString()+'</td><td>'+escapeHtml(h.query.slice(0,60))+'</td>'+
+    '<td><span class="pill '+(h.source==='cache'||h.source==='workflow'?'accent':(h.source==='fallback'?'warn':''))+'">'+h.source+'</span></td>'+
+    '<td>'+(h.provider||'-')+'</td><td>'+(LANG_NAMES[h.language]||h.language)+'</td><td>'+h.sentiment+'</td>'+
+    '<td><span class="pill '+(h.status==='success'?'success':'danger')+'">'+h.status+'</span></td><td>'+h.latencyMs+' ms</td></tr>'
+  ).join('');
+}
+function exportCSV(){
+  idbGetAll('history').then(history=>{
+    const header = ['time','query','response','source','provider','language','sentiment','status','latency_ms'];
+    const rows = history.map(h=>[new Date(h.ts).toISOString(), h.query, h.response, h.source, h.provider, h.language, h.sentiment, h.status, h.latencyMs]
+      .map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(','));
+    const csv = [header.join(','), ...rows].join('\n');
+    const blob = new Blob([csv], {type:'text/csv'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'mis_report_'+Date.now()+'.csv';
+    a.click();
+  });
+}
+/* ---------------------------- Settings wiring ------------------------------ */
+function applySettingsToUI(){
+  document.getElementById('keyGemini').value = settings.keys.gemini;
+  document.getElementById('keyGroq').value = settings.keys.groq;
+  document.getElementById('keyOpenrouter').value = settings.keys.openrouter;
+  document.getElementById('keyHf').value = settings.keys.huggingface;
+  document.getElementById('modelGemini').value = settings.models.gemini;
+  document.getElementById('modelGroq').value = settings.models.groq;
+  document.getElementById('modelOpenrouter').value = settings.models.openrouter;
+  document.getElementById('modelHf').value = settings.models.huggingface;
+  syncModelPreset('modelGeminiPreset', 'modelGemini');
+  syncModelPreset('modelGroqPreset', 'modelGroq');
+  syncModelPreset('modelOpenrouterPreset', 'modelOpenrouter');
+  syncModelPreset('modelHfPreset', 'modelHf');
+  document.getElementById('cacheThreshSlider').value = settings.cacheThreshold;
+  document.getElementById('cacheThreshVal').textContent = settings.cacheThreshold.toFixed(2);
+  document.getElementById('autoEnrichSelect').value = settings.autoEnrich ? 'on':'off';
+  document.getElementById('topKInput').value = settings.topK;
+  document.getElementById('providerSelect').value = settings.provider;
+  document.getElementById('wfThreshSlider').value = settings.workflowThreshold;
+  document.getElementById('wfThreshVal').textContent = settings.workflowThreshold.toFixed(2);
+  document.getElementById('wfProvider').value = settings.workflowProvider;
+  document.getElementById('minRelevanceSlider').value = settings.minRelevance;
+  document.getElementById('minRelevanceVal').textContent = settings.minRelevance.toFixed(2);
+  document.getElementById('fallbackResponseInput').value = settings.fallbackResponse;
+  updateProviderStatus();
+}
+function updateProviderStatus(){
+  const provider = document.getElementById('providerSelect').value;
+  const names = {gemini:'Gemini', groq:'Groq', openrouter:'OpenRouter', huggingface:'Hugging Face'};
+  const hasKey = !!settings.keys[provider];
+  document.getElementById('providerStatus').textContent = 'Provider: ' + names[provider] + (hasKey ? ' (key set)' : ' (no key set)');
+}
+/* Free-tier model preset <select> <-> model text-input wiring, shared across all
+   four providers. The text input remains the source of truth that gets saved;
+   the preset dropdown is a convenience that fills it in, with a "Custom" escape
+   hatch for typing any model id directly (needed since free-tier lineups shift). */
+function syncModelPreset(selectId, inputId){
+  const select = document.getElementById(selectId);
+  const input = document.getElementById(inputId);
+  const knownValues = Array.from(select.options).map(o=>o.value).filter(v=>v!=='custom');
+  select.value = knownValues.includes(input.value) ? input.value : 'custom';
+}
+function wireModelPreset(selectId, inputId){
+  const select = document.getElementById(selectId);
+  const input = document.getElementById(inputId);
+  select.addEventListener('change', ()=>{
+    if (select.value !== 'custom'){ input.value = select.value; }
+    else { input.focus(); input.select(); }
+  });
+  input.addEventListener('input', ()=>syncModelPreset(selectId, inputId));
+}
+wireModelPreset('modelGeminiPreset', 'modelGemini');
+wireModelPreset('modelGroqPreset', 'modelGroq');
+wireModelPreset('modelOpenrouterPreset', 'modelOpenrouter');
+wireModelPreset('modelHfPreset', 'modelHf');
+/* ---------------------------- Wire up UI ------------------------------------ */
+document.querySelectorAll('.nav-item').forEach(item=>{
+  item.addEventListener('click', ()=>{
+    document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+    document.querySelectorAll('.tab-section').forEach(s=>s.classList.remove('active'));
+    item.classList.add('active');
+    const tab = item.getAttribute('data-tab');
+    document.getElementById('tab-'+tab).classList.add('active');
+    document.getElementById('pageTitle').textContent = item.textContent.trim();
+    if (tab==='dashboard') refreshDashboard();
+    if (tab==='mis') refreshMIS();
+    if (tab==='kb') renderDocTable();
+    if (tab==='workflows') renderWorkflowTable();
+  });
+});
+document.getElementById('themeToggle').addEventListener('click', ()=>{
+  const html = document.documentElement;
+  const next = html.getAttribute('data-theme')==='dark' ? 'light':'dark';
+  html.setAttribute('data-theme', next);
+  document.querySelector('.theme-toggle .knob').textContent = next==='dark' ? '🌙':'☀️';
+  settings.theme = next; saveSettings(settings);
+  refreshDashboard();
+});
+const dropzone = document.getElementById('dropzone');
+const fileInput = document.getElementById('fileInput');
+dropzone.addEventListener('click', ()=>fileInput.click());
+dropzone.addEventListener('dragover', e=>{ e.preventDefault(); dropzone.classList.add('drag'); });
+dropzone.addEventListener('dragleave', ()=>dropzone.classList.remove('drag'));
+dropzone.addEventListener('drop', e=>{
+  e.preventDefault(); dropzone.classList.remove('drag');
+  [...e.dataTransfer.files].forEach(ingestFile);
+});
+fileInput.addEventListener('change', e=>{ [...e.target.files].forEach(ingestFile); fileInput.value=''; });
+document.getElementById('chunkSizeSlider').addEventListener('input', e=>document.getElementById('chunkSizeVal').textContent = e.target.value);
+document.getElementById('chunkOverlapSlider').addEventListener('input', e=>document.getElementById('chunkOverlapVal').textContent = e.target.value);
+document.getElementById('btnRecommend').addEventListener('click', ()=>{
+  if (!lastUploadedFile){ toast('Upload a file first.', 'err'); return; }
+  const rec = recommendChunking(lastUploadedFile.charCount, lastUploadedFile.ext);
+  document.getElementById('chunkSizeSlider').value = rec.size;
+  document.getElementById('chunkOverlapSlider').value = rec.overlap;
+  document.getElementById('chunkSizeVal').textContent = rec.size;
+  document.getElementById('chunkOverlapVal').textContent = rec.overlap;
+  document.getElementById('recommendExplain').textContent = 'Recommended: size='+rec.size+', overlap='+rec.overlap+'. '+rec.reason;
+});
+document.getElementById('btnRebuild').addEventListener('click', async ()=>{ await rebuildIndex(); toast('Index rebuilt.', 'ok'); });
+document.getElementById('btnClearKB').addEventListener('click', async ()=>{
+  if (!confirm('Clear the entire knowledge base?')) return;
+  await idbClear('docs'); await idbClear('chunks'); await rebuildIndex(); await renderDocTable(); refreshDashboard();
+  toast('Knowledge base cleared.', 'ok');
+});
+/* ---------------------------- Workflows tab wiring -------------------------- */
+async function renderWorkflowTable(){
+  const workflows = await idbGetAll('workflows');
+  const tbody = document.getElementById('wfTableBody');
+  if (!workflows.length){ tbody.innerHTML = '<tr><td colspan="5" class="hint">No workflows yet.</td></tr>'; return; }
+  tbody.innerHTML = workflows.map(w=>{
+    const stepCount = Object.keys(w.flow?.nodes||{}).length;
+    const active = w.active !== false;
+    return '<tr><td>'+escapeHtml(w.name)+'</td>'+
+      '<td>'+(w.triggers||[]).slice(0,3).map(t=>'<span class="pill">'+escapeHtml(t)+'</span>').join(' ')+(w.triggers && w.triggers.length>3 ? ' <span class="pill">+'+(w.triggers.length-3)+'</span>' : '')+'</td>'+
+      '<td>'+stepCount+'</td>'+
+      '<td><span class="pill '+(active?'success':'danger')+'">'+(active?'active':'inactive')+'</span></td>'+
+      '<td style="white-space:nowrap;">'+
+        '<button class="btn btn-sm" data-wf-test="'+w.id+'">Test</button> '+
+        '<button class="btn btn-sm" data-wf-toggle="'+w.id+'">'+(active?'Disable':'Enable')+'</button> '+
+        '<button class="btn btn-sm" data-wf-edit="'+w.id+'">Edit</button> '+
+        '<button class="btn btn-sm btn-danger" data-wf-del="'+w.id+'">Delete</button>'+
+      '</td></tr>';
+  }).join('');
+  tbody.querySelectorAll('[data-wf-del]').forEach(btn=>{
+    btn.onclick = async ()=>{
+      if (!confirm('Delete this workflow?')) return;
+      await idbDelete('workflows', parseInt(btn.getAttribute('data-wf-del'),10));
+      await renderWorkflowTable(); refreshDashboard();
+      toast('Workflow deleted.', 'ok');
+    };
+  });
+  tbody.querySelectorAll('[data-wf-toggle]').forEach(btn=>{
+    btn.onclick = async ()=>{
+      const id = parseInt(btn.getAttribute('data-wf-toggle'),10);
+      const w = workflows.find(x=>x.id===id);
+      w.active = w.active === false ? true : false;
+      await idbPut('workflows', w);
+      await renderWorkflowTable(); refreshDashboard();
+    };
+  });
+  tbody.querySelectorAll('[data-wf-edit]').forEach(btn=>{
+    btn.onclick = ()=>{
+      const id = parseInt(btn.getAttribute('data-wf-edit'),10);
+      const w = workflows.find(x=>x.id===id);
+      openWorkflowEditor(w);
+    };
+  });
+  tbody.querySelectorAll('[data-wf-test]').forEach(btn=>{
+    btn.onclick = ()=>{
+      const id = parseInt(btn.getAttribute('data-wf-test'),10);
+      const w = workflows.find(x=>x.id===id);
+      document.querySelector('.nav-item[data-tab="chat"]').click();
+      addMessage('system', 'Testing workflow: '+w.name);
+      advanceWorkflow(w, w.flow.start, {}, null, null);
+    };
+  });
+}
+/* ---------------------------- Workflow diagram editor ----------------------- */
+let editingWorkflowId = null;
+let currentEditingFlow = null; // { start, nodes } — single source of truth while the preview card is open
+function genNodeId(flow){
+  let n = 1;
+  while (flow.nodes['n'+n]) n++;
+  return 'n'+n;
+}
+function isNodeReferenced(flow, nodeId){
+  for (const id of Object.keys(flow.nodes)){
+    const n = flow.nodes[id];
+    if (n.type === 'question'){
+      if ((n.options||[]).some(o=>o.next===nodeId)) return true;
+    } else {
+      if (n.next === nodeId) return true;
+      if (n.onErrorNext === nodeId) return true;
+    }
+  }
+  return false;
+}
+/* Deletes a node if nothing else in the flow still points to it, then recurses into
+   whatever that node itself pointed to — pruning a whole orphaned subtree at once. */
+function pruneOrphan(flow, nodeId){
+  if (!nodeId || nodeId === flow.start) return;
+  if (isNodeReferenced(flow, nodeId)) return;
+  const node = flow.nodes[nodeId];
+  if (!node) return;
+  delete flow.nodes[nodeId];
+  const childIds = node.type === 'question' ? (node.options||[]).map(o=>o.next) : [node.next, node.onErrorNext].filter(Boolean);
+  childIds.forEach(cid=>pruneOrphan(flow, cid));
+}
+function setFlowState(flow){
+  currentEditingFlow = flow;
+  syncJsonFromFlow();
+  renderDiagramEditor();
+}
+function syncJsonFromFlow(){
+  document.getElementById('wfJson').value = JSON.stringify(currentEditingFlow, null, 2);
+  document.getElementById('wfJsonError').textContent = '';
+}
+function renderDiagramEditor(){
+  const container = document.getElementById('wfDiagram');
+  container.innerHTML = '';
+  if (!currentEditingFlow || !currentEditingFlow.nodes || !currentEditingFlow.start) return;
+  container.appendChild(renderNodeCard(currentEditingFlow.start, new Set()));
+}
+/* Each node renders as TWO nested elements: an unbounded-width `.wf-node-wrap`
+   container (so a wide subtree of branches underneath is never clipped/overlapped),
+   and inside it a fixed-width `.wf-node` "card" holding just the header/text/form.
+   Only the card is styled/sized as a box — the branches below it are siblings of the
+   card inside the wrap, free to be as wide as they need without fighting the card's
+   width. Mixing the two into one element was the earlier bug: a wide options row was
+   forced inside a 280px-capped box and spilled out, visually overlapping neighbors. */
+function renderNodeCard(nodeId, visited){
+  const flow = currentEditingFlow;
+  const node = flow.nodes[nodeId];
+  const outer = document.createElement('div');
+  outer.className = 'wf-node-wrap';
+  if (!node){
+    outer.className = 'wf-node-missing';
+    outer.textContent = 'Missing node: ' + nodeId;
+    return outer;
+  }
+  if (visited.has(nodeId)){
+    outer.className = 'wf-jump-chip';
+    outer.textContent = '↩ continues at step "' + nodeId + '"';
+    return outer;
+  }
+  visited = new Set(visited); visited.add(nodeId);
+  outer.dataset.nodeId = nodeId;
+
+  const card = document.createElement('div');
+  card.className = 'wf-node wf-node-' + node.type;
+  outer.appendChild(card);
+
+  const header = document.createElement('div');
+  header.className = 'wf-node-header';
+  const idBadge = document.createElement('span');
+  idBadge.className = 'wf-node-id';
+  idBadge.textContent = nodeId + (nodeId === flow.start ? ' · START' : '');
+  header.appendChild(idBadge);
+  const typeSelect = document.createElement('select');
+  typeSelect.className = 'wf-node-type-select';
+  WORKFLOW_NODE_TYPES.forEach(t=>{
+    const o = document.createElement('option'); o.value = t; o.textContent = t;
+    if (t === node.type) o.selected = true;
+    typeSelect.appendChild(o);
+  });
+  typeSelect.onchange = ()=>changeNodeType(nodeId, typeSelect.value);
+  header.appendChild(typeSelect);
+  card.appendChild(header);
+
+  if (node.type !== 'api_call'){
+    const ta = document.createElement('textarea');
+    ta.className = 'wf-node-text';
+    ta.value = node.text || '';
+    ta.rows = 2;
+    ta.placeholder = node.type==='question' ? 'Question shown to the user…' : (node.type==='input' ? 'Prompt asking the user to type a value…' : 'Final answer text… ({{variable}} supported)');
+    ta.oninput = ()=>{ node.text = ta.value; syncJsonFromFlow(); };
+    card.appendChild(ta);
+  }
+
+  if (node.type === 'input'){
+    const row = document.createElement('div'); row.className = 'wf-input-row';
+    const label = document.createElement('label'); label.textContent = 'Store typed answer as variable:';
+    const varInput = document.createElement('input'); varInput.type = 'text'; varInput.value = node.variable || ''; varInput.placeholder = 'e.g. orderId';
+    varInput.oninput = ()=>{ node.variable = varInput.value.trim(); syncJsonFromFlow(); };
+    row.appendChild(label); row.appendChild(varInput);
+    card.appendChild(row);
+    const branches = document.createElement('div'); branches.className = 'wf-branches';
+    const branch = document.createElement('div'); branch.className = 'wf-branch';
+    branch.appendChild(renderNodeCard(node.next, visited));
+    branches.appendChild(branch);
+    outer.appendChild(branches);
+  }
+
+  if (node.type === 'api_call'){
+    card.appendChild(renderApiForm(nodeId, node));
+    const branches = document.createElement('div'); branches.className = 'wf-branches';
+    const okBranch = document.createElement('div'); okBranch.className = 'wf-branch';
+    const okLabel = document.createElement('div'); okLabel.className = 'wf-branch-label'; okLabel.textContent = 'on success';
+    okBranch.appendChild(okLabel);
+    okBranch.appendChild(renderNodeCard(node.next, visited));
+    branches.appendChild(okBranch);
+    if (node.onErrorNext){
+      const errBranch = document.createElement('div'); errBranch.className = 'wf-branch';
+      const errLabel = document.createElement('div'); errLabel.className = 'wf-branch-label warn'; errLabel.textContent = 'on error';
+      errBranch.appendChild(errLabel);
+      errBranch.appendChild(renderNodeCard(node.onErrorNext, visited));
+      branches.appendChild(errBranch);
+    }
+    outer.appendChild(branches);
+  }
+
+  if (node.type === 'question'){
+    const branches = document.createElement('div'); branches.className = 'wf-branches';
+    (node.options||[]).forEach((opt, idx)=>{
+      const branch = document.createElement('div'); branch.className = 'wf-branch';
+      const labelRow = document.createElement('div'); labelRow.className = 'wf-branch-label-row';
+      const labelInput = document.createElement('input'); labelInput.type = 'text'; labelInput.value = opt.label;
+      labelInput.oninput = ()=>{ opt.label = labelInput.value; syncJsonFromFlow(); };
+      const removeBtn = document.createElement('button'); removeBtn.className = 'btn btn-sm btn-danger'; removeBtn.textContent = '✕'; removeBtn.title = 'Remove this branch';
+      removeBtn.onclick = ()=>removeOption(nodeId, idx);
+      labelRow.appendChild(labelInput); labelRow.appendChild(removeBtn);
+      branch.appendChild(labelRow);
+      branch.appendChild(renderNodeCard(opt.next, visited));
+      branches.appendChild(branch);
+    });
+    const addBranch = document.createElement('div'); addBranch.className = 'wf-branch wf-add-branch';
+    const addBtn = document.createElement('button'); addBtn.className = 'btn btn-sm btn-accent'; addBtn.textContent = '+ Add option';
+    addBtn.onclick = ()=>addOption(nodeId);
+    addBranch.appendChild(addBtn);
+    branches.appendChild(addBranch);
+    outer.appendChild(branches);
+  }
+
+  return outer;
+}
+function renderApiForm(nodeId, node){
+  node.api = node.api || { url:'', method:'GET', headers:{}, body:'', responseVar:'', timeoutMs:8000 };
+  const box = document.createElement('div'); box.className = 'wf-api-form';
+  const row1 = document.createElement('div'); row1.className = 'row';
+  const methodSel = document.createElement('select'); methodSel.style.flex = '0 0 90px';
+  ['GET','POST','PUT','PATCH','DELETE'].forEach(m=>{
+    const o = document.createElement('option'); o.value = m; o.textContent = m;
+    if ((node.api.method||'GET') === m) o.selected = true;
+    methodSel.appendChild(o);
+  });
+  methodSel.onchange = ()=>{ node.api.method = methodSel.value; syncJsonFromFlow(); renderDiagramEditor(); };
+  const urlInput = document.createElement('input'); urlInput.type = 'text'; urlInput.placeholder = 'https://api.example.com/orders/{{orderId}}'; urlInput.value = node.api.url || '';
+  urlInput.oninput = ()=>{ node.api.url = urlInput.value; syncJsonFromFlow(); };
+  row1.appendChild(methodSel); row1.appendChild(urlInput);
+  box.appendChild(row1);
+
+  const varRow = document.createElement('div'); varRow.className = 'field';
+  const varLabel = document.createElement('label'); varLabel.textContent = 'Store response as variable:';
+  const varInput = document.createElement('input'); varInput.type = 'text'; varInput.value = node.api.responseVar || ''; varInput.placeholder = 'e.g. orderStatus';
+  varInput.oninput = ()=>{ node.api.responseVar = varInput.value.trim(); syncJsonFromFlow(); };
+  varRow.appendChild(varLabel); varRow.appendChild(varInput);
+  box.appendChild(varRow);
+
+  const details = document.createElement('details'); details.className = 'wf-api-advanced';
+  const summary = document.createElement('summary'); summary.textContent = 'Headers, body, error routing & test call';
+  details.appendChild(summary);
+
+  const headersLabel = document.createElement('label'); headersLabel.textContent = 'Headers (JSON object)';
+  const headersTa = document.createElement('textarea'); headersTa.rows = 2; headersTa.value = JSON.stringify(node.api.headers||{}, null, 2);
+  headersTa.oninput = ()=>{
+    try{ node.api.headers = JSON.parse(headersTa.value || '{}'); syncJsonFromFlow(); headersTa.style.borderColor = ''; }
+    catch(e){ headersTa.style.borderColor = 'var(--danger)'; }
+  };
+  details.appendChild(headersLabel); details.appendChild(headersTa);
+
+  const bodyLabel = document.createElement('label'); bodyLabel.textContent = 'Body (POST/PUT/PATCH — supports {{variable}})';
+  const bodyTa = document.createElement('textarea'); bodyTa.rows = 2; bodyTa.value = node.api.body || '';
+  bodyTa.oninput = ()=>{ node.api.body = bodyTa.value; syncJsonFromFlow(); };
+  details.appendChild(bodyLabel); details.appendChild(bodyTa);
+
+  const errLabel = document.createElement('label'); errLabel.textContent = 'On error, go to:';
+  const errSel = document.createElement('select');
+  const noneOpt = document.createElement('option'); noneOpt.value = ''; noneOpt.textContent = '(stop workflow, show standard response)';
+  errSel.appendChild(noneOpt);
+  Object.keys(currentEditingFlow.nodes).forEach(id=>{
+    if (id === nodeId) return;
+    const o = document.createElement('option'); o.value = id; o.textContent = id;
+    if (node.onErrorNext === id) o.selected = true;
+    errSel.appendChild(o);
+  });
+  errSel.onchange = ()=>{ node.onErrorNext = errSel.value || undefined; syncJsonFromFlow(); renderDiagramEditor(); };
+  details.appendChild(errLabel); details.appendChild(errSel);
+
+  const testBtn = document.createElement('button'); testBtn.className = 'btn btn-sm btn-accent'; testBtn.style.marginTop = '8px'; testBtn.textContent = 'Test call';
+  const testResult = document.createElement('div'); testResult.className = 'hint wf-api-test-result';
+  testBtn.onclick = async ()=>{
+    testBtn.disabled = true; testResult.style.color = ''; testResult.textContent = 'Calling…';
+    const result = await performApiCall(node.api, {});
+    testBtn.disabled = false;
+    testResult.textContent = result.ok ? ('✓ Success — ' + JSON.stringify(result.data).slice(0,220)) : ('✗ Failed — ' + result.error);
+    testResult.style.color = result.ok ? 'var(--success)' : 'var(--danger)';
+  };
+  details.appendChild(testBtn); details.appendChild(testResult);
+  box.appendChild(details);
+
+  const hint = document.createElement('div'); hint.className = 'hint';
+  hint.textContent = 'Calls run directly from this browser tab — the target API must allow CORS from this page or the call will fail. A production deployment proxies this through a backend (see Architecture & Scale).';
+  box.appendChild(hint);
+  return box;
+}
+function changeNodeType(nodeId, newType){
+  const flow = currentEditingFlow;
+  const node = flow.nodes[nodeId];
+  const oldType = node.type;
+  if (oldType === newType) return;
+  if (oldType === 'question'){ (node.options||[]).forEach(o=>pruneOrphan(flow, o.next)); delete node.options; }
+  if (oldType === 'input'){ pruneOrphan(flow, node.next); delete node.next; delete node.variable; }
+  if (oldType === 'api_call'){ pruneOrphan(flow, node.next); if (node.onErrorNext) pruneOrphan(flow, node.onErrorNext); delete node.next; delete node.onErrorNext; delete node.api; }
+  node.type = newType;
+  if (newType === 'question'){
+    const newId = genNodeId(flow);
+    flow.nodes[newId] = { type:'answer', text:'New answer…' };
+    node.options = [{ label:'Continue', next:newId }];
+    if (!node.text) node.text = 'New question…';
+  } else if (newType === 'input'){
+    const newId = genNodeId(flow);
+    flow.nodes[newId] = { type:'answer', text:'New answer…' };
+    node.variable = 'value';
+    node.next = newId;
+    if (!node.text) node.text = 'What would you like to enter?';
+  } else if (newType === 'api_call'){
+    const newId = genNodeId(flow);
+    flow.nodes[newId] = { type:'answer', text:'New answer…' };
+    node.api = { url:'', method:'GET', headers:{}, body:'', responseVar:'result', timeoutMs:8000 };
+    node.next = newId;
+  } else if (newType === 'answer' && !node.text){
+    node.text = 'New answer…';
+  }
+  syncJsonFromFlow();
+  renderDiagramEditor();
+}
+function addOption(nodeId){
+  const flow = currentEditingFlow;
+  const node = flow.nodes[nodeId];
+  const label = prompt('Label for the new option button:');
+  if (!label || !label.trim()) return;
+  const newId = genNodeId(flow);
+  flow.nodes[newId] = { type:'answer', text:'New answer…' };
+  node.options = node.options || [];
+  node.options.push({ label: label.trim(), next: newId });
+  syncJsonFromFlow();
+  renderDiagramEditor();
+}
+function removeOption(nodeId, idx){
+  const flow = currentEditingFlow;
+  const node = flow.nodes[nodeId];
+  if (node.options.length <= 1){ toast('A question needs at least one option — add another before removing this one.', 'err'); return; }
+  const opt = node.options[idx];
+  if (!confirm('Remove option "'+opt.label+'"? Any steps only reachable through it will be removed too.')) return;
+  node.options.splice(idx,1);
+  pruneOrphan(flow, opt.next);
+  syncJsonFromFlow();
+  renderDiagramEditor();
+}
+document.getElementById('wfJson').addEventListener('input', ()=>{
+  const raw = document.getElementById('wfJson').value;
+  const errEl = document.getElementById('wfJsonError');
+  try{
+    const parsed = JSON.parse(raw);
+    validateWorkflowFlow(parsed);
+    currentEditingFlow = parsed;
+    errEl.textContent = '';
+    renderDiagramEditor();
+  } catch(err){
+    errEl.textContent = 'Not applied to diagram yet: ' + err.message;
+  }
+});
+function openWorkflowEditor(w){
+  editingWorkflowId = w.id;
+  document.getElementById('wfPreviewCard').style.display = '';
+  document.getElementById('wfName').value = w.name;
+  document.getElementById('wfTriggers').value = (w.triggers||[]).join(', ');
+  const groundedEl = document.getElementById('wfGroundedIn');
+  if (w.groundedDocs && w.groundedDocs.length){
+    groundedEl.style.display = '';
+    groundedEl.innerHTML = 'Grounded in: ' + w.groundedDocs.map(d=>'<span class="pill accent">'+escapeHtml(d)+'</span>').join(' ');
+  } else {
+    groundedEl.style.display = 'none';
+  }
+  document.getElementById('wfGenStatus').textContent = '';
+  setFlowState(structuredClone(w.flow));
+  document.getElementById('wfPreviewCard').scrollIntoView({behavior:'smooth', block:'start'});
+}
+document.getElementById('btnGenerateWorkflow').addEventListener('click', async ()=>{
+  const prompt = document.getElementById('wfPrompt').value.trim();
+  if (!prompt){ toast('Describe the workflow first.', 'err'); return; }
+  const provider = document.getElementById('wfProvider').value;
+  settings.workflowProvider = provider; saveSettings(settings);
+  const statusEl = document.getElementById('wfGenStatus');
+  const btn = document.getElementById('btnGenerateWorkflow');
+  btn.disabled = true; statusEl.textContent = 'Retrieving KB context and generating with ' + provider + '…';
+  try{
+    const wf = await generateWorkflowFromPrompt(prompt, provider);
+    editingWorkflowId = null;
+    document.getElementById('wfPreviewCard').style.display = '';
+    document.getElementById('wfName').value = wf.name;
+    document.getElementById('wfTriggers').value = (wf.triggers||[]).join(', ');
+    const groundedEl = document.getElementById('wfGroundedIn');
+    if (wf.groundedDocs && wf.groundedDocs.length){
+      groundedEl.style.display = '';
+      groundedEl.innerHTML = 'Grounded in: ' + wf.groundedDocs.map(d=>'<span class="pill accent">'+escapeHtml(d)+'</span>').join(' ');
+    } else {
+      groundedEl.style.display = 'none';
+    }
+    setFlowState({ start: wf.start, nodes: wf.nodes });
+    statusEl.textContent = 'Generated — review the diagram below, then Save.';
+    document.getElementById('wfPreviewCard').scrollIntoView({behavior:'smooth', block:'start'});
+  } catch(err){
+    statusEl.textContent = '';
+    toast('Generation failed: ' + err.message, 'err');
+  } finally {
+    btn.disabled = false;
+  }
+});
+document.getElementById('btnValidateWorkflow').addEventListener('click', ()=>{
+  try{
+    validateWorkflowFlow(currentEditingFlow);
+    toast('Workflow is valid.', 'ok');
+  } catch(err){
+    toast('Invalid workflow: ' + err.message, 'err');
+  }
+});
+document.getElementById('btnSaveWorkflow').addEventListener('click', async ()=>{
+  const name = document.getElementById('wfName').value.trim();
+  const triggers = document.getElementById('wfTriggers').value.split(',').map(t=>t.trim().toLowerCase()).filter(Boolean);
+  if (!name){ toast('Give the workflow a name.', 'err'); return; }
+  if (!triggers.length){ toast('Add at least one trigger phrase.', 'err'); return; }
+  try{
+    validateWorkflowFlow(currentEditingFlow);
+  } catch(err){
+    toast('Invalid workflow: ' + err.message, 'err');
+    return;
+  }
+  const groundedDocsEl = document.getElementById('wfGroundedIn');
+  const record = {
+    name, triggers, flow: structuredClone(currentEditingFlow), active: true, createdAt: Date.now(),
+    groundedDocs: groundedDocsEl.style.display !== 'none' ? Array.from(groundedDocsEl.querySelectorAll('.pill')).map(p=>p.textContent) : []
+  };
+  if (editingWorkflowId){
+    record.id = editingWorkflowId;
+    await idbPut('workflows', record);
+  } else {
+    await idbAdd('workflows', record);
+  }
+  document.getElementById('wfPreviewCard').style.display = 'none';
+  document.getElementById('wfPrompt').value = '';
+  editingWorkflowId = null;
+  currentEditingFlow = null;
+  await renderWorkflowTable();
+  refreshDashboard();
+  toast('Workflow saved.', 'ok');
+});
+document.getElementById('btnDiscardWorkflow').addEventListener('click', ()=>{
+  document.getElementById('wfPreviewCard').style.display = 'none';
+  editingWorkflowId = null;
+  currentEditingFlow = null;
+});
+document.getElementById('wfThreshSlider').addEventListener('input', e=>{
+  settings.workflowThreshold = parseFloat(e.target.value);
+  document.getElementById('wfThreshVal').textContent = settings.workflowThreshold.toFixed(2);
+  saveSettings(settings);
+});
+document.getElementById('wfProvider').addEventListener('change', e=>{ settings.workflowProvider = e.target.value; saveSettings(settings); });
+document.getElementById('providerSelect').addEventListener('change', ()=>{ settings.provider = document.getElementById('providerSelect').value; saveSettings(settings); updateProviderStatus(); });
+document.getElementById('sendBtn').addEventListener('click', ()=>{
+  const input = document.getElementById('chatInput');
+  const val = input.value; input.value='';
+  handleUserQuery(val);
+});
+document.getElementById('chatInput').addEventListener('keydown', e=>{
+  if (e.key==='Enter' && !e.shiftKey){ e.preventDefault(); document.getElementById('sendBtn').click(); }
+});
+/* Voice input */
+let recognizer = null, listening = false;
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+document.getElementById('micBtn').addEventListener('click', ()=>{
+  if (!SR){ toast('Speech recognition not supported in this browser.', 'err'); return; }
+  const micBtn = document.getElementById('micBtn');
+  if (listening){ recognizer.stop(); return; }
+  recognizer = new SR();
+  recognizer.continuous = false;
+  recognizer.interimResults = false;
+  recognizer.onresult = (e)=>{
+    const transcript = e.results[0][0].transcript;
+    document.getElementById('chatInput').value = transcript;
+    handleUserQuery(transcript);
+  };
+  recognizer.onend = ()=>{ listening=false; micBtn.classList.remove('listening'); };
+  recognizer.onerror = ()=>{ listening=false; micBtn.classList.remove('listening'); toast('Voice input error.', 'err'); };
+  recognizer.start();
+  listening = true; micBtn.classList.add('listening');
+});
+/* MIS filters */
+['misFilterStatus','misFilterProvider','misSearch'].forEach(id=>document.getElementById(id).addEventListener('input', refreshMIS));
+document.getElementById('btnExportCSV').addEventListener('click', exportCSV);
+document.getElementById('btnClearHistory').addEventListener('click', async ()=>{
+  if (!confirm('Clear all chat history / MIS records?')) return;
+  await idbClear('history'); refreshMIS(); refreshDashboard();
+  toast('History cleared.', 'ok');
+});
+/* Settings save */
+document.getElementById('btnSaveKeys').addEventListener('click', ()=>{
+  settings.keys.gemini = document.getElementById('keyGemini').value.trim();
+  settings.keys.groq = document.getElementById('keyGroq').value.trim();
+  settings.keys.openrouter = document.getElementById('keyOpenrouter').value.trim();
+  settings.keys.huggingface = document.getElementById('keyHf').value.trim();
+  settings.models.gemini = document.getElementById('modelGemini').value.trim() || DEFAULT_SETTINGS.models.gemini;
+  settings.models.groq = document.getElementById('modelGroq').value.trim() || DEFAULT_SETTINGS.models.groq;
+  settings.models.openrouter = document.getElementById('modelOpenrouter').value.trim() || DEFAULT_SETTINGS.models.openrouter;
+  settings.models.huggingface = document.getElementById('modelHf').value.trim() || DEFAULT_SETTINGS.models.huggingface;
+  saveSettings(settings);
+  updateProviderStatus();
+  toast('Connector settings saved.', 'ok');
+});
+document.getElementById('cacheThreshSlider').addEventListener('input', e=>{
+  settings.cacheThreshold = parseFloat(e.target.value);
+  document.getElementById('cacheThreshVal').textContent = settings.cacheThreshold.toFixed(2);
+  saveSettings(settings);
+});
+document.getElementById('autoEnrichSelect').addEventListener('change', e=>{ settings.autoEnrich = e.target.value==='on'; saveSettings(settings); });
+document.getElementById('topKInput').addEventListener('change', e=>{ settings.topK = Math.max(1, parseInt(e.target.value,10)||4); saveSettings(settings); });
+document.getElementById('minRelevanceSlider').addEventListener('input', e=>{
+  settings.minRelevance = parseFloat(e.target.value);
+  document.getElementById('minRelevanceVal').textContent = settings.minRelevance.toFixed(2);
+  saveSettings(settings);
+});
+document.getElementById('btnSaveFallback').addEventListener('click', ()=>{
+  const text = document.getElementById('fallbackResponseInput').value.trim();
+  settings.fallbackResponse = text || DEFAULT_SETTINGS.fallbackResponse;
+  document.getElementById('fallbackResponseInput').value = settings.fallbackResponse;
+  saveSettings(settings);
+  toast('Grounding settings saved.', 'ok');
+});
+/* Data management */
+document.getElementById('btnExportAll').addEventListener('click', async ()=>{
+  const data = { docs: await idbGetAll('docs'), chunks: await idbGetAll('chunks'), history: await idbGetAll('history'), workflows: await idbGetAll('workflows'), settings };
+  const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = 'neurodesk_backup_'+Date.now()+'.json'; a.click();
+});
+document.getElementById('btnImportAll').addEventListener('click', ()=>document.getElementById('importFile').click());
+document.getElementById('importFile').addEventListener('change', async e=>{
+  const file = e.target.files[0]; if (!file) return;
+  try{
+    const data = JSON.parse(await file.text());
+    await idbClear('docs'); await idbClear('chunks'); await idbClear('history'); await idbClear('workflows');
+    for (const d of data.docs||[]) await idbAdd('docs', stripId(d));
+    for (const c of data.chunks||[]) await idbAdd('chunks', stripId(c));
+    for (const h of data.history||[]) await idbAdd('history', stripId(h));
+    for (const w of data.workflows||[]) await idbAdd('workflows', stripId(w));
+    if (data.settings) { settings = Object.assign(structuredClone(DEFAULT_SETTINGS), data.settings); saveSettings(settings); applySettingsToUI(); }
+    await rebuildIndex(); await renderDocTable(); await renderWorkflowTable(); refreshDashboard(); refreshMIS();
+    toast('Backup imported.', 'ok');
+  } catch(err){ toast('Import failed: ' + err.message, 'err'); }
+  e.target.value = '';
+});
+function stripId(obj){ const c = {...obj}; delete c.id; return c; }
+document.getElementById('btnResetAll').addEventListener('click', async ()=>{
+  if (!confirm('This wipes the knowledge base, chat history, workflows, and connector keys stored in this browser. Continue?')) return;
+  await idbClear('docs'); await idbClear('chunks'); await idbClear('history'); await idbClear('workflows');
+  localStorage.removeItem('neurodesk_settings');
+  settings = loadSettings();
+  applySettingsToUI();
+  await rebuildIndex(); await renderDocTable(); await renderWorkflowTable(); refreshDashboard(); refreshMIS();
+  toast('Everything reset.', 'ok');
+});
+/* ---------------------------- Boot ------------------------------------------ */
+/* One-time self-heal for a data bug in earlier versions: auto-enriched chunks were
+   saved with a hardcoded docName ('Chat History') that never matched their actual doc
+   record's name. That mismatch made findCachedAnswer()'s freshness check treat those
+   answers as permanently "stale" (cited doc appears missing), silently disabling cache
+   reuse. This repairs any chunk whose docName doesn't match its parent doc's real name. */
+async function repairChunkDocNames(){
+  const docs = await idbGetAll('docs');
+  const docNameById = new Map(docs.map(d=>[d.id, d.name]));
+  const chunks = await idbGetAll('chunks');
+  let fixed = 0;
+  for (const c of chunks){
+    const correctName = docNameById.get(c.docId);
+    if (correctName && c.docName !== correctName){
+      await idbPut('chunks', { ...c, docName: correctName });
+      fixed++;
+    }
+  }
+  return fixed;
+}
+(async function init(){
+  document.documentElement.setAttribute('data-theme', settings.theme);
+  document.querySelector('.theme-toggle .knob').textContent = settings.theme==='dark' ? '🌙':'☀️';
+  applySettingsToUI();
+  const repaired = await repairChunkDocNames();
+  await rebuildIndex();
+  await renderDocTable();
+  await renderWorkflowTable();
+  await refreshDashboard();
+  await refreshMIS();
+  if (repaired) toast('Repaired '+repaired+' knowledge-base chunk(s) with mismatched source names — cache matching should work correctly now.', 'ok');
+})();
+</script>
+</body>
+</html>
