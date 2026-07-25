@@ -1,0 +1,1086 @@
+
+/
+Claude finished the response
+
+Updated tasks, ran 2 commands, ran an agent
+Updated tasks, ran 2 commands, ran an agent
+Let me set up the web folder and copy over the shared logic files.
+
+
+Ran 2 commands, created a file
+Ran 2 commands, created a file
+Now the main HTML page.
+
+
+Ran a command
+Ran a command
+Now the stylesheet.
+
+
+Ran 3 commands
+Ran 3 commands
+All assets load correctly. Let me also do a headless browser check for real JS console errors before moving on.
+
+
+Headless-check web page for JS console errors
+Headless-check web page for JS console errors
+All wiring checks out end to end. Now the GitHub Pages publishing guide.
+
+
+Updated tasks, ran a command
+Updated tasks, ran a command
+Final verification pass and packaging.
+
+
+Ran a command, updated tasks, read a file
+Ran a command, updated tasks, read a file
+Built the standalone web version — plain HTML/CSS/JS, no backend, reuses the same prompts and character-limit logic as the extension.
+
+One important technical constraint I checked before building: Gemini's API sends CORS headers that allow direct browser calls (Google actually designs for this — there's an API key restriction option specifically for client-side apps), but Groq's API is server-side-only and generally blocks browser-origin requests. So the web version defaults to Gemini and still offers Groq, but with a visible warning and a friendly error message if it gets blocked, rather than a confusing failure.
+
+To publish it on GitHub Pages: unzip the file, then either drag the files into a new GitHub repo through the website and flip on Pages in Settings (no git needed), or push it with git — both paths are spelled out step by step in the README inside the zip. Once enabled, you get a public URL like https://<username>.github.io/text-converter/ that anyone can open and use immediately with their own free API key — no install required.
+
+I verified it end to end with a headless run: dropdowns populate, no console errors, and clicking convert without a key correctly shows "Add an API key above first," confirming the JS wiring works.
+
+
+C:\Users\user\AppData\Roaming\Claude\local-agent-mode-sessions\3c120713-065f-4f9f-bba1-d332b2a7a914\c4b067f1-8245-4672-a51f-8e1060a347f5\local_3a303b54-21f2-41ae-897f-3c65d863b8a9\outputs\text-converter-web.zip
+ 
+create in one single file with html, css and JS all in one file
+
+
+Ran 2 commands, updated tasks
+Ran 2 commands, updated tasks
+Now let's verify the extracted script is syntactically valid and the file serves correctly.
+
+
+Ran a command
+Ran a command
+Let me also run a quick headless functional check to make sure it behaves identically to the multi-file version.
+
+
+Headless-check single-file HTML for JS errors
+Headless-check single-file HTML for JS errors
+just add one note For Gemini 3.1 and 3.5 version works. And remember APIs for Gemini and Groq seprately when user shared
+
+
+Updated tasks, read a file
+Updated tasks, read a file
+This shared models.js exists in both the extension and web folders. I'll update it once and copy to both.
+
+
+Created a file, ran a command
+Created a file, ran a command
+Now update background.js — new default model + per-provider API key lookup.
+
+
+Read a file, edited a file
+Read a file, edited a file
+Now the message handler that reads the stored key — needs to switch from a single apiKey to a per-provider apiKeys object.
+
+
+Read 2 files, edited a file
+Read 2 files, edited a file
+Now update options.html to add the model-note element, then options.js for per-provider key storage.
+
+
+Edited 2 files, read a file
+Edited 2 files, read a file
+Now rewrite options.js with per-provider key storage and the model note rendering.
+
+
+Ran a command
+Ran a command
+API Error: Connection closed mid-response. The response above may be incomplete.
+
+create in one single file with html, css and JS all in one file. just add one note For Gemini 3.1 and 3.5 version works. And remember APIs for Gemini and Groq seprately when user shared
+
+
+Updated tasks, read a file
+Updated tasks, read a file
+Now I'll rewrite the settings-related parts: default model, per-provider key storage, and the model note.
+
+
+Edited 2 files
+Edited 2 files
+Now the core logic swap — per-provider key storage instead of a single flat key:
+
+
+Edited a file
+Edited a file
+Now update index.html — add the model note element and mention per-provider key memory in the copy.
+
+
+Read a file, edited a file, ran a command
+Read a file, edited a file, ran a command
+All syntax checks pass. Now let's regenerate the single-file HTML from the updated sources.
+
+
+Ran a command
+Ran a command
+Now verify the regenerated single file end-to-end, including the new per-provider key behavior and the model note.
+
+
+Ran a command
+Ran a command
+Let me run a functional check via Node/jsdom to confirm the per-provider key memory actually works end to end (not just present in the bundle).
+
+
+Ran 3 commands
+Ran 3 commands
+Good, jsdom is installed. Now let's write and run the functional test.
+
+
+Ran a command
+Ran a command
+Now let's verify the extension's options.js logic with a mocked chrome.storage API.
+
+
+Ran 2 commands
+Ran 2 commands
+Both the extension and web versions correctly keep Gemini and Groq keys separate, and the default/note changes are wired through. Now let's update the READMEs and re-zip everything.
+
+
+Read a file, edited a file
+Read a file, edited a file
+Now the web README — add the same note plus mention the single-file build option.
+
+
+Edited 2 files, read a file
+Edited 2 files, read a file
+
+Read README.md
+
+Edited
+
+Edited
+Done
+Now let's do a final full verification pass and re-zip both packages, plus provide the single HTML file directly.
+
+
+Ran a command
+Ran a command
+All checks pass. Now let me copy the single-file HTML directly to the outputs root so it's easy to grab standalone, and present everything.
+
+
+Updated tasks, ran a command, read a file
+Updated tasks, ran a command, read a file
+Done. text-converter-single.html is everything — HTML, CSS, and JS — in one file; open it directly or drop it into any GitHub Pages repo (or anywhere else). I also updated the multi-file web folder and the Chrome extension to match, so all three stay in sync.
+
+Both changes you asked for:
+
+Gemini model note: the Model dropdown now leads with Gemini 3.1 and 3.5 versions, each labeled "confirmed working," and 3.5 Flash is the new default. A note under the dropdown says so explicitly, in the extension settings, the web page, and the single file.
+Separate key memory: Gemini and Groq keys are now remembered independently. Switching the Provider dropdown swaps in that provider's own saved key instead of clobbering the other one — verified this actually works end to end (saved a Gemini key, switched to Groq, saved a different key, switched back to Gemini, and the original key was still there untouched) in both the extension and the web version.
+I also re-verified everything with real execution (not just eyeballing the code): no console errors, all dropdowns populate correctly, and the per-provider key swap behaves as expected.
+
+
+C:\Users\user\AppData\Roaming\Claude\local-agent-mode-sessions\3c120713-065f-4f9f-bba1-d332b2a7a914\c4b067f1-8245-4672-a51f-8e1060a347f5\local_3a303b54-21f2-41ae-897f-3c65d863b8a9\outputs\text-converter-single.html
+Code 
+
+C:\Users\user\AppData\Roaming\Claude\local-agent-mode-sessions\3c120713-065f-4f9f-bba1-d332b2a7a914\c4b067f1-8245-4672-a51f-8e1060a347f5\local_3a303b54-21f2-41ae-897f-3c65d863b8a9\outputs\text-converter-web.zip
+ 
+
+C:\Users\user\AppData\Roaming\Claude\local-agent-mode-sessions\3c120713-065f-4f9f-bba1-d332b2a7a914\c4b067f1-8245-4672-a51f-8e1060a347f5\local_3a303b54-21f2-41ae-897f-3c65d863b8a9\outputs\text-converter-extension.zip
+ 
+
+
+
+
+Claude is AI and can make mistakes. Please double-check responses. Give us feedback
+
+
+Text converter single · HTML
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SMS &amp; WhatsApp Text Converter</title>
+<meta name="description" content="Free browser tool: rewrite marketing text into a 160-char SMS, a high-conversion WhatsApp message, or a WhatsApp/RCS Utility-template-safe version. Runs entirely in your browser." />
+<link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABC0lEQVR4nO2aQRKCMAxFfzteRS4oCzmBLOSCchhdlSkd7DRAk0bzVo6V6X8N0ZmgQ4br8/7OrXMx96P7tra50ErwlC2R1RutBk+JRXx4oSU8sM7qcx/UgAd0nX4gZFZfAafx9GMuey983R5n5gAAdNNAvoZcgRrBUygipB7gCE/dR30TFwtwnT51v/+pQKuYgDQmII0JSGMC0piANCYgjQlIYwLSmIA0xQJ7hk5HKN2vyQpUG2xxVIG6B7kC3TRUE2GZjcbkhk9cPVOlBzgbfvd4fQvubyrgxApIhAcAn3uIXIpU+Lkf3eEKSIUPLKev7VlZuHOa/CWmsAic0QtcxFl/688eKa2I5O6OD88YTmAkihIBAAAAAElFTkSuQmCC" />
+<style>
+:root {
+  --green-dark: #1f2430;
+  --green: #1f7a5c;
+  --green-light: #25936f;
+  --sms: #2f5d50;
+  --whatsapp: #1f7a5c;
+  --utility: #3a4a75;
+  --bg: #f6f7f9;
+  --card: #ffffff;
+  --text: #1a1a1a;
+  --muted: #6b7280;
+  --border: #e3e5e9;
+  --danger: #c0392b;
+  --danger-bg: #fdecea;
+}
+ 
+* { box-sizing: border-box; }
+ 
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  line-height: 1.5;
+}
+ 
+.wrap {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 32px 20px 60px;
+}
+ 
+header {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 28px;
+}
+header .logo { width: 44px; height: 44px; border-radius: 10px; flex-shrink: 0; }
+header h1 { font-size: 22px; margin: 0 0 4px 0; }
+.tagline { margin: 0; color: var(--muted); font-size: 14px; }
+ 
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+ 
+.card-title {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.step-num {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--green);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.card-title h2 { font-size: 16px; margin: 0 0 4px 0; }
+.card-title p.muted { margin: 0; }
+ 
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.grid .full { grid-column: 1 / -1; }
+ 
+label {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 600;
+  margin-bottom: 5px;
+  color: #333;
+}
+ 
+select, input[type="text"], input[type="password"], textarea {
+  width: 100%;
+  padding: 9px 10px;
+  font-size: 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-family: inherit;
+  background: #fff;
+  color: var(--text);
+}
+ 
+textarea { resize: vertical; }
+ 
+.hint { font-size: 11.5px; color: var(--muted); margin-top: 5px; }
+.hint a { color: var(--green); }
+ 
+.key-row { display: flex; gap: 8px; }
+.key-row input { flex: 1; }
+ 
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--muted);
+  margin-top: 10px;
+  cursor: pointer;
+}
+.checkbox-row input { width: auto; margin: 0; }
+ 
+.ghost-btn {
+  background: #f0f2f4;
+  border: 1px solid var(--border);
+  color: #333;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.ghost-btn:hover { background: #e6e9ec; }
+.ghost-btn.small { margin-top: 8px; padding: 6px 10px; font-size: 11.5px; }
+ 
+.primary-btn {
+  background: var(--green);
+  color: #fff;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.primary-btn:hover { background: var(--green-light); }
+ 
+.warning {
+  margin-top: 14px;
+  background: #fff8e6;
+  border: 1px solid #f0dca0;
+  color: #8a6a1f;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 12.5px;
+}
+.warning a { color: #8a6a1f; font-weight: 600; }
+ 
+.input-stats {
+  text-align: right;
+  font-size: 11.5px;
+  color: var(--muted);
+  margin-top: 6px;
+}
+ 
+.modes {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+}
+.mode-btn {
+  flex: 1;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 6px;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.mode-btn.sms { background: var(--sms); }
+.mode-btn.whatsapp { background: var(--whatsapp); }
+.mode-btn.utility { background: var(--utility); }
+.mode-btn:hover { filter: brightness(1.1); }
+.mode-title { font-size: 13.5px; font-weight: 700; }
+.mode-sub { font-size: 10.5px; opacity: 0.85; }
+ 
+.msg { font-size: 13px; color: var(--danger); margin-top: 10px; min-height: 16px; }
+ 
+.result-wrap { margin-top: 16px; }
+.result-title { font-weight: 700; font-size: 12.5px; color: #444; text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 8px; }
+ 
+.standards {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+.standards .badge {
+  flex: 1;
+  min-width: 130px;
+  background: #f0f4f2;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 12px;
+  color: #333;
+}
+.standards .badge .label { font-weight: 700; display: block; color: #555; font-size: 10.5px; text-transform: uppercase; letter-spacing: .02em; }
+.standards .badge.over { background: var(--danger-bg); color: var(--danger); }
+.standards .badge.over .label { color: var(--danger); }
+ 
+.result-actions { display: flex; gap: 8px; margin-top: 12px; }
+ 
+.card.note {
+  font-size: 12.5px;
+  color: var(--muted);
+  background: #fafafa;
+}
+ 
+footer {
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 32px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+footer .small { font-size: 11.5px; }
+ 
+@media (max-width: 520px) {
+  .grid { grid-template-columns: 1fr; }
+  .mode-title { font-size: 12px; }
+}
+ 
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABC0lEQVR4nO2aQRKCMAxFfzteRS4oCzmBLOSCchhdlSkd7DRAk0bzVo6V6X8N0ZmgQ4br8/7OrXMx96P7tra50ErwlC2R1RutBk+JRXx4oSU8sM7qcx/UgAd0nX4gZFZfAafx9GMuey983R5n5gAAdNNAvoZcgRrBUygipB7gCE/dR30TFwtwnT51v/+pQKuYgDQmII0JSGMC0piANCYgjQlIYwLSmIA0xQJ7hk5HKN2vyQpUG2xxVIG6B7kC3TRUE2GZjcbkhk9cPVOlBzgbfvd4fQvubyrgxApIhAcAn3uIXIpU+Lkf3eEKSIUPLKev7VlZuHOa/CWmsAic0QtcxFl/688eKa2I5O6OD88YTmAkihIBAAAAAElFTkSuQmCC" alt="" class="logo" />
+      <div>
+        <h1>SMS &amp; WhatsApp Text Converter</h1>
+        <p class="tagline">Rewrite marketing text for SMS, WhatsApp, or a WhatsApp/RCS Utility template — with live character stats for all three channels.</p>
+      </div>
+    </header>
+ 
+    <section class="card setup" id="setupCard">
+      <div class="card-title">
+        <span class="step-num">1</span>
+        <div>
+          <h2>Connect a free AI provider</h2>
+          <p class="muted">This page has no server — your text and API key go straight from your browser to the provider you choose below. Nothing is stored or seen by us.</p>
+        </div>
+      </div>
+ 
+      <div class="grid">
+        <div>
+          <label for="provider">Provider</label>
+          <select id="provider">
+            <option value="gemini">Google Gemini (recommended for web)</option>
+            <option value="groq">Groq</option>
+          </select>
+          <div class="hint" id="providerHint"></div>
+        </div>
+ 
+        <div>
+          <label for="model">Model</label>
+          <select id="model"></select>
+          <div class="hint" id="modelNote"></div>
+        </div>
+ 
+        <div class="full">
+          <label for="apiKey">API Key</label>
+          <div class="key-row">
+            <input type="password" id="apiKey" placeholder="Paste your API key" autocomplete="off" />
+            <button type="button" id="toggleKey" class="ghost-btn">Show</button>
+          </div>
+          <div class="hint">
+            Free key: <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" id="geminiKeyLink">Gemini (aistudio.google.com/apikey)</a>
+            <span id="groqKeyLink" style="display:none">or <a href="https://console.groq.com/keys" target="_blank" rel="noopener">Groq (console.groq.com/keys)</a></span>
+          </div>
+          <label class="checkbox-row">
+            <input type="checkbox" id="rememberKey" />
+            Remember my key in this browser (Gemini and Groq keys are remembered separately, so switching providers won't lose the other one — clear anytime below)
+          </label>
+          <button type="button" id="clearKey" class="ghost-btn small">Clear saved key</button>
+        </div>
+ 
+        <div>
+          <label for="language">Language</label>
+          <select id="language"></select>
+        </div>
+      </div>
+ 
+      <div id="corsWarning" class="warning" style="display:none">
+        ⚠ Groq's API typically blocks direct requests from web pages (CORS). It may not work here — Gemini is recommended for this web version. Groq does work in the <a href="#extension">Chrome extension</a>, which isn't subject to the same restriction.
+      </div>
+    </section>
+ 
+    <section class="card">
+      <div class="card-title">
+        <span class="step-num">2</span>
+        <div>
+          <h2>Paste your text and convert</h2>
+        </div>
+      </div>
+ 
+      <textarea id="input" placeholder="Paste your marketing text here…" rows="6"></textarea>
+      <div class="input-stats" id="inputStats">0 characters</div>
+ 
+      <div class="modes">
+        <button class="mode-btn sms" data-mode="sms">
+          <span class="mode-title">SMS</span>
+          <span class="mode-sub">≤160/70 chars</span>
+        </button>
+        <button class="mode-btn whatsapp" data-mode="whatsapp">
+          <span class="mode-title">WhatsApp</span>
+          <span class="mode-sub">marketing</span>
+        </button>
+        <button class="mode-btn utility" data-mode="utility">
+          <span class="mode-title">Utility</span>
+          <span class="mode-sub">WA/RCS template</span>
+        </button>
+      </div>
+ 
+      <div id="msg" class="msg"></div>
+ 
+      <div id="resultWrap" class="result-wrap" style="display:none">
+        <div class="result-title" id="resultTitle"></div>
+        <textarea id="result" rows="6"></textarea>
+        <div class="standards" id="standardsBox"></div>
+        <div class="result-actions">
+          <button id="copyBtn" class="primary-btn">Copy to clipboard</button>
+          <button id="regenBtn" class="ghost-btn">Regenerate</button>
+        </div>
+      </div>
+    </section>
+ 
+    <section class="card note">
+      <strong>Note on "Utility" conversion:</strong> this drafts WhatsApp Business API / RCS Utility-style wording to help avoid unnecessary Marketing-tier template costs. Final category approval is always decided by Meta/your BSP or RCS provider during template review — treat the output as a starting draft, not a guarantee.
+    </section>
+ 
+    <footer id="extension">
+      <p>Want this without opening a tab? There's also a <strong>Chrome extension</strong> version that pops up a mini toolbar right next to any text you select on any webpage, and supports Groq too (extensions aren't limited by browser CORS the way this page is).</p>
+      <p class="muted small">Your API key and pasted text are sent directly from your browser to the AI provider you choose. This page is static (hosted on GitHub Pages) — there is no backend, no analytics, and nothing is logged or stored anywhere but your own browser.</p>
+    </footer>
+  </div>
+ 
+  <script>
+// ---- languages.js ----
+ 
+// languages.js — shared language list, loaded by content.js, popup.js,
+// options.js (via <script> tag) and background.js (via importScripts).
+const LANGUAGES = [
+  { value: "auto", label: "Auto (same as input)" },
+  { value: "English", label: "English" },
+  { value: "Hindi", label: "Hindi (हिंदी)" },
+  { value: "Hinglish", label: "Hinglish (Hindi, Latin script)" },
+  { value: "Bengali", label: "Bengali (বাংলা)" },
+  { value: "Tamil", label: "Tamil (தமிழ்)" },
+  { value: "Telugu", label: "Telugu (తెలుగు)" },
+  { value: "Marathi", label: "Marathi (मराठी)" },
+  { value: "Gujarati", label: "Gujarati (ગુજરાતી)" },
+  { value: "Kannada", label: "Kannada (ಕನ್ನಡ)" },
+  { value: "Malayalam", label: "Malayalam (മലയാളം)" },
+  { value: "Punjabi", label: "Punjabi (ਪੰਜਾਬੀ)" },
+  { value: "Urdu", label: "Urdu (اردو)" },
+  { value: "Arabic", label: "Arabic (العربية)" },
+  { value: "Spanish", label: "Spanish" },
+  { value: "French", label: "French" },
+  { value: "Portuguese", label: "Portuguese" },
+  { value: "Indonesian", label: "Indonesian" },
+  { value: "German", label: "German" }
+];
+ 
+// Scripts commonly outside the GSM-7 basic character set — used only as a
+// hint to the model; the client always re-checks the actual output.
+const NON_GSM7_LANGUAGES = new Set([
+  "Hindi", "Bengali", "Tamil", "Telugu", "Marathi", "Gujarati", "Kannada",
+  "Malayalam", "Punjabi", "Urdu", "Arabic"
+]);
+ 
+// ---- smsUtils.js ----
+ 
+// smsUtils.js — SMS character-limit math.
+// Standard SMS uses the GSM-7 alphabet: 160 chars per single segment
+// (153 per segment when concatenated). Any character outside that alphabet
+// forces Unicode/UCS-2 encoding: only 70 chars per single segment
+// (67 per segment when concatenated) — this is why messages in Hindi,
+// Arabic, Tamil, etc. (or even a single emoji/curly quote) have a much
+// shorter limit than plain English.
+ 
+const GSM7_BASIC =
+  "@£$¥èéùìòÇ\nØø\rÅåΔ_ΦΓΛΩΠΨΣΘΞÆæßÉ !\"#¤%&'()*+,-./0123456789:;<=>?¡" +
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÑÜ§¿abcdefghijklmnopqrstuvwxyzäöñüà";
+const GSM7_EXTENDED = "^{}\\[~]|€";
+ 
+function isGSM7Char(ch) {
+  return GSM7_BASIC.indexOf(ch) !== -1 || GSM7_EXTENDED.indexOf(ch) !== -1;
+}
+ 
+function smsSegmentInfo(text) {
+  let gsm7 = true;
+  let extCount = 0;
+  for (const ch of text) {
+    if (!isGSM7Char(ch)) { gsm7 = false; break; }
+    if (GSM7_EXTENDED.indexOf(ch) !== -1) extCount++;
+  }
+ 
+  if (gsm7) {
+    const length = text.length + extCount; // extension-table chars cost 2
+    const singleLimit = 160, multiLimit = 153;
+    const segments = length <= singleLimit ? 1 : Math.ceil(length / multiLimit);
+    return { encoding: "GSM-7", length, singleLimit, multiLimit, segments };
+  } else {
+    const length = Array.from(text).length; // count by code point
+    const singleLimit = 70, multiLimit = 67;
+    const segments = length <= singleLimit ? 1 : Math.ceil(length / multiLimit);
+    return { encoding: "Unicode", length, singleLimit, multiLimit, segments };
+  }
+}
+ 
+// WhatsApp Business API / RCS Business Messaging template body limits.
+// These are the commonly documented limits; your specific BSP/RCS
+// aggregator or carrier may enforce slightly different caps.
+const WHATSAPP_BODY_LIMIT = 1024; // template message body
+const RCS_TEXT_LIMIT = 3072;      // typical single RCS text message limit
+ 
+function messageStandardsInfo(text) {
+  const sms = smsSegmentInfo(text);
+  const plainLen = Array.from(text).length;
+  return {
+    sms,
+    whatsapp: { length: plainLen, limit: WHATSAPP_BODY_LIMIT, over: plainLen > WHATSAPP_BODY_LIMIT },
+    rcs: { length: plainLen, limit: RCS_TEXT_LIMIT, over: plainLen > RCS_TEXT_LIMIT }
+  };
+}
+ 
+// Compact array form for rendering badges/rows in the UI.
+function standardsSummary(text) {
+  const info = messageStandardsInfo(text);
+  const segNote = info.sms.segments > 1 ? `, ${info.sms.segments} segs` : "";
+  return [
+    {
+      key: "sms",
+      label: "SMS",
+      text: `${info.sms.length}/${info.sms.singleLimit} (${info.sms.encoding}${segNote})`,
+      over: info.sms.length > info.sms.singleLimit
+    },
+    {
+      key: "whatsapp",
+      label: "WhatsApp",
+      text: `${info.whatsapp.length}/${info.whatsapp.limit}`,
+      over: info.whatsapp.over
+    },
+    {
+      key: "rcs",
+      label: "RCS",
+      text: `${info.rcs.length}/${info.rcs.limit}`,
+      over: info.rcs.over
+    }
+  ];
+}
+ 
+// ---- models.js ----
+ 
+// models.js — shared model lists, loaded by options.js (via <script> tag)
+// and background.js (via importScripts).
+//
+// Only models confirmed as (a) available on the provider's free tier and
+// (b) relevant to plain text generation/rewriting are listed here — no
+// image/video/audio/embedding/moderation/enterprise-only models.
+//
+// Verified against:
+//   https://ai.google.dev/gemini-api/docs/pricing   (Gemini, July 2026)
+//   https://console.groq.com/docs/models             (Groq, July 2026)
+//   https://console.groq.com/docs/rate-limits         (Groq free plan, July 2026)
+//
+// Free-tier availability and model line-ups change over time — if a model
+// here ever stops working, check those pages again and update this list.
+//
+// Gemini 3.1.x and 3.5.x have been confirmed working hands-on with this
+// tool, so they're marked and promoted to the top of the list / default.
+ 
+const MODELS = {
+  gemini: [
+    { value: "gemini-3.5-flash", label: "Gemini 3.5 Flash (recommended — confirmed working)" },
+    { value: "gemini-3.5-flash-lite", label: "Gemini 3.5 Flash-Lite (confirmed working, lightweight)" },
+    { value: "gemini-3.1-flash-lite", label: "Gemini 3.1 Flash-Lite (confirmed working, lightweight)" },
+    { value: "gemini-2.5-flash", label: "Gemini 2.5 Flash (free, fast)" },
+    { value: "gemini-2.5-flash-lite", label: "Gemini 2.5 Flash-Lite (free, lightest/cheapest-quality)" },
+    { value: "gemini-2.5-pro", label: "Gemini 2.5 Pro (free, most capable, slower)" },
+    { value: "gemini-3.6-flash", label: "Gemini 3.6 Flash (free, newest)" },
+    { value: "gemini-3-flash-preview", label: "Gemini 3 Flash Preview (free, preview — may change)" }
+  ],
+  groq: [
+    { value: "llama-3.3-70b-versatile", label: "Llama 3.3 70B Versatile (recommended — free, high quality)" },
+    { value: "llama-3.1-8b-instant", label: "Llama 3.1 8B Instant (free, fastest)" },
+    { value: "openai/gpt-oss-120b", label: "GPT-OSS 120B (free)" },
+    { value: "openai/gpt-oss-20b", label: "GPT-OSS 20B (free, lightweight)" }
+  ]
+};
+ 
+// Short advisory notes shown under the Model dropdown in the UI.
+const MODEL_NOTES = {
+  gemini: "Note: Gemini 3.1 and 3.5 versions have been confirmed working with this tool.",
+  groq: ""
+};
+ 
+// ---- app.js ----
+ 
+// app.js — standalone web version. No backend: every API call goes straight
+// from this browser to the provider the visitor picked, using a key they
+// supply themselves. Nothing here is sent to, or stored by, any server of
+// ours — settings (minus the key, unless "remember" is checked) live in
+// this browser's localStorage only.
+ 
+const STORAGE_KEY = "textConverterWebSettings";
+ 
+const DEFAULT_MODELS = {
+  gemini: "gemini-3.5-flash",
+  groq: "llama-3.3-70b-versatile"
+};
+ 
+// ---------- Prompt building (mirrors the Chrome extension's background.js) ----------
+ 
+function languageInstruction(language) {
+  if (!language || language === "auto") {
+    return `Keep the output in the same language and script as the original TEXT below (if it's Hinglish/transliterated, keep it transliterated — don't switch scripts).`;
+  }
+  const nonGsm7 = NON_GSM7_LANGUAGES.has(language);
+  const scriptNote = nonGsm7
+    ? ` This language typically uses a non-GSM-7 script, which means plain SMS switches to Unicode encoding — segments are limited to 70 characters (not 160). Keep this in mind for the SMS mode limit below.`
+    : "";
+  return `Write the final output in ${language}, using its native script (not a transliteration), regardless of what language/script the original TEXT is in.${scriptNote}`;
+}
+ 
+function buildPrompt(mode, text, language) {
+  const base = text.trim();
+  const langLine = languageInstruction(language);
+ 
+  if (mode === "sms") {
+    return `Rewrite the text below as a single SMS message.
+${langLine}
+Rules:
+- If the final message uses only basic Latin letters/digits/punctuation (GSM-7 alphabet), the strict limit is 160 characters.
+- If the final message uses any non-Latin script or accented/special characters outside GSM-7 (e.g. Devanagari, Arabic, Tamil, Bengali, or similar), the strict limit is 70 characters instead, because Unicode SMS segments are shorter.
+- Stay under whichever limit applies. Keep the single most important call-to-action and keyword.
+- Plain text only. No emojis, no markdown, no hashtags.
+- Do not invent facts, offers, prices, or links that are not in the original text.
+- Output ONLY the final SMS text. No quotes, no preamble, no character count.
+ 
+TEXT:
+"""${base}"""`;
+  }
+ 
+  if (mode === "whatsapp") {
+    return `Rewrite the text below as a high-conversion WhatsApp marketing message (you may use up to roughly 700 characters).
+${langLine}
+Rules:
+- Use a strong hook in the first line.
+- Weave in high-value marketing keywords where truthful and relevant to the content (e.g. exclusive, limited-time, save, free, new, instant, bonus, today only) — only use ones that fit the actual offer, don't fabricate claims.
+- Use WhatsApp-friendly formatting: *bold* with single asterisks, short line breaks, at most 2-3 relevant emojis.
+- End with one clear call-to-action.
+- Do not invent facts, prices, discounts, or links that are not implied by the original text.
+- Output ONLY the final WhatsApp message. No preamble, no explanation.
+ 
+TEXT:
+"""${base}"""`;
+  }
+ 
+  if (mode === "utility") {
+    return `You are helping a business draft a WhatsApp Business API / RCS "Utility" category template from a marketing message, so it can be registered as a Utility template instead of a (more expensive, opt-in-heavy) Marketing template.
+${langLine}
+ 
+Utility templates must read as transactional/informational content tied to something the recipient already has with the business (an order, account, appointment, subscription, service) — NOT as an unsolicited promotion.
+ 
+Rewrite the text below by:
+- Removing promotional language, discount hype, urgency/scarcity phrasing, and generic sales CTAs ("Buy now!", "Don't miss out!", excessive exclamation marks or emojis).
+- Reframing it as an account/order/service update, confirmation, reminder, or informational notice.
+- Keeping the essential factual content (including any specific benefit or offer detail) but phrased informationally rather than promotionally — e.g. "Your loyalty reward is now available in your account" instead of "Don't miss this AMAZING deal!!!".
+- Preserving any template placeholders like {{1}}, {{2}} exactly as they appear.
+- Keeping it concise, in a neutral/professional tone.
+ 
+Output ONLY the rewritten utility-style message. No preamble, no explanation, no disclaimers in the output itself.
+ 
+TEXT:
+"""${base}"""`;
+  }
+ 
+  throw new Error("Unknown mode: " + mode);
+}
+ 
+function stripWrappingQuotes(s) {
+  return s.replace(/^["'“”]+|["'“”]+$/g, "").trim();
+}
+ 
+// ---------- Direct browser API calls ----------
+// Gemini's generateContent endpoint sends CORS headers for browser-origin
+// requests (this is documented/expected — Google's API key "HTTP referrer"
+// restriction option exists specifically for client-side browser apps).
+// Groq's API is designed for server-side use and typically does not send
+// CORS headers for browser origins, so it may fail here with a generic
+// "Failed to fetch" — we catch that and explain it rather than showing a
+// confusing raw error.
+ 
+async function callGemini({ apiKey, model, prompt }) {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`;
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: { temperature: 0.6, maxOutputTokens: 400 }
+    })
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data?.error?.message || `Gemini API error (${res.status})`);
+  }
+  const text = data?.candidates?.[0]?.content?.parts?.map(p => p.text || "").join("") ?? "";
+  if (!text) throw new Error("Gemini returned an empty response. The content may have been blocked by safety filters.");
+  return text.trim();
+}
+ 
+async function callGroq({ apiKey, model, prompt }) {
+  let res;
+  try {
+    res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model,
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.6,
+        max_tokens: 400
+      })
+    });
+  } catch (networkErr) {
+    throw new Error("Groq blocked this request from the browser (CORS). This is a known limitation of using Groq from a plain web page — try Gemini instead, or use the Chrome extension version, which isn't subject to this restriction.");
+  }
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data?.error?.message || `Groq API error (${res.status})`);
+  }
+  const text = data?.choices?.[0]?.message?.content ?? "";
+  if (!text) throw new Error("Groq returned an empty response.");
+  return text.trim();
+}
+ 
+async function convert({ mode, text, language, provider, apiKey, model }) {
+  if (!apiKey) throw new Error("Add an API key above first.");
+  const prompt = buildPrompt(mode, text, language);
+  const useModel = model || DEFAULT_MODELS[provider] || DEFAULT_MODELS.gemini;
+  const result = provider === "groq"
+    ? await callGroq({ apiKey, model: useModel, prompt })
+    : await callGemini({ apiKey, model: useModel, prompt });
+  return stripWrappingQuotes(result);
+}
+ 
+// ---------- UI wiring ----------
+ 
+const providerEl = document.getElementById("provider");
+const modelEl = document.getElementById("model");
+const apiKeyEl = document.getElementById("apiKey");
+const toggleKeyEl = document.getElementById("toggleKey");
+const rememberKeyEl = document.getElementById("rememberKey");
+const clearKeyEl = document.getElementById("clearKey");
+const languageEl = document.getElementById("language");
+const providerHintEl = document.getElementById("providerHint");
+const modelNoteEl = document.getElementById("modelNote");
+const corsWarningEl = document.getElementById("corsWarning");
+const geminiKeyLinkEl = document.getElementById("geminiKeyLink");
+const groqKeyLinkEl = document.getElementById("groqKeyLink");
+ 
+const inputEl = document.getElementById("input");
+const inputStatsEl = document.getElementById("inputStats");
+const msgEl = document.getElementById("msg");
+const resultWrap = document.getElementById("resultWrap");
+const resultTitleEl = document.getElementById("resultTitle");
+const resultEl = document.getElementById("result");
+const standardsBoxEl = document.getElementById("standardsBox");
+const copyBtn = document.getElementById("copyBtn");
+const regenBtn = document.getElementById("regenBtn");
+ 
+const MODE_TITLES = { sms: "SMS version", whatsapp: "WhatsApp marketing", utility: "Utility-template version" };
+const PROVIDER_HINTS = {
+  gemini: "Google's Gemini API supports direct browser calls — this is the reliable choice for the web version.",
+  groq: "Groq's API is built for server-side use and usually blocks direct browser requests. It may fail here — see the warning below."
+};
+ 
+let currentMode = null;
+ 
+function loadSettings() {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+  } catch {
+    return {};
+  }
+}
+ 
+function saveSettings(patch) {
+  const current = loadSettings();
+  const next = { ...current, ...patch };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+}
+ 
+function populateModels(provider, preferredValue) {
+  const list = MODELS[provider] || [];
+  modelEl.innerHTML = "";
+  list.forEach(m => {
+    const opt = document.createElement("option");
+    opt.value = m.value;
+    opt.textContent = m.label;
+    modelEl.appendChild(opt);
+  });
+  const match = list.find(m => m.value === preferredValue);
+  modelEl.value = match ? match.value : (list[0] ? list[0].value : "");
+}
+ 
+function updateProviderUI() {
+  const provider = providerEl.value;
+  providerHintEl.textContent = PROVIDER_HINTS[provider] || "";
+  modelNoteEl.textContent = (typeof MODEL_NOTES !== "undefined" && MODEL_NOTES[provider]) || "";
+  corsWarningEl.style.display = provider === "groq" ? "block" : "none";
+  geminiKeyLinkEl.style.display = provider === "gemini" ? "inline" : "none";
+  groqKeyLinkEl.style.display = provider === "groq" ? "inline" : "none";
+}
+ 
+// Gemini and Groq keys are remembered separately (keyed by provider), so
+// switching providers swaps the key field instead of overwriting the other
+// provider's saved key.
+function getStoredKeys() {
+  const settings = loadSettings();
+  const apiKeys = { gemini: "", groq: "", ...(settings.apiKeys || {}) };
+  // Migrate a legacy single-key install (from before keys were per-provider).
+  if (settings.apiKey && !apiKeys[settings.provider || "gemini"]) {
+    apiKeys[settings.provider || "gemini"] = settings.apiKey;
+  }
+  return apiKeys;
+}
+ 
+function setStoredKey(provider, key) {
+  const apiKeys = getStoredKeys();
+  apiKeys[provider] = key;
+  saveSettings({ apiKeys, apiKey: undefined });
+}
+ 
+// Loads whichever key is remembered for `provider` into the key field, and
+// reflects that in the "remember" checkbox.
+function loadKeyForProvider(provider) {
+  const apiKeys = getStoredKeys();
+  const stored = apiKeys[provider] || "";
+  apiKeyEl.value = stored;
+  rememberKeyEl.checked = !!stored;
+}
+ 
+function init() {
+  LANGUAGES.forEach(l => {
+    const opt = document.createElement("option");
+    opt.value = l.value;
+    opt.textContent = l.label;
+    languageEl.appendChild(opt);
+  });
+ 
+  const settings = loadSettings();
+  providerEl.value = settings.provider || "gemini";
+  languageEl.value = settings.language || "auto";
+  populateModels(providerEl.value, settings.model);
+  updateProviderUI();
+  loadKeyForProvider(providerEl.value);
+ 
+  updateInputStats();
+}
+ 
+providerEl.addEventListener("change", () => {
+  populateModels(providerEl.value);
+  updateProviderUI();
+  loadKeyForProvider(providerEl.value);
+  saveSettings({ provider: providerEl.value, model: modelEl.value });
+});
+ 
+modelEl.addEventListener("change", () => saveSettings({ model: modelEl.value }));
+languageEl.addEventListener("change", () => saveSettings({ language: languageEl.value }));
+ 
+toggleKeyEl.addEventListener("click", () => {
+  const isPw = apiKeyEl.type === "password";
+  apiKeyEl.type = isPw ? "text" : "password";
+  toggleKeyEl.textContent = isPw ? "Hide" : "Show";
+});
+ 
+rememberKeyEl.addEventListener("change", () => {
+  if (rememberKeyEl.checked) {
+    setStoredKey(providerEl.value, apiKeyEl.value);
+  } else {
+    setStoredKey(providerEl.value, "");
+  }
+});
+ 
+apiKeyEl.addEventListener("input", () => {
+  if (rememberKeyEl.checked) setStoredKey(providerEl.value, apiKeyEl.value);
+});
+ 
+clearKeyEl.addEventListener("click", () => {
+  apiKeyEl.value = "";
+  rememberKeyEl.checked = false;
+  setStoredKey(providerEl.value, "");
+});
+ 
+function updateInputStats() {
+  const len = Array.from(inputEl.value).length;
+  inputStatsEl.textContent = `${len} character${len === 1 ? "" : "s"}`;
+}
+inputEl.addEventListener("input", updateInputStats);
+ 
+function renderStandards(text) {
+  standardsBoxEl.innerHTML = "";
+  standardsSummary(text).forEach(s => {
+    const badge = document.createElement("div");
+    badge.className = "badge" + (s.over ? " over" : "");
+    badge.innerHTML = `<span class="label">${s.label}</span>${s.text}`;
+    standardsBoxEl.appendChild(badge);
+  });
+}
+ 
+async function runConversion(mode) {
+  const text = inputEl.value.trim();
+  msgEl.textContent = "";
+  if (!text) {
+    msgEl.textContent = "Paste some text first.";
+    return;
+  }
+  const apiKey = apiKeyEl.value.trim();
+  if (!apiKey) {
+    msgEl.textContent = "Add an API key above first.";
+    return;
+  }
+ 
+  currentMode = mode;
+  resultWrap.style.display = "block";
+  resultTitleEl.textContent = MODE_TITLES[mode];
+  resultEl.value = "Converting…";
+  standardsBoxEl.innerHTML = "";
+ 
+  try {
+    const result = await convert({
+      mode,
+      text,
+      language: languageEl.value,
+      provider: providerEl.value,
+      apiKey,
+      model: modelEl.value
+    });
+    resultEl.value = result;
+    renderStandards(result);
+  } catch (err) {
+    resultEl.value = "";
+    msgEl.textContent = err.message || String(err);
+  }
+}
+ 
+document.querySelectorAll(".mode-btn").forEach(btn => {
+  btn.addEventListener("click", () => runConversion(btn.dataset.mode));
+});
+ 
+regenBtn.addEventListener("click", () => {
+  if (currentMode) runConversion(currentMode);
+});
+ 
+resultEl.addEventListener("input", () => renderStandards(resultEl.value));
+ 
+copyBtn.addEventListener("click", () => {
+  if (!resultEl.value) return;
+  navigator.clipboard.writeText(resultEl.value).then(() => {
+    copyBtn.textContent = "Copied ✓";
+    setTimeout(() => (copyBtn.textContent = "Copy to clipboard"), 1500);
+  });
+});
+ 
+init();
+  </script>
+</body>
+</html>
+ 
