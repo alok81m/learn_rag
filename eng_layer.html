@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Engagement Layer — Working Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#081826; --bg-panel:#0F2740; --bg-panel-alt:#14314D; --bg-raised:#183A56;
+    --border:#1F3D57; --border-soft:#152E45;
+    --teal:#2FE5B8; --teal-dim:#12664F; --teal-glow:rgba(47,229,184,0.14);
+    --amber:#F5A73B; --amber-dim:#6B4F1C; --coral:#FF6B4A;
+    --text:#EAF2F6; --text-dim:#8CA8BC; --text-faint:#517089;
+    --font-display:'Space Grotesk', sans-serif; --font-body:'Inter', sans-serif; --font-mono:'JetBrains Mono', monospace;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:var(--font-body);-webkit-font-smoothing:antialiased;min-height:100vh;}
+  ::selection{background:var(--teal-glow);color:var(--teal);}
+  :focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
+  button{font-family:inherit;cursor:pointer;}
+  button:disabled{cursor:not-allowed;opacity:0.4;}
+
+  .app{max-width:1180px;margin:0 auto;padding:28px 24px 0;display:flex;flex-direction:column;min-height:100vh;}
+
+  .topbar{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;padding-bottom:22px;border-bottom:1px solid var(--border-soft);}
+  .brand{display:flex;flex-direction:column;gap:6px;}
+  .brand .mark{display:flex;align-items:center;gap:10px;}
+  .brand .dot{width:9px;height:9px;border-radius:50%;background:var(--teal);box-shadow:0 0 12px var(--teal-glow);}
+  .brand h1{font-family:var(--font-display);font-weight:600;font-size:20px;margin:0;letter-spacing:0.2px;}
+  .brand p{margin:0;color:var(--text-dim);font-size:13px;}
+  .topbar-right{display:flex;flex-direction:column;align-items:flex-end;gap:8px;}
+  .scenario{text-align:right;}
+  .scenario .label{font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-faint);}
+  .scenario .value{font-family:var(--font-mono);font-size:13px;color:var(--teal);margin-top:2px;}
+  .ai-status-btn{display:flex;align-items:center;gap:7px;background:var(--bg-panel-alt);border:1px solid var(--border);border-radius:999px;padding:6px 12px 6px 10px;color:var(--text-dim);font-size:11.5px;font-family:var(--font-mono);}
+  .ai-status-btn:hover{border-color:var(--teal-dim);}
+  .ai-status-btn .pip{width:7px;height:7px;border-radius:50%;background:var(--text-faint);}
+  .ai-status-btn.on .pip{background:var(--teal);box-shadow:0 0 8px var(--teal-glow);}
+  .ai-status-btn .gear{font-size:13px;}
+
+  .stepper{display:flex;align-items:stretch;gap:0;margin:22px 0 20px;overflow-x:auto;}
+  .step{flex:1;min-width:130px;position:relative;background:none;border:none;color:var(--text-faint);padding:14px 14px 14px 40px;text-align:left;border-bottom:2px solid var(--border);transition:border-color .2s ease, color .2s ease;}
+  .step .num{position:absolute;left:12px;top:14px;width:20px;height:20px;border-radius:50%;border:1.5px solid var(--text-faint);display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:11px;color:var(--text-faint);transition:all .2s ease;}
+  .step .title{font-family:var(--font-display);font-size:12.5px;font-weight:600;display:block;}
+  .step .sub{font-size:10.5px;color:var(--text-faint);}
+  .step.done{color:var(--text-dim);border-color:var(--teal-dim);}
+  .step.done .num{border-color:var(--teal);background:var(--teal-dim);color:var(--teal);}
+  .step.active{color:var(--text);border-color:var(--teal);}
+  .step.active .num{border-color:var(--teal);background:var(--teal);color:#04241C;}
+  .step.locked{opacity:0.4;}
+
+  .layout{display:grid;grid-template-columns:1fr 260px;gap:18px;flex:1;align-items:start;}
+  @media (max-width:840px){.layout{grid-template-columns:1fr;}}
+
+  .panel{background:var(--bg-panel);border:1px solid var(--border);border-radius:var(--radius);padding:24px;min-height:380px;display:flex;flex-direction:column;gap:16px;}
+  .panel h2{font-family:var(--font-display);font-size:17px;margin:0;font-weight:600;}
+  .panel .desc{color:var(--text-dim);font-size:13.5px;line-height:1.55;margin:0;max-width:64ch;}
+
+  .btn{background:var(--teal);color:#04241C;border:none;border-radius:7px;padding:10px 18px;font-weight:600;font-size:13.5px;font-family:var(--font-body);transition:transform .12s ease, box-shadow .12s ease;}
+  .btn:hover:not(:disabled){box-shadow:0 0 0 3px var(--teal-glow);}
+  .btn:active:not(:disabled){transform:scale(0.98);}
+  .btn.secondary{background:var(--bg-raised);color:var(--text);border:1px solid var(--border);}
+  .btn.ghost{background:none;color:var(--teal);border:1px solid var(--teal-dim);}
+  .btn.small{padding:7px 12px;font-size:12.5px;}
+
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th{text-align:left;color:var(--text-faint);font-weight:500;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;padding:8px 10px;border-bottom:1px solid var(--border);}
+  td{padding:10px;border-bottom:1px solid var(--border-soft);font-family:var(--font-mono);font-size:12.5px;}
+  tr.enter{animation:rowIn .35s ease both;}
+  @keyframes rowIn{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+  .badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:10.5px;font-family:var(--font-mono);}
+  .badge.warn{background:var(--amber-dim);color:var(--amber);}
+  .badge.ok{background:var(--teal-dim);color:var(--teal);}
+
+  .thinking{display:flex;align-items:center;gap:8px;color:var(--amber);font-family:var(--font-mono);font-size:12.5px;}
+  .thinking .dots span{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--amber);margin:0 2px;animation:blink 1.2s infinite ease-in-out;}
+  .thinking .dots span:nth-child(2){animation-delay:.2s;}
+  .thinking .dots span:nth-child(3){animation-delay:.4s;}
+  @keyframes blink{0%,80%,100%{opacity:.2;}40%{opacity:1;}}
+
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  @media (max-width:640px){.cards{grid-template-columns:1fr;}}
+  .card{background:var(--bg-panel-alt);border:1px solid var(--border);border-radius:9px;padding:16px;cursor:pointer;transition:border-color .15s ease, background .15s ease;animation:cardIn .4s ease both;}
+  @keyframes cardIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+  .card:hover{border-color:var(--teal-dim);}
+  .card.selected{border-color:var(--teal);background:var(--bg-raised);}
+  .card .name{font-family:var(--font-display);font-weight:600;font-size:14px;}
+  .card .count{font-family:var(--font-mono);font-size:11px;color:var(--teal);margin-top:2px;}
+  .card .criteria{font-family:var(--font-mono);font-size:11px;color:var(--text-faint);margin-top:10px;}
+  .card .rationale{font-size:12.5px;color:var(--text-dim);margin-top:8px;line-height:1.5;}
+  .card .blurb{font-size:12.5px;color:var(--text-dim);margin-top:6px;line-height:1.5;}
+  .usecases{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;}
+
+  label.field-label{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-faint);margin-bottom:-4px;}
+  textarea, .text-input{width:100%;background:var(--bg-panel-alt);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-mono);font-size:12.5px;padding:12px;resize:vertical;line-height:1.6;}
+  textarea{min-height:88px;}
+  textarea::placeholder, .text-input::placeholder{color:var(--text-faint);}
+  textarea:focus, .text-input:focus{border-color:var(--teal);outline:none;}
+  select.text-input{padding:9px 10px;}
+  .prompt-preview{font-size:12px;color:var(--text-dim);background:var(--bg-panel-alt);border:1px dashed var(--border);border-radius:8px;padding:10px 12px;font-family:var(--font-mono);line-height:1.6;}
+  .prompt-preview.error{border-color:var(--coral);color:var(--coral);border-style:solid;}
+
+  .flow{display:flex;flex-direction:column;gap:0;max-width:540px;}
+  .flow-step{position:relative;padding:12px 14px;background:var(--bg-panel-alt);border:1px solid var(--border);border-radius:8px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;gap:10px;animation:cardIn .35s ease both;}
+  .flow-step .label{font-size:13px;font-weight:500;}
+  .flow-step .chan{font-family:var(--font-mono);font-size:10.5px;color:var(--text-faint);text-align:right;}
+  .flow-connector{width:1px;height:14px;background:var(--border);margin-left:20px;}
+  .flow-branch{display:flex;gap:8px;padding-left:20px;margin-bottom:6px;}
+  .flow-branch .leg{flex:1;font-size:11.5px;color:var(--text-faint);border-left:1px dashed var(--border);padding-left:10px;}
+  .flow-branch .leg b{color:var(--text-dim);font-family:var(--font-mono);font-weight:500;}
+  .tag-future{font-size:10px;color:var(--coral);border:1px solid var(--coral);border-radius:999px;padding:1px 7px;font-family:var(--font-mono);margin-left:6px;white-space:nowrap;}
+
+  .exec-list{display:flex;flex-direction:column;gap:10px;}
+  .exec-row{display:flex;justify-content:space-between;align-items:center;background:var(--bg-panel-alt);border:1px solid var(--border);border-radius:8px;padding:12px 14px;}
+  .exec-row .who{font-weight:500;font-size:13.5px;}
+  .exec-row .stage{font-family:var(--font-mono);font-size:11.5px;color:var(--text-dim);margin-top:2px;}
+  .exec-row .outcome{font-family:var(--font-mono);font-size:11.5px;padding:3px 10px;border-radius:999px;}
+  .outcome.pending{color:var(--text-faint);background:var(--bg-raised);}
+  .outcome.converted{color:var(--teal);background:var(--teal-dim);}
+  .outcome.noresponse{color:var(--text-faint);background:var(--bg-raised);}
+
+  .stat-row{display:flex;gap:14px;flex-wrap:wrap;}
+  .stat{background:var(--bg-panel-alt);border:1px solid var(--border);border-radius:8px;padding:14px 18px;min-width:120px;}
+  .stat .num{font-family:var(--font-display);font-size:24px;font-weight:600;color:var(--teal);}
+  .stat .lbl{font-size:11px;color:var(--text-faint);text-transform:uppercase;letter-spacing:.05em;margin-top:2px;}
+
+  .archmap{background:var(--bg-panel);border:1px solid var(--border);border-radius:var(--radius);padding:18px;display:flex;flex-direction:column;gap:10px;}
+  .archmap h3{font-family:var(--font-display);font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-faint);margin:0 0 4px;font-weight:600;}
+  .arch-node{padding:10px 12px;border-radius:7px;border:1px solid var(--border);font-size:12px;color:var(--text-faint);transition:all .2s ease;}
+  .arch-node .t{font-weight:600;color:inherit;}
+  .arch-node .s{display:block;font-size:10.5px;color:var(--text-faint);margin-top:2px;}
+  .arch-node.active{border-color:var(--teal);background:var(--teal-glow);color:var(--teal);}
+  .arch-node.active .s{color:var(--teal);opacity:.75;}
+  .arch-arrow{width:1px;height:8px;background:var(--border);margin-left:16px;}
+  .adapter-chip{margin-top:6px;font-family:var(--font-mono);font-size:10.5px;color:var(--text-faint);border:1px dashed var(--border);border-radius:999px;padding:4px 10px;text-align:center;}
+
+  .console{margin:22px 0 24px;border:1px solid var(--border);border-radius:var(--radius);background:#061420;overflow:hidden;}
+  .console-header{display:flex;justify-content:space-between;align-items:center;padding:9px 16px;border-bottom:1px solid var(--border-soft);background:var(--bg-panel);}
+  .console-header .t{font-family:var(--font-mono);font-size:11.5px;color:var(--text-dim);letter-spacing:.03em;}
+  .console-header .t .dot{width:6px;height:6px;border-radius:50%;background:var(--teal);display:inline-block;margin-right:7px;box-shadow:0 0 8px var(--teal-glow);}
+  .console-body{height:150px;overflow-y:auto;padding:10px 16px;font-family:var(--font-mono);font-size:11.5px;line-height:1.9;}
+  .log-line{opacity:0;animation:logIn .3s ease forwards;display:flex;gap:10px;}
+  @keyframes logIn{to{opacity:1;}}
+  .log-line .ts{color:var(--text-faint);flex-shrink:0;}
+  .log-line .kind{flex-shrink:0;width:64px;font-weight:500;}
+  .log-line.system .kind{color:var(--text-dim);}
+  .log-line.ai .kind{color:var(--amber);}
+  .log-line.delivery .kind{color:var(--teal);}
+  .log-line.success .kind{color:var(--teal);}
+  .log-line .msg{color:var(--text-dim);}
+
+  .empty{color:var(--text-faint);font-size:13px;font-family:var(--font-mono);padding:30px 0;text-align:center;}
+
+  .modal-overlay{position:fixed;inset:0;background:rgba(4,10,16,0.62);display:none;align-items:center;justify-content:center;z-index:60;padding:20px;}
+  .modal-overlay.open{display:flex;}
+  .modal-card{background:var(--bg-panel);border:1px solid var(--border);border-radius:14px;padding:24px;width:min(440px,100%);display:flex;flex-direction:column;gap:14px;max-height:90vh;overflow-y:auto;}
+  .modal-card h3{font-family:var(--font-display);font-size:16px;margin:0;font-weight:600;}
+  .modal-card .close-row{display:flex;justify-content:space-between;align-items:center;}
+  .modal-card .xbtn{background:none;border:none;color:var(--text-faint);font-size:18px;line-height:1;padding:4px;}
+  .modal-card .xbtn:hover{color:var(--text);}
+  .chip-row{display:flex;gap:8px;flex-wrap:wrap;}
+
+  @media (prefers-reduced-motion: reduce){*{animation-duration:0.001ms !important;transition-duration:0.001ms !important;}}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="topbar">
+    <div class="brand">
+      <div class="mark"><span class="dot"></span><h1>Engagement layer</h1></div>
+      <p>Working prototype — Phase 0–3 capabilities, GTS CPaaS as delivery adapter</p>
+    </div>
+    <div class="topbar-right">
+      <button class="ai-status-btn" id="aiStatusBtn"><span class="pip"></span><span class="gear">⚙</span><span id="aiStatusText">AI settings — offline</span></button>
+      <div class="scenario">
+        <div class="label">Client / journey</div>
+        <div class="value" id="scenarioLabel">Choose a use case to begin</div>
+      </div>
+    </div>
+  </div>
+
+  <nav class="stepper" id="stepper"></nav>
+
+  <div class="layout">
+    <section class="panel" id="panel"></section>
+
+    <aside class="archmap">
+      <h3>Architecture map</h3>
+      <div class="arch-node" data-layer="connector"><span class="t">Data connector layer</span><span class="s">Reads CRM / DB / portal</span></div>
+      <div class="arch-arrow"></div>
+      <div class="arch-node" data-layer="segmentation"><span class="t">Segmentation engine</span><span class="s">Groups customers</span></div>
+      <div class="arch-arrow"></div>
+      <div class="arch-node" data-layer="journeybuilder"><span class="t">Journey builder</span><span class="s">Drafts the workflow</span></div>
+      <div class="arch-arrow"></div>
+      <div class="arch-node" data-layer="execution"><span class="t">Execution engine</span><span class="s">Runs each instance</span></div>
+      <div class="arch-arrow"></div>
+      <div class="arch-node" data-layer="store"><span class="t">Journey store</span><span class="s">System of record</span></div>
+      <div class="adapter-chip">delivery adapter → GTS CPaaS (swappable)</div>
+    </aside>
+  </div>
+
+  <div class="console">
+    <div class="console-header">
+      <span class="t"><span class="dot"></span>journey store — live event log</span>
+      <span class="t" id="logCount">0 events</span>
+    </div>
+    <div class="console-body" id="consoleBody">
+      <div class="empty">No events yet — choose a use case to begin</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="modal-overlay" id="aiModalOverlay">
+  <div class="modal-card" id="aiModalCard"></div>
+</div>
+
+<script>
+(function(){
+  const STEPS = [
+    { key:'usecase', title:'Choose journey', sub:'Pick a use case' },
+    { key:'data', title:'Connect data', sub:'Read-only source' },
+    { key:'segment', title:'Segment', sub:'Prompt-driven cohorts' },
+    { key:'build', title:'Build journey', sub:'Prompt-driven workflow' },
+    { key:'execute', title:'Execute', sub:'Runs through adapter' },
+    { key:'store', title:'Journey store', sub:'Outcomes & feedback' },
+  ];
+
+  const USECASES = [
+    { id:'leadqual', name:'Lead qualification', blurb:'Score inbound leads and route the sales-ready ones fast.' },
+    { id:'cartabandon', name:'Cart abandonment', blurb:'Recover abandoned carts with a timed multichannel nudge.' },
+    { id:'salesqueries', name:'Sales queries', blurb:'Resolve pre-purchase questions before they go cold.' },
+    { id:'aftersales', name:'After-sales support', blurb:'Catch negative-sentiment issues before they become churn.' },
+    { id:'custom', name:'Custom journey', blurb:'A collections example — edit the prompts in the next steps to make it yours.' },
+  ];
+
+  const GROQ_MODELS = [
+    { id:'llama-3.3-70b-versatile', label:'Llama 3.3 70B Versatile' },
+    { id:'llama-3.1-8b-instant', label:'Llama 3.1 8B Instant' },
+    { id:'meta-llama/llama-4-scout-17b-16e-instruct', label:'Llama 4 Scout' },
+    { id:'qwen/qwen3-32b', label:'Qwen3 32B' },
+    { id:'openai/gpt-oss-120b', label:'GPT-OSS 120B' },
+    { id:'openai/gpt-oss-20b', label:'GPT-OSS 20B' },
+  ];
+  const GEMINI_MODELS = [
+    { id:'gemini-2.5-flash', label:'Gemini 2.5 Flash' },
+    { id:'gemini-2.5-flash-lite', label:'Gemini 2.5 Flash-Lite' },
+    { id:'gemini-2.0-flash', label:'Gemini 2.0 Flash' },
+    { id:'gemini-2.5-pro', label:'Gemini 2.5 Pro (lower free quota)' },
+  ];
+
+  function truncate(s,n){ return s.length>n ? s.slice(0,n).trim()+'…' : s; }
+  function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+  // ---------------------------------------------------------------------
+  // Scenario data — each has canned offline cohorts/flow (used when AI is
+  // set to Offline) plus default segmentation/workflow prompts that are
+  // editable once a scenario is chosen.
+  // ---------------------------------------------------------------------
+  const SCENARIOS = {
+    leadqual: {
+      id:'leadqual', name:'Lead qualification', tagline:'Marketing-qualified → sales-ready',
+      dataSourceLabel:'HubSpot CRM', dataSourceSub:'connector: HubSpot CRM · read-only',
+      columns:['Lead','Source','Engagement score','Status'],
+      customers:[
+        {name:'Rahul Mehta', cells:['Rahul Mehta','Webinar','82','New lead']},
+        {name:'Sofia Almeida', cells:['Sofia Almeida','Blog','34','New lead']},
+        {name:'Tariq Osei', cells:['Tariq Osei','Free trial','91','New lead']},
+        {name:'Elena Popescu', cells:['Elena Popescu','Ebook download','28','New lead']},
+        {name:'Yuki Tanaka', cells:['Yuki Tanaka','Webinar','76','New lead']},
+      ],
+      cohorts:[
+        { id:'ready', name:'Sales-ready', count:3, members:['Rahul Mehta','Tariq Osei','Yuki Tanaka'],
+          criteria:'engagement score ≥ 70 AND active < 24h',
+          rationale:'High engagement plus recent activity signals genuine buying intent — worth a direct qualifying conversation now.' },
+        { id:'nurture', name:'Needs nurturing', count:2, members:['Sofia Almeida','Elena Popescu'],
+          criteria:'engagement score < 70 OR inactive > 3 days',
+          rationale:'Lower engagement or a cooling window suggests educational content will convert better than a sales push.' },
+      ],
+      flow:{
+        steps1:[ {label:'Trigger — lead scored', chan:'sales-ready cohort'}, {label:'Wait 30 minutes', chan:'timer'}, {label:'Send qualifying questions', chan:'via GTS CPaaS · WhatsApp'} ],
+        branch1:{ yes:'Live resolution — route to sales rep (Phase 4 — future)', no:'Wait 47 hours' },
+        steps2:[ {label:'Send relevant case study', chan:'via GTS CPaaS · Email'} ],
+        branch2:{ yes:'Exit — marketing qualified', no:'Send re-engagement nudge' },
+        steps3:[ {label:'Send re-engagement nudge', chan:'via GTS CPaaS · SMS'} ],
+        exitFinal:'Exit — nurture pool',
+      },
+      positiveWord:'was marked sales-ready', positiveExitLabel:'qualified',
+      defaultSegPrompt:'Group leads into a sales-ready cohort (high engagement score, recently active) and a needs-nurturing cohort (lower engagement or inactive for days).',
+      defaultBuildPrompt:'Send a WhatsApp message with qualifying questions, follow up by email with a relevant case study, and finish with an SMS re-engagement nudge if still unresponsive.',
+    },
+    cartabandon: {
+      id:'cartabandon', name:'Cart abandonment', tagline:'Northwind Retail',
+      dataSourceLabel:'Shopify DB', dataSourceSub:'connector: Shopify DB · read-only',
+      columns:['Customer','Cart value','Last activity','Status'],
+      customers:[
+        {name:'Priya Shah', cells:['Priya Shah','$68','3h ago','Abandoned']},
+        {name:'Marcus Chen', cells:['Marcus Chen','$142','18h ago','Abandoned']},
+        {name:'Aisha Rahman', cells:['Aisha Rahman','$24','2h ago','Abandoned']},
+        {name:'Diego Fernandez', cells:['Diego Fernandez','$89','29h ago','Abandoned']},
+        {name:'Wei Lin', cells:['Wei Lin','$51','6h ago','Abandoned']},
+      ],
+      cohorts:[
+        { id:'hi', name:'High-intent recovery', count:3, members:['Priya Shah','Marcus Chen','Wei Lin'],
+          criteria:'cart ≥ $50  AND  abandoned < 24h',
+          rationale:'Cart value and recency both signal strong intent to purchase — worth the fastest, most direct recovery path.' },
+        { id:'lo', name:'Low-intent nurture', count:2, members:['Aisha Rahman','Diego Fernandez'],
+          criteria:'cart < $50  OR  abandoned > 24h',
+          rationale:'Lower cart value or a cooling window suggests a softer nudge works better than urgency messaging.' },
+      ],
+      flow:{
+        steps1:[ {label:'Trigger — cart abandoned', chan:'high-intent recovery cohort'}, {label:'Wait 1 hour', chan:'timer'}, {label:'Send reminder + product image', chan:'via GTS CPaaS · WhatsApp'} ],
+        branch1:{ yes:'Live resolution (Phase 4 — future)', no:'Wait 23 hours' },
+        steps2:[ {label:'Send 10% discount code', chan:'via GTS CPaaS · SMS'} ],
+        branch2:{ yes:'Exit — converted', no:'Send last-call reminder' },
+        steps3:[ {label:'Send last call, cart expiring', chan:'via GTS CPaaS · Email'} ],
+        exitFinal:'Exit — no response',
+      },
+      positiveWord:'purchased', positiveExitLabel:'converted',
+      defaultSegPrompt:'Group customers into a high-intent recovery cohort (cart value at least $50, abandoned under 24 hours ago) and a low-intent nurture cohort (everyone else).',
+      defaultBuildPrompt:'Send a WhatsApp reminder with the product image, follow up with an SMS discount code, and finish with a last-call email before the cart expires.',
+    },
+    salesqueries: {
+      id:'salesqueries', name:'Sales queries', tagline:'Inbound question → resolution or human',
+      dataSourceLabel:'Commerce DB', dataSourceSub:'connector: Product + order DB · read-only',
+      columns:['Customer','Query','Channel','Status'],
+      customers:[
+        {name:'Grace Kim', cells:['Grace Kim','Bulk pricing for 500 units','WhatsApp','Waiting']},
+        {name:'Omar Haddad', cells:['Omar Haddad','Is size L in stock?','Website chat','Waiting']},
+        {name:'Lucia Fernandez', cells:['Lucia Fernandez','Compare plan A vs B','WhatsApp','Waiting']},
+        {name:'Ben Osei', cells:['Ben Osei','Delivery to Zanzibar?','SMS','Waiting']},
+        {name:'Hana Suzuki', cells:['Hana Suzuki','Discount for renewal?','WhatsApp','Waiting']},
+      ],
+      cohorts:[
+        { id:'buy', name:'Ready to buy', count:3, members:['Grace Kim','Omar Haddad','Hana Suzuki'],
+          criteria:'query mentions price, stock, or renewal',
+          rationale:'These questions are the last step before a purchase decision — resolving them fast protects a deal already in motion.' },
+        { id:'research', name:'Research stage', count:2, members:['Lucia Fernandez','Ben Osei'],
+          criteria:'query is comparative or informational',
+          rationale:'These customers are still evaluating — a thorough, unhurried answer matters more than speed.' },
+      ],
+      flow:{
+        steps1:[ {label:'Trigger — inbound query received', chan:'ready-to-buy cohort'}, {label:'Attempt live resolution', chan:'via GTS CPaaS · WhatsApp (Phase 4 — future)'} ],
+        branch1:{ yes:'Exit — resolved by agent (Phase 4 — future)', no:'Escalate to human rep' },
+        steps2:[ {label:'Notify rep with full context', chan:'via GTS CPaaS · internal alert'} ],
+        branch2:{ yes:'Exit — resolved by human', no:'Send holding message' },
+        steps3:[ {label:'Send holding message + ETA', chan:'via GTS CPaaS · WhatsApp'} ],
+        exitFinal:'Exit — pending human follow-up',
+      },
+      positiveWord:'got a resolved answer', positiveExitLabel:'resolved',
+      defaultSegPrompt:'Group inbound queries into a ready-to-buy cohort (mentions price, stock, or renewal) and a research-stage cohort (comparative or informational questions).',
+      defaultBuildPrompt:'Attempt a live WhatsApp resolution first, escalate to a human rep with full context if unresolved, and send a holding message with an ETA while they wait.',
+    },
+    aftersales: {
+      id:'aftersales', name:'After-sales support', tagline:'Support request → resolution',
+      dataSourceLabel:'Zendesk', dataSourceSub:'connector: Support ticketing DB · read-only',
+      columns:['Customer','Issue','Order','Sentiment'],
+      customers:[
+        {name:'Ana Costa', cells:['Ana Costa','Item arrived damaged','#4821','Negative']},
+        {name:'Kwame Boateng', cells:['Kwame Boateng','Where is my order?','#4790','Neutral']},
+        {name:'Mei Lin', cells:['Mei Lin','Wrong item received','#4805','Negative']},
+        {name:'Noah Fischer', cells:['Noah Fischer','How to use product','#4799','Neutral']},
+        {name:'Fatima Zahra', cells:['Fatima Zahra','Refund status','#4772','Negative']},
+      ],
+      cohorts:[
+        { id:'urgent', name:'Needs immediate resolution', count:3, members:['Ana Costa','Mei Lin','Fatima Zahra'],
+          criteria:'sentiment negative AND order issue',
+          rationale:'Negative sentiment tied to a real order problem risks churn the longer it sits unresolved.' },
+        { id:'routine', name:'Routine inquiry', count:2, members:['Kwame Boateng','Noah Fischer'],
+          criteria:'neutral sentiment, informational',
+          rationale:'Standard questions with straightforward answers — no urgency signal, but still worth a fast reply.' },
+      ],
+      flow:{
+        steps1:[ {label:'Trigger — support ticket opened', chan:'needs-immediate cohort'}, {label:'Attempt live resolution', chan:'via GTS CPaaS · WhatsApp (Phase 4 — future)'} ],
+        branch1:{ yes:'Exit — resolved by agent (Phase 4 — future)', no:'Escalate to support rep' },
+        steps2:[ {label:'Notify rep with order + sentiment context', chan:'via GTS CPaaS · internal alert'} ],
+        branch2:{ yes:'Exit — resolved by human', no:'Send apology + compensation offer' },
+        steps3:[ {label:'Send apology + compensation offer', chan:'via GTS CPaaS · Email'} ],
+        exitFinal:'Exit — escalated to manager',
+      },
+      positiveWord:'had the issue resolved', positiveExitLabel:'resolved',
+      defaultSegPrompt:'Group tickets into a needs-immediate-resolution cohort (negative sentiment with an order issue) and a routine-inquiry cohort (neutral sentiment, informational).',
+      defaultBuildPrompt:'Attempt a live WhatsApp resolution first, escalate to a support rep with order and sentiment context if unresolved, and send an apology with a compensation offer.',
+    },
+    custom: {
+      id:'custom', name:'Custom journey', tagline:'Collections example',
+      dataSourceLabel:'Your connected system', dataSourceSub:'connector: as described · read-only',
+      columns:['Record','Status','Last update'],
+      customers:[
+        {name:'Record A-1042', cells:['Record A-1042','42 days overdue','1d ago']},
+        {name:'Record A-1087', cells:['Record A-1087','12 days overdue','2d ago']},
+        {name:'Record A-1120', cells:['Record A-1120','58 days overdue','3d ago']},
+        {name:'Record A-1033', cells:['Record A-1033','5 days overdue','4d ago']},
+        {name:'Record A-1099', cells:['Record A-1099','29 days overdue','5d ago']},
+      ],
+      cohorts:[
+        { id:'priority', name:'Overdue priority', count:3, members:['Record A-1042','Record A-1120','Record A-1099'],
+          criteria:'≥ 21 days overdue',
+          rationale:'These accounts have crossed the standard grace period and warrant proactive outreach.' },
+        { id:'grace', name:'Within grace period', count:2, members:['Record A-1087','Record A-1033'],
+          criteria:'< 21 days overdue',
+          rationale:'Still within normal terms — no action needed yet.' },
+      ],
+      flow:{
+        steps1:[ {label:'Trigger — matches overdue priority', chan:'overdue priority cohort'}, {label:'Wait 1 day', chan:'timer'}, {label:'Send payment reminder', chan:'via GTS CPaaS · WhatsApp'} ],
+        branch1:{ yes:'Live resolution (Phase 4 — future)', no:'Wait 2 days, no response' },
+        steps2:[ {label:'Call by voice', chan:'via GTS CPaaS · Voice call'} ],
+        branch2:{ yes:'Exit — payment plan accepted', no:'Send final notice' },
+        steps3:[ {label:'Offer payment plan by SMS', chan:'via GTS CPaaS · SMS'} ],
+        exitFinal:'Exit — escalate internally',
+      },
+      positiveWord:'was resolved', positiveExitLabel:'resolved',
+      defaultSegPrompt:'Group overdue accounts into a priority cohort (over 21 days overdue) and a grace-period cohort (under 21 days overdue).',
+      defaultBuildPrompt:'Send a WhatsApp payment reminder, wait 2 days, then call by voice if no response, and offer a payment plan by SMS if they engage.',
+    },
+  };
+
+  // ---------------------------------------------------------------------
+  // AI settings — global, applies to segmentation and workflow building
+  // for whichever scenario is active. Key lives in memory only.
+  // ---------------------------------------------------------------------
+  const ai = { provider:'offline', model:GROQ_MODELS[0].id, apiKey:'' };
+
+  const SEGMENTATION_SYSTEM_PROMPT = 'You are the segmentation engine of a customer engagement layer. '+
+    'You will be given a segmentation instruction and a list of customer records. Respond with ONLY valid JSON — '+
+    'no markdown, no commentary — matching exactly this schema: {"cohorts": [ {"name": string, "criteria": string (short phrase), '+
+    '"rationale": string (1-2 sentences), "members": array of strings, each an exact name copied from the provided records} ] }. '+
+    'Produce 1 to 3 cohorts. Only include member names that appear in the provided records. Keep every string under 20 words.';
+
+  const WORKFLOW_SYSTEM_PROMPT = 'You design multichannel customer engagement workflows for a CPaaS engagement layer. '+
+    'You will be given a workflow instruction and the target cohort. Respond with ONLY valid JSON — no markdown, no commentary — '+
+    'matching exactly this schema: {"channels": array of exactly 3 strings chosen only from ["WhatsApp","SMS","Email","Voice call"], '+
+    'in the order they should be used, "steps": array of exactly 3 short action labels, one per channel in the same order, '+
+    '"waitLabel": string describing the wait before the first send (e.g. "Wait 1 day")}. Keep every string under 12 words.';
+
+  function extractJSON(text){
+    const match = (text||'').match(/\{[\s\S]*\}/);
+    if(!match) throw new Error('no JSON object found in the model response');
+    return JSON.parse(match[0]);
+  }
+
+  async function callGroq(apiKey, model, systemPrompt, userPrompt){
+    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer '+apiKey },
+      body: JSON.stringify({
+        model: model,
+        messages:[ {role:'system', content:systemPrompt}, {role:'user', content:userPrompt} ],
+        temperature:0.4,
+      }),
+    });
+    if(!res.ok){ const t = await res.text(); throw new Error('Groq '+res.status+' — '+truncate(t,140)); }
+    const data = await res.json();
+    const text = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
+    if(!text) throw new Error('empty response from Groq');
+    return extractJSON(text);
+  }
+
+  async function callGemini(apiKey, model, systemPrompt, userPrompt){
+    const url = 'https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent';
+    const res = await fetch(url, {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json', 'x-goog-api-key':apiKey },
+      body: JSON.stringify({
+        system_instruction:{ parts:[{text:systemPrompt}] },
+        contents:[ {role:'user', parts:[{text:userPrompt}]} ],
+      }),
+    });
+    if(!res.ok){ const t = await res.text(); throw new Error('Gemini '+res.status+' — '+truncate(t,140)); }
+    const data = await res.json();
+    const text = data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0] && data.candidates[0].content.parts[0].text;
+    if(!text) throw new Error('empty response from Gemini');
+    return extractJSON(text);
+  }
+
+  function runLLM(systemPrompt, userPrompt){
+    if(ai.provider==='groq') return callGroq(ai.apiKey.trim(), ai.model, systemPrompt, userPrompt);
+    if(ai.provider==='gemini') return callGemini(ai.apiKey.trim(), ai.model, systemPrompt, userPrompt);
+    return Promise.reject(new Error('no AI provider configured'));
+  }
+
+  function currentModelLabel(){
+    if(ai.provider==='offline') return 'Offline';
+    const list = ai.provider==='groq' ? GROQ_MODELS : GEMINI_MODELS;
+    const m = list.filter(function(x){return x.id===ai.model;})[0];
+    return (ai.provider==='groq'?'Groq':'Gemini') + ' · ' + (m?m.label:ai.model);
+  }
+
+  function buildFlowFromParts(parsed, cohortName){
+    const channels = (parsed.channels && parsed.channels.length>=3) ? parsed.channels : ['WhatsApp','SMS','Email'];
+    const steps = (parsed.steps && parsed.steps.length>=3) ? parsed.steps : ['Send initial message','Send follow-up message','Send final notice'];
+    return {
+      steps1:[ {label:'Trigger — matches criteria', chan:cohortName+' cohort'}, {label:parsed.waitLabel||'Wait 1 day', chan:'timer'}, {label:steps[0], chan:'via GTS CPaaS · '+channels[0]} ],
+      branch1:{ yes:'Live resolution (Phase 4 — future)', no:'Wait longer, no response' },
+      steps2:[ {label:steps[1], chan:'via GTS CPaaS · '+channels[1]} ],
+      branch2:{ yes:'Exit — resolved', no:'Send final notice' },
+      steps3:[ {label:steps[2], chan:'via GTS CPaaS · '+channels[2]} ],
+      exitFinal:'Exit — escalate internally',
+    };
+  }
+
+  const state = {
+    stage:0, maxReached:0,
+    usecasePicked:null, selectedScenario:null,
+    dataSynced:false,
+    segPrompt:'', segGenerating:false, segError:null, cohorts:null, selectedCohort:null,
+    buildPrompt:'', buildGenerating:false, buildError:null, workflowDrafted:false, workflowApproved:false, activeFlow:null,
+    executed:false, results:null,
+    aiModalOpen:false,
+  };
+
+  const stepperEl = document.getElementById('stepper');
+  const panelEl = document.getElementById('panel');
+  const consoleEl = document.getElementById('consoleBody');
+  const logCountEl = document.getElementById('logCount');
+  const scenarioLabelEl = document.getElementById('scenarioLabel');
+  const aiStatusBtn = document.getElementById('aiStatusBtn');
+  const aiStatusText = document.getElementById('aiStatusText');
+  const aiModalOverlay = document.getElementById('aiModalOverlay');
+  const aiModalCard = document.getElementById('aiModalCard');
+  let logCount = 0;
+  let consoleCleared = false;
+
+  function fmtTime(){ return new Date().toTimeString().slice(0,8); }
+
+  function log(kind, label, msg){
+    if(!consoleCleared){ consoleEl.innerHTML=''; consoleCleared = true; }
+    const line = document.createElement('div');
+    line.className = 'log-line ' + kind;
+    line.innerHTML = '<span class="ts">'+fmtTime()+'</span><span class="kind">'+label+'</span><span class="msg">'+msg+'</span>';
+    consoleEl.appendChild(line);
+    consoleEl.scrollTop = consoleEl.scrollHeight;
+    logCount++;
+    logCountEl.textContent = logCount + ' event' + (logCount===1?'':'s');
+  }
+
+  function setArchActive(layer){
+    document.querySelectorAll('.arch-node').forEach(function(n){ n.classList.toggle('active', n.dataset.layer===layer); });
+  }
+
+  function resetJourneyState(){
+    state.dataSynced = false;
+    state.cohorts = null; state.selectedCohort = null; state.segError = null;
+    state.workflowDrafted = false; state.workflowApproved = false; state.activeFlow = null; state.buildError = null;
+    state.executed = false; state.results = null;
+  }
+
+  function currentFlow(SC){ return state.activeFlow || SC.flow; }
+
+  // ---- AI status pill + settings modal ----
+  function updateAIStatus(){
+    aiStatusText.textContent = ai.provider==='offline' ? 'AI settings — offline' : 'AI settings — '+currentModelLabel();
+    aiStatusBtn.classList.toggle('on', ai.provider!=='offline');
+  }
+
+  function renderAIModal(){
+    aiModalOverlay.classList.toggle('open', state.aiModalOpen);
+    if(!state.aiModalOpen) return;
+    const models = ai.provider==='groq' ? GROQ_MODELS : (ai.provider==='gemini' ? GEMINI_MODELS : []);
+    const modelOptions = models.map(function(m){ return '<option value="'+m.id+'"'+(ai.model===m.id?' selected':'')+'>'+m.label+'</option>'; }).join('');
+    aiModalCard.innerHTML =
+      '<div class="close-row"><h3>AI settings</h3><button class="xbtn" id="aiModalClose">✕</button></div>'+
+      '<p class="desc">Choose which model designs segmentation and workflows. This applies everywhere in the prototype — offline uses a fixed heuristic and ignores your prompts.</p>'+
+      '<div class="chip-row">'+
+        '<button type="button" class="btn small'+(ai.provider==='offline'?'':' secondary')+'" data-provider="offline">Offline</button>'+
+        '<button type="button" class="btn small'+(ai.provider==='groq'?'':' secondary')+'" data-provider="groq">Groq (free)</button>'+
+        '<button type="button" class="btn small'+(ai.provider==='gemini'?'':' secondary')+'" data-provider="gemini">Gemini (free)</button>'+
+      '</div>'+
+      (ai.provider!=='offline' ? (
+        '<label class="field-label">Model</label>'+
+        '<select class="text-input" id="modelSelect">'+modelOptions+'</select>'+
+        '<label class="field-label">API key</label>'+
+        '<input type="password" class="text-input" id="apiKeyInput" placeholder="Paste your '+(ai.provider==='groq'?'Groq':'Gemini')+' API key" value="'+esc(ai.apiKey)+'">'+
+        '<p class="prompt-preview">Stays in this browser tab only, sent directly to '+
+          (ai.provider==='groq' ? 'api.groq.com' : 'generativelanguage.googleapis.com') +
+          ' — never stored or sent anywhere else. Get a free key at '+
+          (ai.provider==='groq' ? 'console.groq.com/keys' : 'aistudio.google.com/apikey') + '.</p>'
+      ) : '<p class="prompt-preview">Offline mode runs a fixed built-in heuristic for every scenario and does not read your prompts. Switch to Groq or Gemini to make the segmentation and workflow prompts actually drive the output.</p>')+
+      '<div class="row"><button class="btn secondary" id="aiModalDone">Done</button></div>';
+
+    document.querySelectorAll('#aiModalCard [data-provider]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        ai.provider = btn.dataset.provider;
+        if(ai.provider==='groq') ai.model = GROQ_MODELS[0].id;
+        if(ai.provider==='gemini') ai.model = GEMINI_MODELS[0].id;
+        updateAIStatus();
+        renderAIModal();
+      });
+    });
+    const modelSelect = document.getElementById('modelSelect');
+    if(modelSelect) modelSelect.addEventListener('change', function(){ ai.model = modelSelect.value; updateAIStatus(); });
+    const apiKeyInput = document.getElementById('apiKeyInput');
+    if(apiKeyInput) apiKeyInput.addEventListener('input', function(){ ai.apiKey = apiKeyInput.value; });
+    document.getElementById('aiModalClose').addEventListener('click', closeAIModal);
+    document.getElementById('aiModalDone').addEventListener('click', closeAIModal);
+  }
+  function openAIModal(){ state.aiModalOpen = true; renderAIModal(); }
+  function closeAIModal(){ state.aiModalOpen = false; renderAIModal(); updateAIStatus(); render(); }
+  aiStatusBtn.addEventListener('click', openAIModal);
+  aiModalOverlay.addEventListener('click', function(e){ if(e.target===aiModalOverlay) closeAIModal(); });
+
+  // ---- Stepper ----
+  function renderStepper(){
+    stepperEl.innerHTML = '';
+    STEPS.forEach(function(s,i){
+      const btn = document.createElement('button');
+      btn.className = 'step' + (i===state.stage?' active':'') + (i<state.stage?' done':'') + (i>state.maxReached?' locked':'');
+      btn.disabled = i>state.maxReached;
+      btn.innerHTML = '<span class="num">'+(i+1)+'</span><span class="title">'+s.title+'</span><span class="sub">'+s.sub+'</span>';
+      btn.addEventListener('click', function(){ state.stage=i; render(); });
+      stepperEl.appendChild(btn);
+    });
+  }
+  function goTo(stage){ state.stage = stage; if(stage>state.maxReached) state.maxReached = stage; render(); }
+
+  // ---- Stage 0: choose journey ----
+  function renderUsecase(){
+    setArchActive(null);
+    const cardsHtml = '<div class="usecases">' + USECASES.map(function(u){
+      return '<div class="card'+(state.usecasePicked===u.id?' selected':'')+'" data-uc="'+u.id+'">'+
+        '<div class="name">'+u.name+'</div><div class="blurb">'+u.blurb+'</div></div>';
+    }).join('') + '</div>';
+
+    panelEl.innerHTML =
+      '<h2>Choose a journey</h2>'+
+      '<p class="desc">Pick a use case to load its data source. You will write the segmentation prompt and the workflow prompt yourself in the next steps — the same layer builds the flow for any of these.</p>'+
+      cardsHtml +
+      (state.usecasePicked ? '<div class="row"><button class="btn secondary" id="ucContinue">Continue with '+SCENARIOS[state.usecasePicked].name+' →</button></div>' : '');
+
+    document.querySelectorAll('[data-uc]').forEach(function(card){
+      card.addEventListener('click', function(){ state.usecasePicked = card.dataset.uc; render(); });
+    });
+    const ucContinue = document.getElementById('ucContinue');
+    if(ucContinue) ucContinue.addEventListener('click', function(){
+      state.selectedScenario = SCENARIOS[state.usecasePicked];
+      state.segPrompt = state.selectedScenario.defaultSegPrompt;
+      state.buildPrompt = state.selectedScenario.defaultBuildPrompt;
+      resetJourneyState();
+      log('system','journey','Use case selected: '+state.selectedScenario.name);
+      goTo(1);
+    });
+  }
+
+  function updateScenarioLabel(){
+    scenarioLabelEl.textContent = state.selectedScenario
+      ? state.selectedScenario.name + (state.selectedScenario.tagline ? ' · '+state.selectedScenario.tagline : '')
+      : 'Choose a use case to begin';
+  }
+
+  // ---- Stage 1: connect data ----
+  function renderData(){
+    const SC = state.selectedScenario;
+    setArchActive('connector');
+    let rows = '';
+    if(state.dataSynced){
+      SC.customers.forEach(function(c,i){
+        rows += '<tr class="enter" style="animation-delay:'+(i*0.06)+'s">'+
+          c.cells.map(function(v,ci){ return ci===c.cells.length-1 ? '<td><span class="badge warn">'+v+'</span></td>' : '<td>'+v+'</td>'; }).join('')+
+        '</tr>';
+      });
+    }
+    panelEl.innerHTML =
+      '<h2>1. Connect data source</h2>'+
+      '<p class="desc">Read-only connection to '+SC.dataSourceLabel+'. Only the fields relevant to this journey are pulled — no full-account access.</p>'+
+      '<div class="row">'+
+        '<button class="btn" id="syncBtn" '+(state.dataSynced?'disabled':'')+'>'+(state.dataSynced?'Synced':'Sync data')+'</button>'+
+        (state.dataSynced?'<span class="badge ok">'+SC.dataSourceSub+'</span>':'')+
+      '</div>'+
+      '<div>'+
+        (state.dataSynced
+          ? '<table><thead><tr>'+SC.columns.map(function(c){return '<th>'+c+'</th>';}).join('')+'</tr></thead><tbody>'+rows+'</tbody></table>'
+          : '<div class="empty">No records yet</div>')+
+      '</div>'+
+      (state.dataSynced ? '<div class="row"><button class="btn secondary" id="nextBtn">Continue to segmentation →</button></div>' : '');
+
+    const syncBtn = document.getElementById('syncBtn');
+    if(syncBtn) syncBtn.addEventListener('click', function(){
+      syncBtn.disabled = true; syncBtn.textContent = 'Syncing…';
+      log('system','connector','Reading '+SC.dataSourceLabel+' (read-only) — '+SC.columns.length+' fields, '+SC.customers.length+' records');
+      setTimeout(function(){
+        state.dataSynced = true;
+        log('success','connector','Synced '+SC.customers.length+' records into the profile store');
+        render();
+      }, 700);
+    });
+    const nextBtn = document.getElementById('nextBtn');
+    if(nextBtn) nextBtn.addEventListener('click', function(){ goTo(2); });
+  }
+
+  // ---- Stage 2: segmentation (prompt-driven) ----
+  function buildSegUserPrompt(SC){
+    const lines = SC.customers.map(function(c){
+      return '- '+c.name+': '+SC.columns.map(function(col,i){return col+'='+c.cells[i];}).join(', ');
+    });
+    return 'Instruction: '+state.segPrompt+'\n\nRecords:\n'+lines.join('\n');
+  }
+
+  function renderSegment(){
+    const SC = state.selectedScenario;
+    setArchActive('segmentation');
+    let cardsHtml = '';
+    if(state.cohorts){
+      cardsHtml = '<div class="cards">' + state.cohorts.map(function(c){
+        return '<div class="card'+(state.selectedCohort===c.id?' selected':'')+'" data-id="'+c.id+'">'+
+          '<div class="name">'+c.name+'</div>'+
+          '<div class="count">'+c.count+' customers</div>'+
+          '<div class="criteria">'+c.criteria+'</div>'+
+          '<div class="rationale">'+c.rationale+'</div>'+
+        '</div>';
+      }).join('') + '</div>';
+    }
+    panelEl.innerHTML =
+      '<h2>2. Segmentation engine</h2>'+
+      '<p class="desc">Write the instruction the segmentation engine should apply to the connected records. Running on: <b>'+currentModelLabel()+'</b>'+(ai.provider==='offline'?' — prompt is ignored in offline mode':'')+'.</p>'+
+      '<label class="field-label">Segmentation prompt</label>'+
+      '<textarea id="segPromptInput">'+esc(state.segPrompt)+'</textarea>'+
+      (state.segError ? '<p class="prompt-preview error">'+state.segError+'</p>' : '')+
+      '<div class="row">'+
+        '<button class="btn" id="runSeg" '+(state.segGenerating?'disabled':'')+'>'+(state.segGenerating?'Running…':(state.cohorts?'Re-run segmentation':'Run segmentation'))+'</button>'+
+      '</div>'+
+      (state.segGenerating ? '<div class="thinking">'+(ai.provider==='offline'?'Applying offline heuristic':'Calling '+currentModelLabel())+'<span class="dots"><span></span><span></span><span></span></span></div>' : '')+
+      cardsHtml+
+      (state.cohorts && state.selectedCohort ? '<div class="row"><button class="btn secondary" id="nextBtn">Continue to journey builder →</button></div>' : '')+
+      (state.cohorts && !state.selectedCohort ? '<p class="desc">Select a cohort to draft its workflow.</p>' : '');
+
+    const segPromptInput = document.getElementById('segPromptInput');
+    if(segPromptInput) segPromptInput.addEventListener('input', function(){ state.segPrompt = segPromptInput.value; });
+
+    const runSeg = document.getElementById('runSeg');
+    if(runSeg) runSeg.addEventListener('click', function(){
+      state.segError = null; state.cohorts = null; state.selectedCohort = null;
+      state.segGenerating = true;
+      log('ai','segmentation','Reading '+SC.customers.length+' records against: "'+truncate(state.segPrompt,70)+'"');
+      render();
+
+      if(ai.provider==='offline'){
+        setTimeout(function(){
+          state.segGenerating = false;
+          state.cohorts = SC.cohorts;
+          const summary = SC.cohorts.map(function(c){return c.count+' '+c.name.toLowerCase();}).join(', ');
+          log('success','segmentation', SC.cohorts.length+' cohorts identified (offline heuristic) — '+summary);
+          render();
+        }, 1000);
+        return;
+      }
+      if(!ai.apiKey || !ai.apiKey.trim()){
+        state.segGenerating = false;
+        state.segError = 'No API key set — open AI settings, or switch to Offline.';
+        render();
+        return;
+      }
+      runLLM(SEGMENTATION_SYSTEM_PROMPT, buildSegUserPrompt(SC)).then(function(parsed){
+        const validNames = SC.customers.map(function(c){return c.name;});
+        const cohorts = (parsed.cohorts||[]).map(function(c,i){
+          const members = (c.members||[]).filter(function(m){return validNames.indexOf(m)>-1;});
+          return { id:'c'+i, name:c.name||('Cohort '+(i+1)), count:members.length, members:members,
+            criteria:c.criteria||'', rationale:c.rationale||'' };
+        }).filter(function(c){return c.count>0;});
+        if(cohorts.length===0) throw new Error('model returned no valid cohorts');
+        state.segGenerating = false;
+        state.cohorts = cohorts;
+        const summary = cohorts.map(function(c){return c.count+' '+c.name.toLowerCase();}).join(', ');
+        log('success','segmentation', cohorts.length+' cohorts identified by '+currentModelLabel()+' — '+summary);
+        render();
+      }).catch(function(err){
+        state.segGenerating = false;
+        state.segError = 'Request failed: '+err.message+'. Falling back to the offline heuristic below.';
+        state.cohorts = SC.cohorts;
+        log('system','segmentation','LLM call failed ('+err.message+') — using offline heuristic instead');
+        render();
+      });
+    });
+
+    document.querySelectorAll('.card[data-id]').forEach(function(card){
+      card.addEventListener('click', function(){
+        state.selectedCohort = card.dataset.id;
+        log('system','segmentation','Cohort selected: '+state.cohorts.filter(function(c){return c.id===card.dataset.id;})[0].name);
+        render();
+      });
+    });
+    const nextBtn = document.getElementById('nextBtn');
+    if(nextBtn) nextBtn.addEventListener('click', function(){ goTo(3); });
+  }
+
+  // ---- Stage 3: journey builder (prompt-driven) ----
+  function flowStepHtml(step){
+    return '<div class="flow-step"><span class="label">'+step.label+'</span><span class="chan">'+step.chan+'</span></div><div class="flow-connector"></div>';
+  }
+  function branchHtml(branch){
+    const yesFuture = branch.yes.indexOf('Phase 4') > -1;
+    return '<div class="flow-branch">'+
+      '<div class="leg"><b>Yes →</b> '+branch.yes.replace(' (Phase 4 — future)','')+(yesFuture?' <span class="tag-future">future</span>':'')+'</div>'+
+      '<div class="leg"><b>No →</b> '+branch.no+'</div>'+
+    '</div>';
+  }
+
+  function renderBuild(){
+    const SC = state.selectedScenario;
+    setArchActive('journeybuilder');
+    const cohort = state.cohorts.filter(function(c){return c.id===state.selectedCohort;})[0];
+    let flowHtml = '';
+    if(state.workflowDrafted){
+      const flow = currentFlow(SC);
+      flowHtml = '<div class="flow">'+
+        flow.steps1.map(flowStepHtml).join('')+
+        branchHtml(flow.branch1)+
+        flow.steps2.map(flowStepHtml).join('')+
+        branchHtml(flow.branch2)+
+        flow.steps3.map(flowStepHtml).join('')+
+        '<div class="flow-step"><span class="label">'+flow.exitFinal+'</span><span class="chan">journey closed</span></div>'+
+      '</div>';
+    }
+    panelEl.innerHTML =
+      '<h2>3. Journey builder</h2>'+
+      '<p class="desc">Write the instruction for the workflow, targeting <b>'+(cohort?cohort.name:'the selected cohort')+'</b>. Running on: <b>'+currentModelLabel()+'</b>'+(ai.provider==='offline'?' — prompt is ignored in offline mode':'')+'. Nothing launches until a human approves it.</p>'+
+      '<label class="field-label">Workflow prompt</label>'+
+      '<textarea id="buildPromptInput">'+esc(state.buildPrompt)+'</textarea>'+
+      (state.buildError ? '<p class="prompt-preview error">'+state.buildError+'</p>' : '')+
+      '<div class="row"><button class="btn" id="draftBtn" '+(state.buildGenerating?'disabled':'')+'>'+(state.buildGenerating?'Drafting…':(state.workflowDrafted?'Redraft workflow':'Draft workflow'))+'</button></div>'+
+      (state.buildGenerating ? '<div class="thinking">'+(ai.provider==='offline'?'Applying offline template':'Calling '+currentModelLabel())+'<span class="dots"><span></span><span></span><span></span></span></div>' : '')+
+      flowHtml+
+      (state.workflowDrafted && !state.workflowApproved ? '<div class="row"><button class="btn" id="approveBtn">Approve workflow</button></div>' : '')+
+      (state.workflowApproved ? '<div class="row"><span class="badge ok">approved · v1</span><button class="btn secondary" id="nextBtn">Continue to execution →</button></div>' : '');
+
+    const buildPromptInput = document.getElementById('buildPromptInput');
+    if(buildPromptInput) buildPromptInput.addEventListener('input', function(){ state.buildPrompt = buildPromptInput.value; });
+
+    const draftBtn = document.getElementById('draftBtn');
+    if(draftBtn) draftBtn.addEventListener('click', function(){
+      state.buildError = null; state.workflowDrafted = false; state.workflowApproved = false; state.activeFlow = null;
+      state.buildGenerating = true;
+      log('ai','journey','Drafting workflow for '+(cohort?cohort.name:'cohort')+' — "'+truncate(state.buildPrompt,70)+'"');
+      render();
+
+      if(ai.provider==='offline'){
+        setTimeout(function(){
+          state.buildGenerating = false;
+          state.activeFlow = null; // use SC.flow
+          state.workflowDrafted = true;
+          log('success','journey','Draft ready (offline template) — 3 channels, 2 branch points, human review required');
+          render();
+        }, 1000);
+        return;
+      }
+      if(!ai.apiKey || !ai.apiKey.trim()){
+        state.buildGenerating = false;
+        state.buildError = 'No API key set — open AI settings, or switch to Offline.';
+        render();
+        return;
+      }
+      const userPrompt = 'Instruction: '+state.buildPrompt+'\n\nTarget cohort: '+(cohort?cohort.name+' — '+cohort.criteria:'selected cohort');
+      runLLM(WORKFLOW_SYSTEM_PROMPT, userPrompt).then(function(parsed){
+        state.activeFlow = buildFlowFromParts(parsed, cohort?cohort.name:'cohort');
+        state.buildGenerating = false;
+        state.workflowDrafted = true;
+        log('success','journey','Draft ready via '+currentModelLabel()+' — 3 channels, 2 branch points, human review required');
+        render();
+      }).catch(function(err){
+        state.buildGenerating = false;
+        state.buildError = 'Request failed: '+err.message+'. Falling back to the offline template below.';
+        state.activeFlow = null;
+        state.workflowDrafted = true;
+        log('system','journey','LLM call failed ('+err.message+') — using offline template instead');
+        render();
+      });
+    });
+
+    const approveBtn = document.getElementById('approveBtn');
+    if(approveBtn) approveBtn.addEventListener('click', function(){
+      state.workflowApproved = true;
+      log('system','journey','Workflow v1 approved by business user — cleared for execution');
+      render();
+    });
+    const nextBtn = document.getElementById('nextBtn');
+    if(nextBtn) nextBtn.addEventListener('click', function(){ goTo(4); });
+  }
+
+  // ---- Stage 4: execute ----
+  function renderExecute(){
+    const SC = state.selectedScenario;
+    setArchActive('execution');
+    const cohort = state.cohorts.filter(function(c){return c.id===state.selectedCohort;})[0];
+    const members = cohort ? cohort.members : [];
+    const rowsHtml = members.map(function(m){
+      return '<div class="exec-row" data-name="'+m+'"><div><div class="who">'+m+'</div><div class="stage" data-stagefor="'+m+'">queued</div></div>'+
+        '<span class="outcome pending" data-outfor="'+m+'">pending</span></div>';
+    }).join('');
+    panelEl.innerHTML =
+      '<h2>4. Execute</h2>'+
+      '<p class="desc">Each customer runs through the approved workflow as its own instance. Every send goes through the delivery adapter — the workflow engine never talks to the CPaaS directly.</p>'+
+      (!state.executed ? '<div class="row"><button class="btn" id="launchBtn">Launch workflow</button></div>' : '')+
+      '<div class="exec-list">'+rowsHtml+'</div>'+
+      (state.executed ? '<div class="row"><button class="btn secondary" id="nextBtn">Continue to journey store →</button></div>' : '');
+
+    const launchBtn = document.getElementById('launchBtn');
+    if(launchBtn) launchBtn.addEventListener('click', function(){
+      launchBtn.disabled = true; launchBtn.textContent = 'Running…';
+      if(members.length===0){
+        log('system','execution','Selected cohort is empty — nothing to run.');
+        state.executed = true; state.results = {};
+        render();
+        return;
+      }
+      log('system','execution','Workflow v1 launched for '+members.length+' customers');
+      runSimulation(members, currentFlow(SC), SC);
+    });
+    const nextBtn = document.getElementById('nextBtn');
+    if(nextBtn) nextBtn.addEventListener('click', function(){ goTo(5); });
+  }
+
+  function setStageFor(name, text){ const el = document.querySelector('[data-stagefor="'+name+'"]'); if(el) el.textContent = text; }
+  function setOutcomeFor(name, cls, text){ const el = document.querySelector('[data-outfor="'+name+'"]'); if(el){ el.className = 'outcome '+cls; el.textContent = text; } }
+
+  function runSimulation(members, flow, SC){
+    const outcomes = {};
+    let delay = 0;
+    members.forEach(function(m, idx){
+      const converts = idx !== members.length-1;
+      const send1 = flow.steps1[flow.steps1.length-1];
+      const steps = [ ['sent', 'delivery', send1.chan+' — '+send1.label.toLowerCase()+' sent to '+m] ];
+      steps.push(converts
+        ? ['replied','success', m+' replied — routed to escalation (Phase 4, not simulated)']
+        : ['no reply','system', 'No reply from '+m+' within window — advancing to next step']);
+      if(!converts){
+        const send2 = flow.steps2[flow.steps2.length-1];
+        steps.push(['sent','delivery', send2.chan+' — '+send2.label.toLowerCase()+' sent to '+m]);
+        steps.push(['no resolution','system', m+' — '+flow.branch2.no.toLowerCase()]);
+        const send3 = flow.steps3[flow.steps3.length-1];
+        steps.push(['sent','delivery', send3.chan+' — '+send3.label.toLowerCase()+' sent to '+m]);
+      }
+      steps.forEach(function(s){
+        delay += 550;
+        setTimeout(function(){ setStageFor(m, s[0]); log(s[1], 'journey', s[2]); }, delay);
+      });
+      delay += 550;
+      setTimeout(function(){
+        if(converts){
+          setOutcomeFor(m, 'converted', SC.positiveExitLabel);
+          log('success','journey', m+' '+SC.positiveWord+' — journey closed, outcome logged');
+        } else {
+          setOutcomeFor(m, 'noresponse', 'no response');
+          log('system','journey', m+' journey closed — no response, outcome logged');
+        }
+        outcomes[m] = converts;
+        if(idx===members.length-1){
+          setTimeout(function(){
+            state.executed = true;
+            state.results = outcomes;
+            log('success','store','Outcomes written to journey store — feedback available to segmentation');
+            render();
+          }, 400);
+        }
+      }, delay);
+    });
+  }
+
+  // ---- Stage 5: journey store ----
+  function renderStore(){
+    const SC = state.selectedScenario;
+    setArchActive('store');
+    const results = state.results || {};
+    const names = Object.keys(results);
+    const converted = names.filter(function(n){return results[n];}).length;
+    const rate = names.length ? Math.round((converted/names.length)*100) : 0;
+    panelEl.innerHTML =
+      '<h2>5. Journey store</h2>'+
+      '<p class="desc">The system of record for every touchpoint. Outcomes here feed back into segmentation, so the next cohort decision is sharper than the last.</p>'+
+      '<div class="stat-row">'+
+        '<div class="stat"><div class="num">'+names.length+'</div><div class="lbl">Customers run</div></div>'+
+        '<div class="stat"><div class="num">'+converted+'</div><div class="lbl">'+SC.positiveExitLabel.charAt(0).toUpperCase()+SC.positiveExitLabel.slice(1)+'</div></div>'+
+        '<div class="stat"><div class="num">'+rate+'%</div><div class="lbl">Success rate</div></div>'+
+      '</div>'+
+      '<div class="row"><span class="badge ok">↻ feeding back into segmentation for next run</span></div>'+
+      '<p class="desc">This closes the loop from the PRD: the journey store is not a log for its own sake — it is what lets the segmentation engine improve without anyone retraining it by hand.</p>'+
+      '<div class="row"><button class="btn ghost" id="startOverBtn">Try another use case →</button></div>';
+
+    const startOverBtn = document.getElementById('startOverBtn');
+    if(startOverBtn) startOverBtn.addEventListener('click', function(){
+      state.usecasePicked = null; state.selectedScenario = null;
+      resetJourneyState();
+      state.stage = 0; state.maxReached = 0;
+      render();
+    });
+  }
+
+  function render(){
+    renderStepper();
+    updateScenarioLabel();
+    switch(STEPS[state.stage].key){
+      case 'usecase': renderUsecase(); break;
+      case 'data': renderData(); break;
+      case 'segment': renderSegment(); break;
+      case 'build': renderBuild(); break;
+      case 'execute': renderExecute(); break;
+      case 'store': renderStore(); break;
+    }
+  }
+
+  updateAIStatus();
+  render();
+})();
+</script>
+</body>
+</html>
