@@ -492,6 +492,67 @@
     background: var(--orange-tint);
   }
 
+  .gauge-percent {
+    font-family: var(--mono);
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 8px;
+  }
+
+  .gauge-percent.warn { color: var(--orange-dark); }
+
+  .recommend-percent {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-top: 6px;
+  }
+
+  .vendor-tx-effective {
+    background: var(--navy-tint);
+    padding: 9px 11px;
+    border-radius: 8px;
+    color: var(--navy);
+    font-weight: 500;
+    margin-top: 4px;
+  }
+
+  .toggle-group {
+    display: flex;
+    border: 1.5px solid var(--border);
+    border-radius: 9px;
+    overflow: hidden;
+    margin-top: 8px;
+  }
+
+  .toggle-btn {
+    flex: 1;
+    background: #FAFBFC;
+    color: var(--text-secondary);
+    border: none;
+    padding: 8px 6px;
+    font-family: var(--sans);
+    font-size: 11.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+
+  .toggle-btn + .toggle-btn {
+    border-left: 1.5px solid var(--border);
+  }
+
+  .toggle-btn.active {
+    background: var(--navy);
+    color: #fff;
+  }
+
+  .toggle-btn:hover:not(.active) {
+    background: var(--navy-tint);
+  }
+
   @media (max-width: 480px) {
     .result-readout { font-size: 30px; }
     .row-fields { grid-template-columns: 1fr; }
@@ -541,12 +602,21 @@
           <label for="perClientCap">Per-client TPS cap</label>
           <input type="text" inputmode="numeric" id="perClientCap" value="1000" />
           <div class="field-note">Default 1,000 for API &middot; configurable for SMPP</div>
+          <div class="toggle-group" id="clientTxToggle" data-value="tx">
+            <button type="button" class="toggle-btn active" data-mode="tx">TX only</button>
+            <button type="button" class="toggle-btn" data-mode="combined">TX+RX combined</button>
+          </div>
         </div>
         <div class="field">
           <label for="operatorCap">Operator / vendor submission TPS limit</label>
           <input type="text" inputmode="numeric" id="operatorCap" value="5000" />
-          <div class="field-note">The actual bottleneck — capped by operator-side capacity</div>
+          <div class="field-note">Total quoted vendor capacity</div>
+          <div class="toggle-group" id="vendorTxToggle" data-value="combined">
+            <button type="button" class="toggle-btn" data-mode="tx">TX only</button>
+            <button type="button" class="toggle-btn active" data-mode="combined">TX+RX combined</button>
+          </div>
         </div>
+        <div class="field-note vendor-tx-effective" id="vendorTxEffective">—</div>
       </section>
 
       <section class="panel result-panel">
@@ -563,6 +633,7 @@
           <input type="text" inputmode="numeric" id="threshold" value="10000000" />
           <div class="field-note">Default 1 crore (10M) — edit to match your actual Redis-backed capacity</div>
         </div>
+        <div class="gauge-percent" id="gaugePercent">—</div>
         <div class="gauge">
           <div class="gauge-track">
             <div class="gauge-fill" id="gaugeFill"></div>
@@ -597,6 +668,7 @@
         </div>
         <div class="recommend-readout" id="recommendSize">—</div>
         <div class="recommend-sub" id="recommendExplain">—</div>
+        <div class="recommend-percent" id="recommendPercent">—</div>
         <div class="recommend-verdict" id="recommendVerdict"></div>
       </section>
 
@@ -614,12 +686,29 @@
         <div class="panel-label">Clients <span class="panel-label-count" id="clientCountLabel"></span></div>
         <div id="clientRows" class="row-list"></div>
         <button class="add-btn" id="addClientBtn">+ Add client</button>
+        <div class="field" style="margin-top: 12px;">
+          <label>Client TPS bind type</label>
+          <div class="toggle-group" id="clientTxToggleVar" data-value="tx">
+            <button type="button" class="toggle-btn active" data-mode="tx">TX only</button>
+            <button type="button" class="toggle-btn" data-mode="combined">TX+RX combined</button>
+          </div>
+          <div class="field-note">Applies to all client caps above</div>
+        </div>
       </section>
 
       <section class="panel">
         <div class="panel-label">Vendors / Operators <span class="panel-label-count" id="vendorCountLabel"></span></div>
         <div id="vendorRows" class="row-list"></div>
         <button class="add-btn" id="addVendorBtn">+ Add vendor</button>
+        <div class="field" style="margin-top: 12px;">
+          <label>Vendor TPS bind type</label>
+          <div class="toggle-group" id="vendorTxToggleVar" data-value="combined">
+            <button type="button" class="toggle-btn" data-mode="tx">TX only</button>
+            <button type="button" class="toggle-btn active" data-mode="combined">TX+RX combined</button>
+          </div>
+          <div class="field-note">Applies to all vendor caps above</div>
+        </div>
+        <div class="field-note vendor-tx-effective" id="vendorTxEffectiveVar">—</div>
       </section>
 
       <section class="panel result-panel">
@@ -635,6 +724,7 @@
           <label for="thresholdVar">Slowdown threshold (messages)</label>
           <input type="text" inputmode="numeric" id="thresholdVar" value="10000000" />
         </div>
+        <div class="gauge-percent" id="gaugePercentVar">—</div>
         <div class="gauge">
           <div class="gauge-track">
             <div class="gauge-fill" id="gaugeFillVar"></div>
@@ -675,6 +765,7 @@
         </div>
         <div class="recommend-readout" id="recommendSizeVar">—</div>
         <div class="recommend-sub" id="recommendExplainVar">—</div>
+        <div class="recommend-percent" id="recommendPercentVar">—</div>
         <div class="recommend-verdict" id="recommendVerdictVar"></div>
       </section>
 
@@ -761,6 +852,9 @@ const std = {
   clientCount: document.getElementById('clientCount'),
   perClientCap: document.getElementById('perClientCap'),
   operatorCap: document.getElementById('operatorCap'),
+  clientTxToggle: document.getElementById('clientTxToggle'),
+  vendorTxToggle: document.getElementById('vendorTxToggle'),
+  vendorTxEffective: document.getElementById('vendorTxEffective'),
   threshold: document.getElementById('threshold'),
   resultTime: document.getElementById('resultTime'),
   resultThroughput: document.getElementById('resultThroughput'),
@@ -768,20 +862,62 @@ const std = {
   gaugeFill: document.getElementById('gaugeFill'),
   gaugeNote: document.getElementById('gaugeNote'),
   gaugeThresholdLabel: document.getElementById('gaugeThresholdLabel'),
+  gaugePercent: document.getElementById('gaugePercent'),
 };
+
+// Fixed 50/50 split: a "TX+RX combined" TPS number is halved to get actual send (TX) capacity.
+// A "TX only" number is used as-is (already pure send capacity, e.g. how clients typically quote TPS).
+const FIXED_TX_RATIO = 0.5;
+
+function setupToggle(containerId, onChange) {
+  const container = document.getElementById(containerId);
+  const buttons = container.querySelectorAll('.toggle-btn');
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      buttons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      container.dataset.value = btn.dataset.mode;
+      onChange();
+    });
+  });
+  return container;
+}
+
+function getEffectiveCapacity(rawValue, mode) {
+  return mode === 'combined' ? rawValue * FIXED_TX_RATIO : rawValue;
+}
+
+function renderQueuePercent(el, queueValue, threshold) {
+  const pct = (queueValue / threshold) * 100;
+  const display = pct >= 1000 ? Math.round(pct) : pct.toFixed(1);
+  el.textContent = `${display}% of threshold`;
+  el.classList.toggle('warn', pct >= 100);
+}
 
 function calculateStandard() {
   const queueSize = parseNum(std.queueSize.value);
   const clientCount = Math.max(1, parseNum(std.clientCount.value));
-  const perClientCap = Math.max(0, parseNum(std.perClientCap.value));
-  const operatorCap = Math.max(0, parseNum(std.operatorCap.value));
+  const perClientCapRaw = Math.max(0, parseNum(std.perClientCap.value));
+  const operatorCapRaw = Math.max(0, parseNum(std.operatorCap.value));
+  const clientMode = std.clientTxToggle.dataset.value;
+  const vendorMode = std.vendorTxToggle.dataset.value;
   const threshold = Math.max(1, parseNum(std.threshold.value));
 
   std.queueSizeWords.textContent = `${formatIndian(queueSize)} \u00b7 ${describeIndianScale(queueSize)}`;
   std.gaugeThresholdLabel.textContent = thresholdLabelText(threshold);
 
-  const clientSideCapacity = clientCount * perClientCap;
-  const effectiveTPS = Math.min(clientSideCapacity, operatorCap);
+  const perClientTX = getEffectiveCapacity(perClientCapRaw, clientMode);
+  const vendorTX = getEffectiveCapacity(operatorCapRaw, vendorMode);
+  const clientSideCapacity = clientCount * perClientTX;
+  const effectiveTPS = Math.min(clientSideCapacity, vendorTX);
+
+  const clientNote = clientMode === 'combined'
+    ? `Client: ${formatIndian(perClientCapRaw)} TPS combined \u2192 ${formatIndian(perClientTX)} TPS TX`
+    : `Client: ${formatIndian(perClientCapRaw)} TPS TX (as quoted)`;
+  const vendorNote = vendorMode === 'combined'
+    ? `Vendor: ${formatIndian(operatorCapRaw)} TPS combined \u2192 ${formatIndian(vendorTX)} TPS TX`
+    : `Vendor: ${formatIndian(operatorCapRaw)} TPS TX (as quoted)`;
+  std.vendorTxEffective.textContent = `${clientNote}  \u00b7  ${vendorNote}`;
 
   if (effectiveTPS <= 0) {
     std.resultTime.textContent = '—';
@@ -792,11 +928,13 @@ function calculateStandard() {
     std.resultTime.textContent = formatDuration(seconds);
     std.resultThroughput.textContent = `at ${formatIndian(effectiveTPS)} effective TPS`;
 
-    const bottleneck = clientSideCapacity <= operatorCap
-      ? `bound by client-side cap (${clientCount} \u00d7 ${formatIndian(perClientCap)} TPS)`
-      : `bound by operator/vendor limit (${formatIndian(operatorCap)} TPS)`;
+    const bottleneck = clientSideCapacity <= vendorTX
+      ? `bound by client-side TX cap (${clientCount} \u00d7 ${formatIndian(perClientTX)} TPS)`
+      : `bound by operator/vendor TX limit (${formatIndian(vendorTX)} TPS)`;
     std.resultBottleneck.textContent = bottleneck;
   }
+
+  renderQueuePercent(std.gaugePercent, queueSize, threshold);
 
   const gaugeRatio = Math.min(queueSize / (threshold * 2), 1);
   std.gaugeFill.style.width = `${gaugeRatio * 100}%`;
@@ -812,6 +950,9 @@ function calculateStandard() {
   }
 }
 
+setupToggle('clientTxToggle', () => { calculateStandard(); calculateRecommendationStandard(); });
+setupToggle('vendorTxToggle', () => { calculateStandard(); calculateRecommendationStandard(); });
+
 [std.queueSize, std.clientCount, std.perClientCap, std.operatorCap, std.threshold].forEach(el => {
   el.addEventListener('input', calculateStandard);
 });
@@ -824,6 +965,7 @@ const rec = {
   durationUnit: document.getElementById('durationUnit'),
   size: document.getElementById('recommendSize'),
   explain: document.getElementById('recommendExplain'),
+  percent: document.getElementById('recommendPercent'),
   verdict: document.getElementById('recommendVerdict'),
 };
 
@@ -850,6 +992,10 @@ function renderRecommendation(recommended, mode, effectiveTPS, trafficTPS, durat
     els.explain.textContent = `Effective throughput (${formatIndian(effectiveTPS)} TPS) already covers this traffic in real time. Recommendation is a 1-minute burst buffer + 20% safety margin, not a sustained backlog.`;
   }
 
+  const pct = (recommended / threshold) * 100;
+  const pctDisplay = pct >= 1000 ? Math.round(pct) : pct.toFixed(1);
+  els.percent.textContent = `= ${pctDisplay}% of your current threshold`;
+
   if (recommended > threshold) {
     els.verdict.textContent = `Exceeds your current threshold (${formatIndian(threshold)}) — increase Redis-backed capacity to at least ${formatIndian(recommended)} to safely support this traffic.`;
     els.verdict.className = 'recommend-verdict needs-increase';
@@ -861,10 +1007,14 @@ function renderRecommendation(recommended, mode, effectiveTPS, trafficTPS, durat
 
 function calculateRecommendationStandard() {
   const clientCount = Math.max(1, parseNum(std.clientCount.value));
-  const perClientCap = Math.max(0, parseNum(std.perClientCap.value));
-  const operatorCap = Math.max(0, parseNum(std.operatorCap.value));
+  const perClientCapRaw = Math.max(0, parseNum(std.perClientCap.value));
+  const operatorCapRaw = Math.max(0, parseNum(std.operatorCap.value));
+  const clientMode = std.clientTxToggle.dataset.value;
+  const vendorMode = std.vendorTxToggle.dataset.value;
   const threshold = Math.max(1, parseNum(std.threshold.value));
-  const effectiveTPS = Math.min(clientCount * perClientCap, operatorCap);
+  const perClientTX = getEffectiveCapacity(perClientCapRaw, clientMode);
+  const vendorTX = getEffectiveCapacity(operatorCapRaw, vendorMode);
+  const effectiveTPS = Math.min(clientCount * perClientTX, vendorTX);
 
   const trafficTPS = Math.max(0, parseNum(rec.trafficTPS.value));
   const durationSeconds = Math.max(1, parseNum(rec.durationValue.value)) * parseNum(rec.durationUnit.value);
@@ -962,14 +1112,21 @@ makeVendorRow(5000);
 
 const varEls = {
   threshold: document.getElementById('thresholdVar'),
+  clientTxToggle: document.getElementById('clientTxToggleVar'),
+  vendorTxToggle: document.getElementById('vendorTxToggleVar'),
+  vendorTxEffective: document.getElementById('vendorTxEffectiveVar'),
   resultTime: document.getElementById('varResultTime'),
   resultThroughput: document.getElementById('varResultThroughput'),
   resultBottleneck: document.getElementById('varResultBottleneck'),
   gaugeFill: document.getElementById('gaugeFillVar'),
   gaugeNote: document.getElementById('gaugeNoteVar'),
   gaugeThresholdLabel: document.getElementById('gaugeThresholdLabelVar'),
+  gaugePercent: document.getElementById('gaugePercentVar'),
   breakdownList: document.getElementById('breakdownList'),
 };
+
+setupToggle('clientTxToggleVar', () => { calculateVariable(); calculateRecommendationVariable(); });
+setupToggle('vendorTxToggleVar', () => { calculateVariable(); calculateRecommendationVariable(); });
 
 varEls.threshold.addEventListener('input', calculateVariable);
 
@@ -980,24 +1137,45 @@ function calculateVariable() {
   clientCountLabel.textContent = clientRowEls.length ? `(${clientRowEls.length})` : '';
   vendorCountLabel.textContent = vendorRowEls.length ? `(${vendorRowEls.length})` : '';
 
-  const clients = clientRowEls.map(row => ({
-    id: row.dataset.id,
-    queue: parseNum(row.querySelector('.client-queue').value),
-    cap: parseNum(row.querySelector('.client-cap').value),
-  }));
+  const clientMode = varEls.clientTxToggle.dataset.value;
+  const vendorMode = varEls.vendorTxToggle.dataset.value;
 
-  const vendors = vendorRowEls.map(row => ({
-    id: row.dataset.id,
-    cap: parseNum(row.querySelector('.vendor-cap').value),
-  }));
+  const clients = clientRowEls.map(row => {
+    const capRaw = parseNum(row.querySelector('.client-cap').value);
+    return {
+      id: row.dataset.id,
+      queue: parseNum(row.querySelector('.client-queue').value),
+      capRaw,
+      cap: getEffectiveCapacity(capRaw, clientMode),
+    };
+  });
+
+  const vendors = vendorRowEls.map(row => {
+    const capRaw = parseNum(row.querySelector('.vendor-cap').value);
+    return {
+      id: row.dataset.id,
+      capRaw,
+      cap: getEffectiveCapacity(capRaw, vendorMode),
+    };
+  });
 
   const threshold = Math.max(1, parseNum(varEls.threshold.value));
   varEls.gaugeThresholdLabel.textContent = thresholdLabelText(threshold);
 
   const totalQueue = clients.reduce((sum, c) => sum + c.queue, 0);
+  const totalClientCapRaw = clients.reduce((sum, c) => sum + c.capRaw, 0);
   const totalClientCap = clients.reduce((sum, c) => sum + c.cap, 0);
+  const totalVendorCapRaw = vendors.reduce((sum, v) => sum + v.capRaw, 0);
   const totalVendorCap = vendors.reduce((sum, v) => sum + v.cap, 0);
   const effectiveTPS = Math.min(totalClientCap, totalVendorCap);
+
+  const clientNote = clientMode === 'combined'
+    ? `Clients: ${formatIndian(totalClientCapRaw)} TPS combined \u2192 ${formatIndian(totalClientCap)} TPS TX`
+    : `Clients: ${formatIndian(totalClientCapRaw)} TPS TX (as quoted)`;
+  const vendorNote = vendorMode === 'combined'
+    ? `Vendors: ${formatIndian(totalVendorCapRaw)} TPS combined \u2192 ${formatIndian(totalVendorCap)} TPS TX`
+    : `Vendors: ${formatIndian(totalVendorCapRaw)} TPS TX (as quoted)`;
+  varEls.vendorTxEffective.textContent = `${clientNote}  \u00b7  ${vendorNote}`;
 
   if (effectiveTPS <= 0 || clients.length === 0 || vendors.length === 0) {
     varEls.resultTime.textContent = '—';
@@ -1012,8 +1190,8 @@ function calculateVariable() {
     varEls.resultThroughput.textContent = `at ${formatIndian(effectiveTPS)} effective TPS across ${clients.length} client(s) / ${vendors.length} vendor(s)`;
 
     const bottleneck = totalClientCap <= totalVendorCap
-      ? `bound by combined client caps (${formatIndian(totalClientCap)} TPS)`
-      : `bound by combined vendor/operator limits (${formatIndian(totalVendorCap)} TPS)`;
+      ? `bound by combined client TX caps (${formatIndian(totalClientCap)} TPS)`
+      : `bound by combined vendor/operator TX limits (${formatIndian(totalVendorCap)} TPS)`;
     varEls.resultBottleneck.textContent = bottleneck;
 
     varEls.breakdownList.innerHTML = '';
@@ -1033,6 +1211,8 @@ function calculateVariable() {
       varEls.breakdownList.appendChild(rowEl);
     });
   }
+
+  renderQueuePercent(varEls.gaugePercent, totalQueue, threshold);
 
   const gaugeRatio = Math.min(totalQueue / (threshold * 2), 1);
   varEls.gaugeFill.style.width = `${gaugeRatio * 100}%`;
@@ -1056,6 +1236,7 @@ const recVar = {
   durationUnit: document.getElementById('durationUnitVar'),
   size: document.getElementById('recommendSizeVar'),
   explain: document.getElementById('recommendExplainVar'),
+  percent: document.getElementById('recommendPercentVar'),
   verdict: document.getElementById('recommendVerdictVar'),
 };
 
@@ -1063,8 +1244,11 @@ function calculateRecommendationVariable() {
   const clientRowEls = Array.from(clientRowsEl.querySelectorAll('.row-item'));
   const vendorRowEls = Array.from(vendorRowsEl.querySelectorAll('.row-item'));
 
-  const totalClientCap = clientRowEls.reduce((sum, row) => sum + parseNum(row.querySelector('.client-cap').value), 0);
-  const totalVendorCap = vendorRowEls.reduce((sum, row) => sum + parseNum(row.querySelector('.vendor-cap').value), 0);
+  const clientMode = varEls.clientTxToggle.dataset.value;
+  const vendorMode = varEls.vendorTxToggle.dataset.value;
+
+  const totalClientCap = clientRowEls.reduce((sum, row) => sum + getEffectiveCapacity(parseNum(row.querySelector('.client-cap').value), clientMode), 0);
+  const totalVendorCap = vendorRowEls.reduce((sum, row) => sum + getEffectiveCapacity(parseNum(row.querySelector('.vendor-cap').value), vendorMode), 0);
   const effectiveTPS = Math.min(totalClientCap, totalVendorCap);
   const threshold = Math.max(1, parseNum(varEls.threshold.value));
 
