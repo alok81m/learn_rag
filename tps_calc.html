@@ -1,1283 +1,2278 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>TPS &amp; Queue Calculator | Globe Teleservices</title>
-<link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAhQAAADtCAYAAADneOwdAAAACXBIWXMAAC4jAAAuIwF4pT92AAAgAElEQVR4nO2dCVxU5frHf3JTXFBcUXABBddUwK1cUlyzhcDMrpULtpea2v/aYnWlW1nGLXCr2yqatmqiZGamgEu5srgjoKCyuIviWjn/z/POe4Yzw8wwMDMwy/PtM804c95zzpwznPd3nrWGRqMBwzAMwzCMNXjw0WMYhmEYxlpYUDAMwzAMYzUsKBiGYRiGsRoWFAzDMAzDWA0LCoZhGIZhrIYFBcMwDMMwVsOCgmEYhmEYq2FBwTAMwzCM1bCgYBiGYRjGalhQMAzDMAxjNSwoGIZhGIaxGhYUDMMwDMNYDQsKhmEYhmGshgUFwzAMwzBWw4KCYRiGYRirYUHBMAzDMIzVsKBgGIZhGMZqWFAwDMMwDGM1LCgYhmEYhrEaFhQMwzAMw1gNCwqGYRiGYayGBQXDMAzDMFbDgoJhGIZhGKthQcEwDMMwjNWwoGAYhmEYxmpYUDAMwzAMYzUsKBiGYRiGsRoWFAzDMAzDWA0LCoZhGIZhrIYFBcMwDMMwVsOCgmEYhmEYq2FBwTAMwzCM1bCgYBiGYRjGalhQMAzDMAxjNSwoGIZhGIaxGhYUDMMwDMNYDQsKhmEYhmGshgUFwzAMwzBWcxsfQoZhGMvxCI+NBjDbCQ9ZBoCLAJIBpNPzrcQZFx1gvyqNR3gsfZdBTrr7leXNW4kzoh1xx1hQ2AiP8NiGAELko6HqGfK1t5kt5QHIla8vyj92yD/8i7cSZ6SbGcswDGMJwXIZ3QTsER67GkACPZxdXDDVDwuKSuIRHhsGQHmUJxjKw18+FCLks7gL8giPhby7SFfdWbDIYOxFmGq96VLkMq5JhHws9giPXQIg+lbijFw+10xlYEFhIR7hsQEAIuWjOkxswfIxEdr9KZYWjGR5d1FtFwE7mh1TbiXOCLNgOcZyAhRL2oWrN3ofKrrQ8q9bmvbHzl6qq6wh50wxSm78ieYN6qJFA93b4nX92jVJ2KJfuxYJ0qqWK3+DjPND15aJLCyYysKCwgwqERGlMhc6Ct6qu4tYj/BYutDHV7e4YBwO5TesWNO8l2zP1IkGhaJLV3Hq8jX9fc8/p33W6P4HjUYTHNjMG+2aNgie8f0WtKhfFyGtm6J984YZ/QJ9E1Qil3FeSFhEeoTHxjmqr55xTFhQGEG6M6arXA/OAAmeWCkuUkgEsbBwW0KkCCYh4U9iIefMJdz8+28cLLwgjgmJCRIGXp41ESSeb0Nwq6bifRIbRZeuCZGRcfIsskl8XL8pxjWvXxexYwbgjYTtOFV8BUUXryD9xBlSGsKCFtyq2ey+gS2u9wpovjbQx3uZ9M8zzgfdsMz2CI8VVlm+ljCWwIJChUd4bJQUEo5mjago7hb1zGgDgCPVv99tOUVo3qCOeO7Ruil+PlCIbUeLENS0ATr7NkLjup4oufEXVqblCOFA1K1FAqOBEBnk4phwR0dhgSBxkX7irHh/5Z5srYiAMFnIZ+3/0k+cRvrxU7UBjA5u3Wz0iNvbXLujne+SpvXrzFUFHjPOA/2W0klY3EqcwZYnxiwsKLRCgi7EcQaBkc5MHt9RuA0B0hpBQsJ7Ucp+jA5tJywSczekYc2z9+DFlb9j6Y5MPBjSDp89Oggr0o7i293ZuuPTv10LvDQiFA3q1MKRoovYml2Ilanyc6kX+ge1wFsRfYWQGN0zCP2DfIXA+GXfMeScLpa6Ql9cZOSdRkbeqTp1a9V89p7ubemxMqh5w4XsEnE6yFqR5BEeO+lW4ox4dz8YjGncWlB4hMeGSCHhanf0bGZ2fRqeLbn+7l+3bj1L4iH95Fnhrjh16apwY5CYuHLjT2GdCGnZRFgmfkw/ivWHTuDl4aEYENgCb/y0C1eu38S2nEIhIup53oYBgb54K+IOcfDmrtuD7DMXcXcXf4zpFYTp321GxnGtZSKwWQMMaN8Sb4/qJ/69YncW1u3NxZUbN3WCQjFe0DZW7MzEih2HR4/s3nb0o/267PBv2uBZVXo04xxQJghYVDCmcEtBIWtGULDRNAfYHXvAd4CuTfT3qTkvn7l8rfaff9/Cjb/+Fl/210Mn8NLwUKxMOyrEBLE1pxD9A32FoCDo/X//tFNYKz4c3Q9z16ch54w2K/TK9T+x/kAe1u/PExaIyYO7I8jHG0XFVzHtmxQhVhSVkH2qGNmnLiJ+6wEENmuIMb3b47vn7sPWIyfx5ZYDIr6i1B0iAzoBrMs4So87RnZvl/bwnR1XBjVv9C92hTgVLCoYk7hd6W0ZcJnuwmKC/tjZQuGahO0+fqbo6eXJsz1v+0dtskiQmKBYBxIT9Txron9gC6xMP6r78hQbQe/podHgx7QcrEzNQeyY/ghs6q2d9MVD2BZE8GX92jXxy/48MfKhnkGoV+s2uZgGckExJufUBbz30w48vCgRWacuYv64wZj32GCEtGkmPtcuVrp+ev4lPQeP/2/t6M82pR8uuFDyqrufWCdjsbTuMowebiUoKA2KfIEuFCthjNWOt0uMlZB74+N/J+5M+nTLgeZTw7ph7b5ceP59FYPqFCL1j/XoeisXD/tcxP6dG9D2Wpb4Nz2aFR/Cudy9Ik5CEQ2KKFh/8DgWJe3Dy3f3QL1aNYWQGNGlDb55cqQIxCSrxNyfd+HJ+A0ouf4nPo8ahkAfb50oKF2fdp2Ka+OfC9YIS8Sr4XfilfA7hBAxNWZpyj7PBb/sniOtagH8Q3EakqWll2F0uIXLQ/7wk10ge8MS2N3h5JTEhCpl28M8Gge0uFqn+cTjp8/UjvK4CZ8bJ4GvgQ/pKxZov+c7ytfN0T7eMfz6axbjJdU/T8Mbp2to54Jj+1vgwsVWWHxXL9T2aoqt15pi+rcpWpeF1ACUMhq/7QC2HMnHO6P74Ze9uYjful/n0Sjj2tDoXBuYNLAb4p+5F9/9cRgrdhwqOwbA44O7450ftw2qU+u2wy/ef8ezsp4K49h4y/MUyeeJUXB5QSFNc8lWlsZ2Jtjd4SSUxIQqPV+U8u0BhqL31vlc1EYuOtjwK/mgGD6aYvG6K7WRObEDOLFS/HsAgFB44liN5jiqaY6jyrPGR7g2nvhiPd4ZPQBvjR6Ad9ds18ZqqISEYabH4uS9+P6Pg5gV2Q93dWqF+et2Ibvogu7zSYODUXShBOvSsumfnntzTy2ePLLXg72D/CZwyW+HJ0Kmk/I1hxG4tKCQdSXi3EhMcLqoAyMtD2EqEeGQrrd6uIGuOI6uNY5r36ihfdqnaYN9f7bB519nY9DQCMwfPwQvLN0o3CGGQkKd6UGfz/omGQM6tcaCSSPwZVIGvv/jEO4JaYe7OrXG1C/W6+IrsgvP4/Wvk8KfHt5j7+i+nbuzqHB44qmiMDcWY+DKgkKKicUOsCtVCbs7HAhpgVCXvXbq2J1uNY6Lx6MUeZXyDfLrtsdXfe/Bu/s9sfM0yggJgarw1dZDxxFVeA7vPjIYY/p2Rsm1m5j6xS/iWT2m5PoNfLjmj9Z5Zy4WvfhA3zs5vdSh8ZY1ULhEN+OagsJNxQTY3VH9qEREpJOVbq8wLa9mAX9kiZnkfL2G2HKzHX7983YcveVTpoKm9kkj3BtZhecxsEsbrZCQAZq6hVVCZOXvBz0vX72xY/bYsDtYVDg002XfD7ZSuDkuJyjcWEyALRTVgzuJCFM0vnUREbelisdpTQNs+LMLNvx5O4o0DXTiIqh5Y7w2ur8QFA/F/IABndtg8ZQIvLLsN2QXnNeuWVMqPoj1qdm1oNHsmP3IYBYVjou3rNYa5+4Hwt1xKUHh5mIihe8QqhYZEzFdCgl3idMpF58al/BYre3ise/vVvj1Zhc07DkaTwwNwby1O/DzHm1Z73V7soRFYtFT92LyJ2uF0DC0bECKCg00O6IfGcKiwnGZzoKCcRlBIbM53FVMgN0dVUdJTGiUvCPjJmzl0O0fJ9GtzkncytqGhIM9sPliF0BTSzdo3Z4jOFJwFu9PGI6XlvwqLRWlokIj3SDr92TXwi3siH6MRYWD4k/X4FuJM/jcuDEuISgoypjN/W7//e2OFBLR9g6uLPDqiPNXbohaERdua4Lwbv5IOHwGGdeb6AU+Qj5RG/K7u7YRRarUNSHa4RTq4rr4Z3NchH+tK2jbtAH+UVj113yPP68gElsQ2XALNtzojK+u9kbRLa07JLvgHF6K/xXvR40Qz/RvjUE8BbF+z5FaPt71kp+//44AF83+yLNhDQ6jach2JtKFxJ4tz4WtcdhrvatYKBLc3OScx3cG9sNOQmL/raYdPDfcaNs+9VpjlKA2BobdLz74aPN+oKZ2IqWeGzubemNZRqocplGtQhtvENq+M/ahJvZRbQlVTYi9aKMvPq4BPz00Co9/sV4UrupWIw9euIF2NU6hXY3T8KlRLJ7tzXDPQ+Kx4UYnLL3SB6f+9hIiInb175gbNRwTPlgpimkZ6wVy7tIVb3lBdcXSz7m3EmfYNFtCFvVTutHaO8so0oWyPWx+LtwBpxcUspy2o1XAzJNKXXnQ3VR6eTEO8o9fuVAq1RKVZ3PmdbZO2AEbCok8eY4U0ZfrNTMN/07cuUo07fLQthAPbtUEz3ydoicKRocG4o3VO0r7YGg/0U/L1Gh0E7CuuJTec6nrIO34adzVwQ8rdh7BvlutxWe/a4L0xnT3OCGERTuP07ijdiHq/3XeLsd3uOdh8Vh1tTuWXumFzftz4dvICx89F44JH67QExL02qt2LTw5sjeeW5gQPH5I6PJ+Xfwfs8uOuRDymhPnER4bXwUNEd2hEjFjBqcWFFSlzYGafK2WlpLkyhaXkn/8ijgoIxKka0ddHGmQqWWZyiODLa1pa68ICPHwmpkmfg8yGyTOa2Za/PepOYVKB1Bq6vXSiFC8uGKbnijo385XtCTPOa3oUGP1HVTxBhrTQkJZdmvmSQzo0BIrdmSWFR/yKePvVsjQtNL++7oGHz8cjKzdG1AjPxXd/3ESPh6XbPrrGlV3L0bUOYylJb3w3WYNerTzxetjw/DWN0l63++NR4fg2+QMpGXl48iJM49+Ou3BnwP9miy36c64KPLaQumd6faMNaPmi7cSZ/D1yE1xWkEh7+ar28eVIvchoSoyLKRQyVUCMOUxCGNBYRvkhF/Zu7gM+VsgAWHK/UTrjt9fcP63T7YcqK28OXng7aJRV/bpYr0JnlqIr9yTrRIFZeMKNBoDcWFCSCjPabmnMHV4qL740K3a+JhPdhRi1oPPYMwH2vLcgR5nMNb3DPp4ZMOzuLSzqTXUq3ETz9X/HXfXzsSXP5zGy9OnY+DtAdi875jYuemR/VFy9YYQFETJtRtYtOaPxR8+e/9arqZpOdR2nNqP21FUhPD1yH1xZgtFdZbUXkLbr+64BSliOLvDBpTEhIZJQVAR94YiIhIUK4Qp5Pobes1MC5m/PLmnWEyjQfMGdRHcqimeWqbcjZdO6gOCfLFwU4a+u8Owb4aqJpS+KDA+puhiCQovXkGQT0Nkn7pgVkgoT2nHikRJ7McHay3aD/frIlI8Z/+WhoLiI+hXMwcjPA+h3T/OWn0i2tU8h7dr/ohNX5zAG0/NwaiskxjUrS16tG+J5+av0vte2/Yfq7l0w55NE4b37GH1ht0IKSrsVTOFO5C6MU4pKMisBmBiNWyaLBLRbNJzHSphlSiWIiLejCXCGHG17pg05fvUnA05Z7SNuWiyJlcHZWdcETEQ2lE0wfcP9EX6iTPa92FKSGifSRxknbogK06WJz40SM87hRD/5sgqOm9WSNCHLRp6iX4bQS0a467ObfDlxjRMnL9aCBPtQvWx6u8QrLoWjHa3ncWDtdPRr9ZRYXGwhiHYhSvxY7H8ifdRXLcNnpv/I0qulh4L5SvFr98V6u/T8OlBwYGfuscv1mZMt5OgcMVgWcZCnNVCUdUFVIqlkODCLS6EjJWItzCYLEOJf6joEZDBnbn5t0f9e9n3W2srk3Vwy6ZiUtyWre1DrrYuDAjyw9asArNCQhlTGqtpXBQYujY2HzqBF0b2wg/bDxkd06JhPdzVuTXuDQ0SgZBbDh3HOyu34IkhoSi4UIKiC5dLv5yqsmXOn00Qc3MovGr0R79ax/Bg3b1CZFSWen+eAxKewK4GD6DkajM9IaF8H3KDbEzLXjAoOPB7dn1YDrlPPcJjl9jhxowtFG6M0wkKWQ2zKqOJaSKJ5C6eroWc5C1xmwmrlNfMNGusUtE1e4yN+3LbodgSnSVCg4l9O2H9gTyjvSwGtPfDwo3p5WZt0P9EO3CULySUMem5p9C+RSPU87wNV65p7/qD/ZtjYOfWCG3bQiUitiK78JxOc3xxKxWvjRkoK1zql8hW71+JxhPrr3fE+msdEVwrHy+1OgyfK0cqffDCLq1BzaZtMPfsQJTcqqn3XWl763YcqhUa6Bc36q5uUZXeiHuSUE2WXsZFcUYLRVXmBi+5lTiDL1IuRklMaJwFLo7VUkhYFScjhctFz6EvR277MEE36VLcRIsGdfHL/rwybopAH28UFV+BWnwYExLqNFJYICRUC4m4iGkjewvxENq2OQovlKhExHmjGSVpR4tEMGRI2+ZIyylUbdr0/mXc8MMzJ/2x6vHpOLTyXXT2OFGp49i/7nHEtvgZc88MQPbNxmW+1/fJ6eNG3dUtWgYtM5bBtWsYm+LhTIdTWieqqgX0mywmXAuKlyiJCU0oR0yQRWKw18y0SGvFhCT6tnZ3/ZJ+4uygD8cMQL1aNYVF4u7b22CFvNOHkqkhU0ZDWjdD9qmLuveUyVOj+7f+GCUgEwafa5ROnuTG8K6Le4LbYVZkP/wwY5SwRJAw2HwoDw/9dyUmLVqDLzemS4uEpjR7RLUt+u+7rfvxxLAeZbZvbv8uX7uJz/bdwunB7+P/zt6PvTd8K3UgA2udR6zvLwisec4gRVaD7JNn//H52u3LbHC+3Aa2ujK2xqkERRVaJyZxlTTXQgZfJpsJRMuTQiLMSveGDmmd8M/oMvm+F7/fguzTF/HZ+CEiHZRcGsI6oRISyoRMQZbpeafLnah1YwT6k3uwvw/G3NEJc8YOwg/TI7Fg0giEBjTHkcLzeGV5EqIWJWrdBanZwuqgtBE3JSSUfdi8Pw8dfJuIOAt90WJu/zRYu+MwBnZri1N1O+DFM/fh32eH49RfXhU+pvU8biLObz1G1s/W30eNBqu37O8vy00zDFMNOI3LQ6Y5VYV1gtwcjlrDnakEKjFhLPamWAZb2kNARtXwarbtm72n+tOEtygpQwRaThnSXXw48nZ/UblSFK5SuQnImlBYXGJR1kZQ84biQa6LVyPqiWwMio+gehOU2rnl4HF8uSkdWYUXyrhD6tephRbe9YS7Q71+ZRljMRIkPtbuPoJ7e3XAF7/uMb9/qvdoHNWQoEqXby3fiG3X2iCn9u2Y3+s0GuWsFr0+LIVExcs+2iJg6y4F6vat8Fwx5v2QEjdtzKBIO5xLl0M2VLQ1nAHnxjhTDMX0KtjGanZzuBbliAlyb0SVV0OiMsgMkkGXQh7PyNh2Rje/Zhw/DS/Pmlj4W7oQAq/e21s8px/X9tBIyzuNkDY+GNmtLUJa+8gtawfT5K9YBnwbeonXWTIgs37tmliXnoPv/zikDdIsJ0CT/pd6tAghbVug8HwWVAubDLbUvq3Bt5v3ivLYX6zfrT/OiJBQxzqQoEiInoDPfvbC/Xd0xtjBwfhs7Q4kH/sLLzfdjODaRRU60i83/13szy9CVGi3ty+n4D6ZacAZH+VjD0HBx92NcQpBIUtO27tVdJ5sosO4CGbERLEMuLRnGrD4LX17zi8YmjO6Cc+nfl3x/Mu+XGBf6UQd3LqpsDJQWWwKyCy6eMVAAEC8R6JBZFJc/xNZp7R1JEICfPB4WDDWpeVYJCSUuT7taCEGdmmDdbuPqD42LSSUD4rOX0bJtZsYeLu/6L9RnpAofYOsCJex+s2J+CYpHRFvLBbrgaYeZhSOxOgGBzG5yc4KHeRXWvyhPZ4X24ntpR05eZtsUsVWxvKxx/WOAz3dGGexUFTFRB9VFeWzmSolwYiYyJBWCXtf+KJuNWp3cGPOhS6Kj5+4q70f0o+fUU382mdhoSChcO0mfL3rIX7zvtJJvJxMChpDbg4Yaw4GI5O7XO/mA7l4YmioGSGhyvQwGL9212EM7NoWKaI0thkhQU296tTC2LAQYZE4cvIsjpw8g9gVm8vs44rizki/1hyv+GwTAZiWMtVnN7KuNUT29UaIfuIe5BWdf8m/RWMWFGaQxQFtfpPGRf/cG2cJyrS3oJjHfwiuRUlMaLyRCyYV8gmzt5goiQmlO2Tvo00H+FPqpy4jQaNBSJtm2JKZXxrMCP1gRoqfKA2CtCyTgtI8ybqh9xnKZnroZ4FoROzE5es3ECTEiP7nGj1xUjbY8qcdh3Ffn47CfWMsq0R8l0ZemPHgXVj2yiPwbVwf4+Z8jefitP1AegT5Gd1HEgXTT47A+suBFh/veh5/Yr7/b3h6cAA6tPbB5JjvOnNwZrnYwzq32g7rZJwIh7dQyMAhewZjFrtQD3+mNLvCsGDPDDu7ONSIoMAfzzSuZ2hdIJfGnMQdJoIZNSJOIj33dOkkbqr2hJG4BRqrLYlt3CJhLEYiNadQdPfMzj9n1iKhty2NNsiSrBPUZ+OnnYf1lu0R1FJYI6j/xrdJ6XhsznLp2tCO/+mPg7j/zi7Yc+Rk2X2k8/d3Tbxb1A9Z1xthSrPdFh1wEhUPX/8WEe/mi+qZ32zY/a9HhveaYvEZcyNkK3N7FAd0pb5CIR7hsVVxkxnvSkkAzuDysHfEdjS7OlwHVetxNZMqUzLbCsicjM3n6uiJBUoHpfiIsv05jLgbyqSEwmCM+n2NyOigvhuFVBbbAiGhjKMYiH/e1RXfbd5n8baUxVL2HtUKih2HhTViUPd2eGRwMC7ThJ6UgZmf/KT/veRT4h8Hsebtx0utHijdnnofV5zvJMSFEidRHjUvHsXj3rdh/tVQpB4+8QgLirJIMWGv6piuJCi8qyBuD66WFePugqKY+3O4DjIIM15VTru4KlwcaqSg8b/o3fEGzsFTLQoomyNLLwPDhJDQfWb55E6uFa/aNfUn6XKzNjRIzS7A3KgRFdqWYv3Yk5WPfz82FO8/eY+wRqRkHMW/PlmLrJNn9LdlMI4sCGSdIAGSkpFTRkiox1GwZdb1hpjf5jdhhSiPh5ocQVpJM+zYX6sxZ3uUImMm4uzYtmAJ35gxDi0oPMJjG9q5b4fNxYR00Ti6SHEpM5uK6arfS5WLCYmwTuR5tPQ0FAUUH5Gt6wpqPJMiJKA50nKLyoqCcib31KOFaN+iMbYcyLNISChvl1y/gaz8cwht54s0pUlZOduiAlWDurcVgqDw/CVhkRg681OjgsCU+yUlPRv39+uC5PTscsdlX2uEF/KGYr7/RotExaxWO/HQ4WZY9EPKlMljBr1dkZPnSsjsuDAZg2bvu212GzMOb6EIs/P67THxN6wiU5k1uFwAqrQMzJb/rC4xAeU3e7DEs4woCPH3wbqMY0aFhHxV+mShkNAtpAHa+zY2fbdvICTU2z9ScBY9Av2QSt1NTWyLMjpIQJCQoNTPn3YcEpkaA7sHIqx7W1XMh3khobxOSsvGiw+HlT9OLSqODcH8tkmisJU56v3jT7zgm4aMsyH3A3AmQWErv729b8QMmcdlvBk4gaCwZ2/91WyicynU4tBWfTgqg/jNHvmrqVHXhmj9bfh+JdwN6mXpOe1oAULbtTBh/TAdbEkvU/Yew9hB3UuzQ8ia0qi+yMSgAEsSEalZ+cLF8dnP21F07rJOtKzdfhCzxw8TWSbaEt7mhYQyruTqdVHZclBwoLBWmBIS6nEtO/dB3XsfABIml3ta7mmch8zTGd1NV1p3SKrKb29LOKid0eHOFgpXCiBya2SapnIhnmSrXhwVRcZwiIykZn6B0OTIctJyUqdeGrO+vWBWSIgS2Qapn9olzWdtFJy/DN9GXhUSEro4iqx8vP/ESIQG+WJQ17YiHoLSPOl9CryMXblZJRbKWj8oDqJn+5ZIzsgxIiQ0Jsclp2UjLDQIyWlZZoWEb5MG+NejQ+HXzBtPffoTAi/3wautyi+ANRTb6tj0BDPG4Po9jA5HFxT2VOssKFwHxToxr4qzOQzRWdQm3jcMfyXvwy/qSRba4ElzFgmKadB7vxwhobwuOl8C30b1RTlusoJYIiRCA/3QU1gh/MTH/350qBAQ/1m2sTSw0owgUF7vpgDL4EAkp+dYJCSU10mpWfhgSqSei0e9nyQknokcgME92+Pr9bvwf/NWimUz4Y+g2hcwpmmW2ZPRre5pHP9+1gttHp4z35KTx1QYcnXwdZTR4bCCQgYU2YsUVtWugdLRk86p18y0quj3Yg6doJgavwGvRvTFPcFt8WXyXmQVycqP5QVbWmKRMJiYlXGpOQUifbPw/GWjQoICLzu0bCoEBKV7Hsk/K6wQlPZZcO6ysELErtwC3YrLEQTKPqak5eDp++7UL6hlwbgjsn8JWUMKz13S7adXbU/867GhOiFx34sfoeTKDb1jMj8/GCODaqL+xYNmT0jN/J0zaHEbnFtGH3Z1MGVwZAuFPQUFV8V0HaLkxc0R+rCQywOZNfxF340X4jfgnpB2eC2yr/iQik5Rpgd9ZlZIoDTQUvfajJBQXBuiSFWgL7JOnkX7lk1EoGV7vyZCRFD5a8rmSM3Ox9qdh0XHz8vSjUFcvnodT91zR4UEgbJTFAtBYqR9y6airHZFsj32HD6BsB7t8fWvu4WQeOzuXnj07l4mhYT6WG1sMAb3XX4fNf++ZvKE1P/rXAAF7FZjTI2rQvEeuR7hsVFspWAUHFlQ2DMgky8uLoDS0VPGTThClLmI+bn519+6OhLUsIseY+7shMcHB2P+43eLqpFUiEp5FF0oQeFFbUEq0ZdDZGuYFxJBvk1Eh1GahEk8dPBrIsQD3e0/OaKXqC9BFoi1OzMRm73yH1sAACAASURBVL8NRecv6cYb7eux9yhinroP9Si48uoNvW2ZG6dM8JS1ERYSiCMnTls4TrGcaNCzY2tRMrt3lzZYs3lvuUJCsWTsPnkTvUOno+Wed8s7L9O58Z9dIFGxyiM8djXHUjBwcEHR0I7rZkHhGkRJV4fj1dQwcFMcKTgnxMPUL9aL3hmhbVuIIErq9kkCgrIkoMRYUHvyp7zUoRfiPbI+KGQVnBMWBnJv0CNl/zFheZge2R+j3lqmG2OpIKB/7ck6iZ5B2gJVFRlH71Fg5TMP9APW/F7OuFJBQELigQHdxFv/Xf4b/rt8g0VCQnmdmVsEv2efRnryZwipf9bc2YikgFmvmWk84dkHSqVJ9giPjeT0UffGLS0U/KN3GSKroFZJ5SiTGiqRzbyyCs+VcXeQ0KC+Gg8P6IrPN6TK5UuXefvCJRSeL9GtR71OZWJ//ZHB8PKspQrutEwQEKlH8rUVLym40lQchwmXSGrmCSEQyGJy+dp1k0KiRZMGQkSE39UNBWeLMfvTn/CvccOw+2AeLl+5bpGQUD4uPHMR9evVRmxRXyypn2juNHlzS3O7Q3Uv0qki563EGXzD5qY4crdRe1koMuy0XqYKke6OZAdxdSjospLKdvmEtiOoiY6h9MgqOI+UA7nCcpGWU4i0nALdgwIuhZjQpZTKiVajXh+QlX8W7Vs10c7HZjqNauTn6n3YQ6KgQyvj3U5hepwy+ZOVomfHVgbjtK97dGyF/04dhW/fmgTfpt54MW4Fnp6zHIlb9iEz7xQ6tPFRiafSdWvUhbqMbHP3wVw09GuHdWfblHdu7N0TiNEKt2RZLZhxQ5ylfbktYbOnaxDp0FHmGv1JkJp2KZUsDYWEbpKGRqR/EtQWXKNuI16OkFAmWap2ScGYJoUEjAgC+ZpcHh1aNYNvowYWCRCdtULuS+bx08JKoXxG6/q/R4Yg8b/PivTP5NQsER8R/dlPOJJ3Wjdu96Hj6OjfvEJCQhl76cp1+DVriMRrvcs7I45pyXI9SFTEy7YJjJvhyILCXlkeLChcg3QHs06UopoElbt9USETMCkk1JM3iY8gv8ZG7/SNCglN6SSbefKMiIOoiJBQW02olkTPDi3NjzOY1JX3C84Uo2enNng6oh8SY57FB9MeRMGZi3jq3a+lNWKvNkZCPQ4aFJy+qBMUlgoJ9diIsBDMfWMKUjVdzZ0Vb2nVYuxPMNf5cU8cWVD422m97N9zAbxmpjnsBau5xyXjrg0oosCYkCidLCnIsj4FaVoqJFQuitSskyIOoqJCQmel0Lk9zIwzEBJkiSAR8Uxkf3Rs44P6dTzx4ryVuP//PhbpnxTrYEwMKOsjtwUJiooICfrMq05tISY6BrTAC3O/wbz9Tco7NWylqDoGeYTHcidnN8MdXR4MY1d8PC4bdW0QgS0amRQSyrKU8kkpoBUREsr7lPJJRaJC27eskJBQXpOg6KG4LcxsLywkCP83djASY57BBy+MQv26tTH7s7XIPH4KSXuycCTvlPHvZyRGgoIzCaqVYYmQoCeKw4h7aawI5DycW4jMY4XIKmmA7CsNzJ1ae9a2YcoyTbZNZ9wERy+9zTDOiW5iVJ40osW4zvKgMZVFAWGhuK93R3yus1BAL+uhdFzZ8dr0z3xRzCo182SFxtFrqiNBFgZRvfLsJd0438YNRAGqXh1bC7fGERIOqVnCnVEoBYGwcBw6jl6dW2PPoTyL0z+JzNxTwkqx52Be2WNjMPbZh8Mw7r6+mPvlz8Kl8tzDg3XrWXu6Naa1PWDqJ8Muj6qH4ilCnLBGRXEVWbNdKuOQBQXD2I5iGZSG7redRMbNlqrJUCOqSYpMD41xIaFMtFRt8sm7e1VYSCiv9xw5WRoHUYFxyjIiW6NDa2TWOS2ad4WFtodfU28RVJm4dZ+wRGirbBoIHio2dTAPj47sbbIBmrH0TxELceYiOvm3wO4DuSaFRM8uAXh7yijsOnAMdz/7IUquXEev2/1Vi2qQcq65OUHBgYJVj78sLOZsZbrTbyXOYOtKBWFBwTC2I12XOqpzc5ROnEfyzwlXxub9uUaFhPIelcgmC4FX7ZqicmZFBQHVhHj6vjsqPI5iIUg8UNXK8P5dRVlscmFEf/4zjpw4pdJGZYWEMqHvOpSHD2c8ZLGQUF7nn74Ar7qeepYdZXnfZg3x3MNh6Bjgi9cX/ojddPygXg90AqbwRm1kXWmA9vUuGTupwfxbrxame4THxnP9H9fHkQWF7m7Pxtjbj0qmvRQbr9OeXVcZO9C9Zj4ybvrpme9JKPxzYFd8oYqpMDpBU3Bldr4oqU1poJYKAmWZAllmm7qPiqZbJsb16NBK68KQD0r7pBiKrzfswTMR/fD03G9KYxmMbQ/Q+35EydXrItujQ+vmOJJXZFpIGFhdyDLx3Jgw/E+TrFu+Xt3aeP7hMEQMDsVH3yXhjQWrdNtV3Eil2qN0nakXG5sSFI5Onp2Lb4VJt489rqvm8JYWCi5/7uI4sqBIt9NEaldBIavE2dRU5hEeq7FgMab6yVV+sy0o08PAtUG9NWiSN7RIGJtkj5w8ix5BLUX1SsAyIaG2SCjZGj/9rjX/h3ZohY6tmokCUh1bNxNWCFqGrBBfb9iNF+evEi4ZZd0kKMhikSl6c5QvJNT7sftQLnp1boPMvCIL9lWx5pS+JiEx/r47Me7+vti08xDufuZDlFy9pjoMBttVnhSXkfnATEcm91biDLu7BmThqemylktViYuJHuGx07nfh2vjji4P9qMy9kJn0h3Y/Ca2twrA5v3HtG9QLYrzl0QmQz3PmrqeHaYEAfXTeOrePrrATNNCQqOa57XvkeXhz7//xosPh+H+vl2EeKCYBxIPFEyZuHW/cIsYdYkoFoPDx9GzU2vh8rBUSCgTOgVY+jXzVgkFM0JCcvnKNfS6PQAzo0YKiwQJiTEvfoSCMxdUi5rZrirFtvB6bf6Bm0He9ETJ4lMkYKZV0aadMZaCqQDuKCjYj8rYC52g8Cw+hoFh/pg7aYRIA6XS2ZR9QRkc1OY7LTvfqJDQme1FPYlRJoUE1ZqgmAOyIvg1qQ/fJt7CInH56g2RqVFw7hLq1/XEJ2t+x5HjZ1Ci6q9hTkgo26NsDdFWfP0u1ceWZW0czi3C4F4d9SwP5hqFUYzEY/fdKf5JvTnKtUiYEBLKx6kXGvEP3AKktYDiGxJkISp7WyuiWFC4No4sKJLtFTvgER4bwAFCjB3Q+00lrlyO2FUBohR2jyA/PDWytwi2/HhKhHB/aF0MENYDcnFoKZ1sKf5h2StjhUioL8WDwpETZ7TdRs8WI/PEGSRuO6B7T5lcybVBMQ30gIVCQnkraU8m3nzqvgoJCeXjzNxC9OriX1YMGAiJ8LAQYY1o2awhVielibfnfvGzyN7QGG7LxHb7dG2Lw0cL9awob08fA6St59+3hdxKnJEs60Uk21lU+MsUUi4u6KK4a5ZHiKvl/zLVj9fMtOSSmFDdfnSvVYD0y77YvO8YNu87Kua7gd3aYmxYd3z2807tQtLaoBYSykuyMpDo+GZjmu7f2iBLy4I0dx8+gfv7dcUHxzeVFRLmXCkUXHnlhmja1aNTa2GtMDqhG7hClGUuX7khCk5RHMVuUVei9LtRQaqIwSGICAtF/pkL+Pi7TbqsDYqZoKqXuw8cs1zASHcJLeRVtzZeefp+/WOpTx7/mRiHJvkqEhVR0vXBuCCObqGYbad1h3GtecZOZChutZBaBViq6aFn9qcGXG88NgSpWaXBluTeMDaxk2tk9sQRoq6E7gNLBIH8J9WTiH78HnzwzUaLhYTaIrH7UJ4QBaLYFMoXEmqrwq6DuaJpFzS5wjUzpHcnPHZ/XzSoW1vERzz+7y9FHw712MPHpKXBiPgxZgmh/3Vs54tNvx8U24h/72ns3HsUcz9dg8ahjdCj4QXDM8w3EWaQooJcErF23EwkCwrXxZFLb9szGpgLljD2QmfO7e5ZCK8aN/VKXWtLY18WLhCY7bWhES4MqlBJbhLDz82NU7a35/BxURKb1mF2nDKpG5S5JutCr87+ulgFjcHyunXqREjpI/NYkeiz8Z/nI/DLRzNEwCVZI0Y+9yHe/3IdCk5fKDsWkOsuXX95zcJa+jSCX/OG+HHhdCxatgFzP1ljxkDBgqI8biXOiLND2rsacntwCXQXxWEFhZ39bMH8o2bshN7vtl/tY2UmQ7JIDOzezrQgUCZvyvZIz8agkED9yduskNCffJNTj4hsjYoICWUZatpFgsK0kNCUERKDe3XCfyZHYNx9dwr3xa79ueg/YQ7eWLgKSTsOmxAhZeMrLOk6SlaJTu38MLTv7ZjyZjw2/XFAt/9GrBPgxoAWY+/ASS6B7qI4enMweyrlSDuum3FfktXfvH+dvDJ388kZOegpOoKaFhLKJJr4+wGE9729VEjAMiGhvF6zdR/CB3SrkJBQ9uWyiKMoQlivDiaEBDX08sQDg4Lxn+cjsTX+FTwQFiJEBFW0pDiKNclpBt/RiJBQZWpY2r68d9d2WLlwOvJPXUDUS/9D5tECfcFlHBYUFkBBmnaON2FB4aI4elCmvYpbQQYHcXtdxqZ4zUxLL4kJzVPa75Og8KpxA5dv1dLFHVCxKtGAq5GXtqqlmQDEPZkn4dukAXybKM26SgWAXjyDiRgJCqj0e9Jb1L8gd4s6RkK9vHqb6hiJpF2Z6N3ZH8k7DytbRMc2zYULg+Ii6HnTzsNI2nkIc79ch5Ir13Srm/fyozpRUCZrw9h2YSAkjMR1UFrp+MgBmBA5AKs27EbL5o1wqeSa3jrr3/aX0VNKQbP8a7eYBDvWp2DrsIvi6BYKe14AgmXFOIaxNQZWilyVBUD7ICvFwOBAk9YBtZshOS0bYdLtoSnHImHMtZG85wgG9+hQpk16GcuAEdfGrgO5IgWUrBT/eS4CW798GW9NjhQBl8vW/oHgh2Zj+vvfiLRPnZiQ66agyw7+Lcq4RUxaJOShMGVFiRjWQ1gl6PXwiXNQv14d7Mw4arBOoIOX0bLbq/lXXiHsee1lQeGiOLqFwt53FNO5vjxjB+jubqKy2tENDuKXy0F6d9qJvx/EB8+F49uNqdqFzGRQfLNhN2Y/fo/osVGeRQJG1rF6cwZmjhuONZv3lmuRgIxN6NU5AIN7d0SngBYiFmLcvXcKS8TH3yejkKpXagy2abB9WjM1/KKg0FKLg8F2DcaQ9UEbrKlvRendrS0mPzZcvJ76n3gczikQr/t0b4elP24u853b1y8xdkbZOlExOICVqTAObaGQldwy7LiJiRycydgar5lpCbK5nSCw1nkE1jynF6+QRT0yaPJr2bScDAqN6KdBha2oEqYlFgnDu/sjeafh17ShcJ0IdBYJ7Tjfpg0Q1rMDZo4fge/eexrrFkzDA2HBoqX4+/G/iMZdy9Zux/Kf/0Dh6QulcQoqS4POtaGKryBx0LtrgL4bx0yMBAVY5p86rztOJCQoFZTExKJlv2LiS//TigmNRlhIGtSrg0z5b6A0fqK/33VjGWKcJl4BuPgUUxmcobBVsp3LZXMXPMYe6Fkp3utzGXNOdUNqpqwpodHg699S8ciwHnhz8S/yPZSKAQMrxde/7kZ4/26yyJR5i4SxGAmqfDm4ZwdhraDMjU7+zdGrSwA6+jcXn1NGB9WOWP1RmujFobaCbPI/JKwVVD/CnEXC8DtQwKSynCnri7Hx5NoYNayX+CcJCaotobc9AEP7dcVvv+/XCQn1/obUK7hpcD5Xe81M4ztuhrEzziAo4u3cvGai7NXPJlHGlsSrBUWTgmS8FP4E6k68G0lp2SIuInHbfiTPn4IPvknS9dowVeY6ccs+PPPBANSr46krpW1OSFBDsPr1PNHRvwX8mnoLMUF39c8+NFAIBhIQy37ejszcImGJ0FufwfYpjmLcfX31LRIwLSSUNwpOXcDgO7uUTvhm9jliWE/x1sqF03C55JpJIaGM7xMciFXrd+l3dIUGw7o1LvT0+NvX4DxWuiV4SUxoQ6+ZaW7XIVNWzWSYCuHwgkJWb9NFzduJOE5lYmyJLMOt97tNWx6NH2tG4P5+XfCvsWFi0ic+nfkwdmeewOWr10VHUMOJOTPvtOjRkbhlL56N7I+kPVm6ZcjCQDEP5BKh1xSzUGp1yEPB2YsiOPKNj9fgrecewPtL1iN5d2a5YkAdI5FJFSyh3RYJEEvHnjx1AQ3q1VZ9LuM9VGP8fBphfGR/jBreS1g03vvfarNCgvD1aYQ+3QMx5d9f6m2zU6AfXgvaugxXMVN1KvOkC6rCkJhw42wwdgUzFcZZennE27EMN2TGR/StxBncCY+xJfR7Wqysb2SDHMQfO4oPvz2lfYP6eHRshU9fGisEBYmCZyL66TbfoU1z8Z4hPTu1EQ3DhBXgTDEKzhaL5yQSCpRqejDPaMDk8p93YEivTkjadVi3fXNCQj121/5j6HV7W2157HLHKv/Tt2iohQRZJKggFcVNJGzYjVkffIfxkXdpxYQxt4pq/KgRvfHbtv162ydrzH9fm7DD6/uvHzY4XNb8Tcd5zUxzV3coWyiYCsOCopTZ1MaXg5EYG5Ig7251zZaiGu/Fe4V9daZ+skiQ64OKQH26epvJDAj6HxWR+nD6Q1izJQOJm/fpL2NGDCgfJySnYdviVzA3fp3WbWKBkFA+3rX/KIbc0QXLEn+3QEhon8jl0btbO50QoGJUkSQk+t0uhAMJiU2/7xcjJo8bjl0ZOWXdKgZChCBBMeHFhbrtdWzXEktjp+BC4ptfU/kL1ekj60Sl3B0lMaHx7lqnxiM8tqGdC/9xPIuL4uh1KASy1bg9q2YqJMs/JoaxGul715uURnofRXCdItUdvgafrNqKR0f0Qr3atUondcN6EdTF8+p1xHz1q0gBpUJVpRkdBiW5DdahZF5QB9HVyemIGBSit31Lxu7adwxD7uisX3RKN1Y/u0R5rQRlvvzU/fj1y1fwyjPhOHy0AMMnvosX3ozHRikmRNaGTyOR4aGuKaG3X3KbkcI1ch4FMhskYkQfLHr7STz18v9OeOVtuNPgnFWqCVVJTChZNdKpSJmb/hVMt3PHURYULopTCApJVdwteLOoYGxMnDqFlJjafI+eYCCXReLWfSI+wpiQKG0uBhzJO4Wk3Ufw2Mg+FosB9fqWr92OcfffWeGxlAJK7o6ObVuUKyQ6BPjiJSEiXharpTgKKo89enIcvlq1RVS21BNOVFMiOBD5RedVu6EvJJTXUyaOxIL4X8Q/333pUUwcPQjPzfr07zY4+ZXnP249ojrMKZWJnSiJCSUXR4jXzDR3tk7YuxsoW4FdFKcRFLcSZyTYub68QjCLCsZWGLNSBNW+iEnN9unVZPjfj1sQflc3ba0II0JCNYPjfytSEDEoGPV0VoryhYQyMVOAZf7piwjr3bHCY3ftOyriKAyFhGhPfmdnISLWf/EyFrwxAQVFFxD18v/E6l/78HudRcFQSCivWzZvjJ0ZOSaFBP0vYkRvITouX76KVZ/OFO9NmLYA16/fPDk7YFNL1SEurkwquBQT7l7sLt7O1gmwhcJ1cSYLBaqgC54CiwrGlsQZiuGoZvvR3vOCbsKkmIb/LvsNbz51v0khoVgGKM2TXBfPPTTIMjGg0XdtrN6UinH397VYSChjd+09ivER/bVxCwG+eP6RoVgxfyq2fxeN8REDpIj4BCMmvYuvEraIGAqxBjNCgujVLRA7M7JNCgml8NfUiSNR36sOlsZNxcLF6/Dqe8tx+cpVPNls69vqFF26TlS07oQUE3SeIt0xTRRa6wSJiQh7b4fj1FwXpxIUtxJnxFeRlQIqUcHpU4xVyAmqjBh+tdUO1WSvwZote8UEGtajvVEhoXZPUA2Jwb06ikwQoz061EIC+mPXJKWhZbNGorCVJUKClqHy2/W9aqOlTyOs//wlzH99PLzq1cZ7nybi9ntfFkLiq9VbhCVCWZfS9ZMCM40JCWXdw/p1FdYJU0KC/vfq85Fo2aIxdqZnYeg/o7Fx216xXNvWPp/c2/L0FNVhTamou0IlJsLctQCWFBMTLVjUWqoiFo6pJpwly0ONXiqenSFRQXUwIrnwFWMNlG0gJy5d91xyfUz1TcP8gtIgyX//LxFfvDFeFJ6iIEpTmRf0GZXFfmni3XjizSX6mRfKhG1iLH3w0bcb8dzYIdj1+hdGszZ8fRqKrA4SA31IEADYuS9HBFUm/LYHX63eWmaMso0yWSoG29YYjBnavyum/PsLlZAoHdM7OAhTo+5Bn5AgRD4xF4dz8nXuIJ+m3qd+6L6ScmCfkSOKK5qdIM8JXU8Gu2MQprxhirdjV2dDuAS6C+N0goKsFB7hsVFV+AdA/sQkj/DYN7lOBWMl9Ls9pl7FmKZZyLrmjXXntIawwrMXseznHYid8TCefGupdiGDdEzFokCtxalp12P33IHlP283LiSMjaVa1JvS8PzYIaL9+G6qMdE1QKR19u7aFn7NG4llKGZi0x8HMPfTROG+oJHk8ujU1ldlxZBfxJSQAJBfdM6okIDs30GQUDAmJMgqQY+F8etwODtft/91PGv99ZhPOlXQ/US1qbCKuCtkaijdlU9yt9bmUkhEV5FVQg0LChfGGS0UkIFTaVW8zdlSyESxtYKpDGROL4kJnQEgVj38lXaHENx3CH7cW4LMvFNYvm6HaBn+7OiBIgBToBISqjfw+qIE/BDzLHYdOCarWJoXEr26tEWndi1ERc1LV65j8TtPihoYZHkgAfHV6m3Yuf8oSkquqTeje7Hx9wOY/NgwEWipfbsci4QQFBeMWkGIUXf3wW/b9ulcG4qQIJb8kISWvk0wbEA3LFj8s+p7AUGN/35lXLv8V1UBhJMstTDICphKvMCkytaqcCZkKe2GsmBVmJ37I5kiQ5YAYFwUpxQUshz3PDv3+DCGv7RW0FU+moUFU1HIv18SExqptrB5/HkFIwoXYOCU7+HVqKnotUGBl88+NEg72ecWYvcBJXRI3ypA6ZxzF6/DW5NH4X2adHVFpNqK1x3b+oq24C19GopaD5T6SdYGev7o640Y/0A/ISI27TioW6f+ZvSFAMVIUH0JWi+JEL0xRserP9dfF709tH83vPLeckSO6C2EBGVxkHjYlZGNToEtMeuF0Rg3dZ6eQGrZvMnX8T3XdFNNihaLgpKY0BApJugOfVRly3LbiUEe4bGaatly1eBMqbiOfC4c1lrurBYKSHNdpJ17fJhikEpYxMmUVoaxlEiZOqdLz6v59zXkfTEOU8/eB++mPujdOUBkcpCoqC/6YZTPl/95XAgFEiEkNCg9lCpcHj5aKP5NPT2USV1xi1wquYp3ZozBpu0HtOs3ISTUIoYCKKnapYhnQOn7pYuqrSRl16UsqgRafhU3Fat+2YHJr32mi5GggM93X30MC774GQXkMpGradq4wYE1fdbsUll55lVATESqGoWFuXHhquqgmN0dro/TCopbiTMuShdEUjXuxiCpZPPkH0sCWy2Y8iA/v5zc9H67QXWK8XqTtZh8eAB279dahpf7b8e8l8Zi2vvfihoSZe76VXfuX/zncdFz4+NvN0H3ocGkbhiouXvfUZEO+vwjw7Do69/MCgnlJaV4TnhwYJn9MBQS1F9DvY+0KIkjcnOMGnkHOge1xKHsfEyYNh+Xr1zTW8esqaOxMy0Lq37ZrltfI+96J77u/dtH1NVc7soSr5lpFhVhKokJjZMWzTyZGspiomqhGy+3TMd1J5zZQkGigtI636yCPh/l4S8vVtM8wmNJiSfLanD0nFtRv6EMmAqQHVDduQtqdZod7WpWlN1IJxlmLAXVLcaijlsx+XB/lPxVU8RFvL5gFb6IjsLjsxfrOn8ai5F4Yc5yLH7nCWGNWL0xFcqH6mBHHSohQKmfPy6chlUbdoux5QVbUqDmwuhJegW4gLIWCXJZUCAlFb4aOqA7hvXvJrI1yBqxceteNPCqoxUTonJm6TqmTLoHrVo0xvgXvtJtt6G314nv7kx6r4nnn4qYmGFJeqjKxUHukYyKBm4yNqHYXfuiuBtOLSigFRXRMuCoqrI+ysNbBntFKELHI1xYZ/PKqRDXsJoCpZhqQqaShhjGAglR0WkbJh/sh8t/18Sug7mY++XP+PLNSXj8jS+RmVsqKtSBmiVXr2HanGVYETdVxDeQq0O7nPn0TZrQl67aijkvjhH1JJTlzAVbkttjSN/bRT8OYxYN6pLaJzgInYJaYuM3s7EzPRu/bd2LKa9/LpZ795XHsGrdDuFyUYbS/8hyMWxAd4wXcRPafWjk7XXie30xYVHMRElM6HSVa2SJG3cOrW6i2TrhHji9oJCU8Uk7IP7VFO/BODBkspdZB3rpeyQqlnRLxstH+iDrSgOsSdJa6Oe/+qiwRFCgprGJnCwMUbM+w8LXx2PKW0tVFg3zMQ5U2XJo3y54/rFhWLRsg/4YI+M3btsnun5uVLUR7xToJ4Is6UGxESRUftu6D1Pe+FzPouLr01hYLIY8PFvvfRITE8cMxvipcaLfB9Gja9sNnwcu/1pacoqlu8KsW9HAKkFjprtDJoeDQpkdbJ1wE5yt9LZRpPoNM2zCxDDOgLxzXmK4qy08r2FRl98xsFGhmHTXbErD1DnL8OXbTyBicKjJypKZRwuEmFj4+gTRe8N4eW3oj6dqlP/9DhMi7xIZHOX1+aBUT7JAUPfPOTMfwW/L38Cclx4VPTmoZkSf8FeEReJw9kldxU+lMuZrUx/EnPkrcVlYJ7TrU8TEOCkmvOp6aiJG9H7q88DlP0sxobgrTIoJEmayU2iagYuDxUT1UKmeKozz4hKCAqX14fnHyzglpkSF1z/+xHsdd+OJVpliMs48VoSHpi/AuPB+eHvqaHjV8dQrUa0IAa2oWIIFb4zHA0N6mBUSSq8NSgl99b/f4t1/jRUuC0MhQWmnkcN7Y87MsVj0y/4WRQAAFmVJREFU5uOirwZ1+6TAyvEzFmLUU+/j1bnLhfWCxlHQ5Y60rNKy4dBgaP/uInZCF2xpICao8dfdg0LO/2fmoyGz68wbIF0WS8rLypAVL9NV8VSU/RHCwZfVynTu2+FeuIrLQ0Dpmx7hsWUC3RjGGSBRURJDloey1QufaJ2FHg3O4a2sYBSc1mDMtAV4a9pDWDznKbwW94NR1wbFUQyf9B7i33sGLZs3wkfLN5gNtiQ2/b4fQ/t1xSvPRWLV+p3CddGne5BoL05C4FBOvoiHWPXLTgwd0E2MWbpCZTRQuTD6hLTHycJlOisEZXi8N2scIia9qxMzUx6/F8PuCsa4KbHo3L4VxkbctX5YybKX/kr/aKkMTDYbL1ESExomU8iVGCqKVYpyt8qXDsgS2XuJcSNcSlCgtDQ3WFQwzogUFemG1TSJUO/z+Cp0Kz7LC8K3+QF4Pe4H0W8j/t2nRW+Npau3oqTkul6MxOWS66KN+Dsv/lMIi6lvxosKmdrPtcvRRE8lsEk0+DVvjM6BfiJDg5p2rVq/C4dzTmLpymQczinQEyKXLl8VwZXKtnRhnhRPEeQnilQVFJ3XCYqP5jyNJd8noaDwnFjyvVnjhUhZ8MVPWPjO01f69uo4jgTVX8BmaW0IMdWsS8ZJxBkEY1PGVxxncVQ7JCbYWuyGuJygAIsKxsmR1TRzZWChXqBxvX/8ientDmFi91tI8hqNTQcu4LXY70VxqoihPbFo+Qas/m2PXFoj4iEa1KuDr37cjOfHj8CGJbNEeigFUNL79AyZtZF/6rxI8yTrAxWYWvrhZBzKPomEX3cZtWjQMmTBIFcIuUs0autEcHv8tiVDtyzVlaCMjgVfrhVjPnr3GWGRyC88h4/ee3b1zS2LppXEjJ0h3ZYmgyilRSLKwIqTIseweb36YTHhxrikoIC+qIhz8OwPhikDlYSWd+EJxtKJG5Vk4sGSOejX7W5c6vyYSBGlzqBzXnxYPNTs3Juj+xeJCapySWKC4iVIQJCQEBhkjUyYsRBLP5wi3k5Yv9No1gfVk6CMjaUrklTr0ODBe+7AK3O0dSREKuhd3fHApHcxddK9mPjPIcIy8c2qLed+SNz603NN1v/S16c4RdZtCTBmYTDi2oB0b0Rz0KXDwGLCzXFZQYFSUaEUmGJRwTgV0twfoqryWIYWBevhdXwjvj3ZBlOP+8OvTWvhvpg8boQQCou++hW7FEEhJ/v3Pk4Qn896LhI/rt+JpStTtJUqAb0YC8q2GD9jAZbGThX/NhQV9HLDlr2YOukeLP0hSSdE/Fo0RoP6dXA46yQ6BrXErGkPYWfqEaxZ/Kpo9kVC4uMl6856Xi2cv2p4eh8AzxqrXinTaSOlkFCnXCuFkti94TjM4PRQxmWyPEwho4wDZAoZwzgdsrz0YHlHXgav2/7CkwFHkdBvCwZqtmLHli0YPnGOcFW8+mwENiydhfGRA7SlsGXGxcKv1mP8iwtFsOaqT/4lsjcMsz7oNdWSmDB9ASY+FIZXJ48CdMkk2hSNjVv2omWLJqJ7qSJGosYMxo7ULETecyeWLZwhrBHDBgZj8/aD5wZGzsqcHfP1v37uv+7bVcPTR5Bbx2tmml4GB1lmZGvxXOm2VMREsYyTICtGNIsJh4B+k6EsJhi4uoVCQdapCPEIjzV5p8cwjozMWgiQdRamG7O4CWHR9qh4rC30RXL6aTz46y707h4ounnuWBWJVb/uwsat+7Dx930i7mHW+9/Ar3kjTJkwUggGyuygCpa6xl9CVFwVJbIXvfMklsZNxfOzPhNCQ7FIUKzEsIHdkV9wDkMHBmPUvXcKEfHgvXeKVWzcsjdj7sKVt3JPnJ6fOmo7ZM0YEhK60uYlMaEB8nsZa/jHFgnHZB5XwWTU1NCo/aJugEd4bKSxYDc3w6Z9KjzCY5MdqPS5rXDYFsFy8o02ll5qSOG12kg50xSJ+b4o/LspRt3dWzTnogJUVJyKYih2pGcLAUHBlQ+O1DbuIpasSMZvW/aKbA3F/DBhdBii/jkY8d9twuGsfHRq3xIP3nOnCLA8lHVSPEvy5N9ZfId+zzVMHbU9RFoKk5WUThkXEWmma3CeFBLxjiQkPMJjox2gf1B1kuIoNSZc9NpTHty+3FGQtSoC5MUuwt2+P+P8yNiKKGmtMCssfOtcx9g2J8WDxMWeI2n4Yvv3yLzmgy697hANuyaMHiSKVJG42JmehTkLVqJPaHsMG9ANs6Y8KAQFFajKpzbi0i3y2gsPifVTnMU781bgtWkPYcVPv+e9MePhOFVzPEHqqO1R8j2KiQiTPTbCzIj6FCkiONjSsUiRFgmu8cEYxe0EBUpdIJGyqVg899hgnBEjwiLSnOWNxMX9LYvEAziM83/t0ZxIalJj669NcLJGGzRp0wET/jlKuCvUUJonZW2oKJaCIbeBV530ua+NF4HPb8zQZpfIYMow2SlX6ZpbXgp3nsxoiTNVe4KpFoqV88JVL5nycEtBoSCVdoA0YRr1S7sgb3IrYddCJSwayhoNUZZ0rm1825UajW+7guDax7XtL8iz8XEMLtTwPHcNtS9evYk6J643KL52q+ZNWr6rz60DjW/kZhmspqEUM6hEx9w8abmI4xoSDkWxPC8kJBI4RoKxFLcWFAqyBXqcFBWuKiyWSHMl3/25KDLOQAQvyhoWUdJSUKG2+DU1N5rUxI0mDWoCLWoW++k+uGGT9voZcrKKZxHhMORJi5OwNLFLg6ksLCgkUoWrhUWUC7hClOj4eBYS7oWcrOl3rARxhqkeVfm7TlEmKhmQ6Qp3u64w4Yrv4ALiId5FzkdFcNjv63ZZHhXBIzw2SvqlnS14c7U0VVZJUBtneTgX0jUSIgVGgCrOwRrLXIp8Tpb1I3K5QRfDuBdsoTCDnJDjZVZIpKW+6WoiReXzZGsEYxJpJUg2dqcjrRkBFh69XA6gZBhGgS0UFUSKCyV/3lzqm73JUE0KydUZOCXdRCHVtX07Ec/tlxmGYSyHBYWVqARGiOpha5GRIs3IInCKg6YYhmEYR4MFhZ2QNS4gRUZD1VYaqu7mL6oLAEly5cMVAqYYhmEYN4EFBcMwDMMwVuPy3UYZhmEYhrE/LCgYhmEYhrEaFhQMwzAMw1gNCwqGYRiGYayGBQXDMAzDMFbDgoJhGIZhGKthQcEwDMMwjNWwoGAYhmEYxmpYUDAMwzAMYzUsKBiGYRiGsRoWFAzDMAzDWA0LCoZhGIZhrIYFBcMwDMMwVnMbH0KGqRwlMaFKK/oA+VBQ2tLnes1My+XDyzAM9K8Z9GioOigucc1wuvblJTGh0VWwmWSvmWnJlRlo5/2Lt+bHZmrfvGamVcUxNYojHy9jyAtClHwEWzAkj35PAOK8Zqal23JfoN2fKAMxY0sq/XcA25xbOl4XrdkHU5jZN7qgxzvqNkpiQsMAhBn5yKpzVYHtB8jth8nf3SAji2XIc0f7k+A1M+2ijbcfZav1GWKPa6Hc5+kAIgH4WzCErhkJ8prhVOLCGS0Us6toO5X947Tn/tE+WfMDM7Vv1SYoHPx46SEnCLoweFdgGF1AJtKjJCY0hS6GNr5IRJm4qNsKayYpm5zbkpjQYnmBjbfhpBlm6riVxIQmW3uOSmJCI818/zetWHWYmfXaTVBIIUO//QgLFg+WD/rdx5XEhNK5i7bR7z7AztcMm10L5c1HnDwOFYGuGdPoURITuoSOuy1FmT3hGAqGKQe6MJTEhKbLC1lFxIQhNIGly8mGsRxveVFOoslJXqitJc7MeFvcAZtbh00sIFWB/O2TIEiyUEwYopy79CqyLjsEJTGhIdJKU1ExYQiNz5Xrc3hYUDCMGeTklWyhe8MS6AK7ylkuEA5IhJycrDp+XjPTEqRp2RhWCQpp4jY1+a52FjO2PMa5lRQShtDvfjZZf2wkCB0Wef6TLXRvWHrskp3hmsGCgmHME12BWIkUM5OUIS5/YbUjdKGOt8HxM2Up8Jcm/spiTpCYs4w4DHLySrbSImeMQfZ0zTgI8RYet4wKXDO8ncGyxVkeDGMCOWFNM3N8lsigswTDD6RbI9KMydNbTjxOMcE4IMFS7E23YtfizPjjo6yY+EwJiryqCJy0lgqKiWJp2lcIsODO3GlcPhVFHjtzMU1LjAVoy2uNEqdianwwBWHbKmjYHjidoPCamVajvGXk3UWSkY9SvGamWXPnYQ3WBGIpuFMKoiMcL3OxDpPM/WFLkUH+/jh5AVVbOYplkJo9xcQSG3x/e01+MwwmIVOEyAusqQmKgtYqHQlPgW4y6M2Y6KMg2goHw8lrj6n9dRbxWN4ddrH8LkazqKTJP9LEuTP7d2MFeQ4iVMxdM0JNZXrJ35lyzQiT30V97PLkNcOhxRhbKKqI6kzNdEYc5HiZSsdcYukfNl1A5AUiWa4vTt6h2Dtq25YZEbYm3cJ9S5ZZAvFmLD1RVkbmm1t3ZCUmKVPWiWJnuDOXgZPmXHzz5MRm8vcrRUacPHfT5fnxtqOYgEzFdYRrhqkb1nmWpo3T34bKStTQGYSEAsdQMEzFqdBELS++Im+fLnrOkgLmKHjNTIuSvmZjWGVxlMLGlA+7Qu4UabY2JU5sWo/BHsj9N/edSRBUyGojrXBhdhYTzkAZt6g55DGO9JqZFuBMx40tFAxTcSocbc0iwmriTPiWbVGDg+5sFxt5n3zWIRUoSObswZhRZlwdMyo7scnjZ/Oibk5GhYvPOWPFTLZQMEzFieK0z6rFWOCrDUmQLgljVMRKYUpQZNijSqodMLX/KXaO93ElTJ3naHfI6mJBwTCmMTWJKXnhcSwsnB9VQJwxLCpCJn8HpmIPHH4yloGUpvaf478sx5Sg8JcFqqLlsXZJ2OXBMCaQAZV5JqL2vVXlcZXUuXTZ5CdZ9qBwdzOvzaiC6qLRJuIfvC1M1TNlySh2Eh+4KWHsFKmuDkSCFJDGXEfeMk15tryu5KrisZJdoZkgC4oqgirEWbklioy3JufeqbDB8Yq30YU8ykQKshpv6ctX/PmitkFJTChkMGGCDMqryosFWU+sidtwtN+bqX0xFaxZIejcyF4rxmIyosxlaEhTtinB4ywBdaYEhT1dTbYkxBGuGTIVebqJmBw1/vJheM0oluIiuRquGVbDgqLqsGcDJ1fE2uNlk7sqmcI1yYILhCkUoRErJ6zoKrrjs1Wp8GpHpo2a+j3Y8lia2s4gMlObubhHmglmdJbYA1NmeGexsnk70DUjXqaKV6aPh7csdR4hrxlLbNhYze6woGCYcpAXiFwjxWYqyiDZ4GqeO1mbjBAirTflLldOYSvY0gIgz7Mpc7W5ehemghmdpm+HGUHhTsX0bAalOkuLianfk6UonYpnOENgLAdlMowFkFWBcsIpn17W4LeGafKu212JlW6k8h6x5YiJeXaYsE1dtI2KBhlgZ+rO2J3Psdsj3ScBsjKspT1+TBHrDN1aWVAwTAWgi4TXzDS6c24rxcU86cc3lXZoCrrrsEWbbHclw07ZB+YahhmLkzBlacqzc6prVcEN7KyAYirIsiBvRqy9Zsy2smmd3WGXB8NUAnlnXGbykemDAbI6YGQ5d9jRfBdbKUhMhNmjWJgMzlxtomV3lJEgRVOi0NnOa7IJS0uIEwVmOjTlXDNCVNcMcy6SaGurw9oTFhRVhCVNzZhSnPV4qaoC0kV4urRCmPKj+lewEmNFGOyC6X7Fsg+KvU2/cSYERQRldChCRlosnD0YU8GUOHPoO2IV1dn40SpU1wwhNgz6nxhSXoBwtcIuD4axI9KPGmbGvGnv+gquAFkkRnnNTGtYFQ2gyunvEWXitZolTlhq3ZSoHeQOFR4dCRl8ae664LCFsVhQMIydkXcg7NoohYLUBhs8ZphZPrgasg1MWRhEzIQMxjRmxYAznmspomxRfpyxAfJ8rDaxJnZ5MIyzIgOhoq0sfMPNwUox1r48WaaSxpoYQ5+HVWH10XgT++Ivfd6m7iAznNjVlGCidgIFAyZw5VfLka5OumZEWfF7SDcjWh0StlAwjAloApO55EkyYM2aBj8uW7/fVkhT7xITq1P6p1SJ+V26LEzty3QzwZjO3ETLnFiOr+yxp3EyLsDlkdeMdFkIz9/K34MpS4TD3pywoGAYIxgICQX/ykxq0jxu6o6WCwepoIJAZky9VSoqzEwGprJ3ip05I0LeSZsqZR4sj32FmuHJ5ZNlHQWXdvuprhnqKrXBlfne8riZqm/isJYidnlUETYqShLv7M1jLMUBjleuiT9ouliky4ZR5Zoypbsk3kw2gL3M41E2yFlPribzfZQ8LsbKhwfLz+ze5VU2h8swsh+mzmWCEwZjGkKWhDQTn9FxSLOkHLScEKcbuFCo9ooiGm1NgC2uGXYK+p2oHI8KXDNMClNHdqmxoKg6ZttgS8n2uKMtiQnVWDHcXula1X28THWfhLw7TZIdAxOUP37Z9yNEFgNS/Ozm+guk2FEgVqaPgDGq/OIlGyyFyTsxY5YAcddnp4nJkLgK9HFx+jbfUkS9Wc7fn1IOOs/I35hSg8VU/RV7iQp/G10zrDmH0WYaCQbLa0aGvF7oOhKrrhlKHQpzfXhMueEcAnZ5MIwR5ERvLvMA8iI2TSkfLYVZGkrLRpfXrIij500g7/QjzWQeTJR9N+y9H/EWVjS0pzisUuRduiUTl78UF7NVj4kW9LtxySqx0nIwr5zFguWxSpLWHvU1Y3Y5YqLY0UUrCwqGMUE5QYLWMomj5s0jj4+5fPxpVTQxWeIDd6n4AGlBsNdvf4m1bcIdFdn0zyYt9Y0Q5eiilQUFw5hBXljLu+uoCMVSTHBdCguQd32TzCy5uApERXmWkDxXPJ/ytz+pEj0nTFEsC5S5dA8b6QK2pRhTjpvDB/yyoGCYcpB3HYNtcOdB2QshLCYqhjxeb5oZFFfR7IOKIO8KzZ17lz2fqo6Zb1ohLIrl+AAXaZhWLlI0jbJBl9ElznTcXDUoM9fEBagqzEXmLnzWYu3+22PfHHGfFGx2vuWdcpicuKJkAJU5f6dCihK4aSdzZbwdAyetXa+pc1vh40B+/ZKY0Itmul/aO5U02oz/uioFhalzYrfgWRnPEi1jViLlb99c4CXkRJosH7bMfjF1bXc4pAhIkD1fIi04Zgr2vmbYjRoajTUB/gzj3qgitA25yDESjKtj7Pfvgk3pbIqZdO5cZw/sZUHBMAzDMIzVcAwFwzAMwzBWw4KCYRiGYRirYUHBMAzDMIzVsKBgGIZhGMZqWFAwDMMwDGM1LCgYhmEYhrEaFhQMwzAMw1gNCwqGYRiGYayGBQXDMAzDMFbDgoJhGIZhGKthQcEwDMMwjNWwoGAYhmEYxmpYUDAMwzAMYzUsKBiGYRiGsRoWFAzDMAzDWA0LCoZhGIZhrIYFBcMwDMMwVsOCgmEYhmEYq2FBwTAMwzCM1bCgYBiGYRjGalhQMAzDMAxjNSwoGIZhGIaxGhYUDMMwDMNYDQsKhmEYhmGshgUFwzAMwzBWw4KCYRiGYRirYUHBMAzDMIzVsKBgGIZhGMZqWFAwDMMwDGM1LCgYhmEYhrEaFhQMwzAMw1gNCwqGYRiGYayGBQXDMAzDMFbDgoJhGIZhGKthQcEwDMMwjNWwoGAYhmEYxmpYUDAMwzAMYzUsKBiGYRiGsQ4A/w+MpI/XSiFcbgAAAABJRU5ErkJggg==" />
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Live Meeting Assist</title>
+
+<!--
+==================================================================================
+  LIVE MEETING ASSIST — read this before you do anything else
+==================================================================================
+
+  WHAT THIS IS
+  A single HTML file that helps you follow live meetings (Zoom, Teams, Meet,
+  Webex, or anything else running in your browser or on your screen) by:
+    1. Capturing the meeting's audio and turning it into a live, scrolling
+       caption feed (with rough speaker turns and optional live translation).
+    2. After the call, turning the saved transcript into a Minutes of Meeting
+       (summary, key points, decisions, action items, per-speaker breakdown).
+
+  There is NO server anywhere. Every line of JavaScript in this file runs
+  inside your own browser tab. The only things that leave your computer are
+  the audio clips and text you choose to send to whichever AI provider you
+  configure in the Settings tab — and they go straight from your browser to
+  that provider's API, using an API key that YOU type in and that is stored
+  only in this browser's local storage. This file, even hosted on a public
+  GitHub Pages URL, never contains your key and never sends your data
+  anywhere else.
+
+  HOW AUDIO CAPTURE ACTUALLY WORKS (please read this — it explains a real
+  limitation, not a bug)
+  A plain web page cannot listen to "whatever is playing on your computer"
+  directly — browsers don't allow that, for good privacy reasons. The only
+  way a web page can get audio out of another window is to ask you, the
+  human, to explicitly share it, using the same "Share screen" permission
+  dialog you'd use for screen-sharing. That's what the "Start sharing audio"
+  button does: it opens your browser's normal screen/tab-share picker, and
+  you choose the meeting tab (or window, or whole screen) AND tick the
+  "share audio" / "share tab audio" checkbox in that dialog. If you forget
+  to tick that box, the app will tell you — no audio track means no
+  transcript.
+
+  This also means the "floating caption window" cannot magically float on
+  top of Zoom or Teams the way a native app could — a web page has no
+  power to draw on top of other applications. What we do instead is use a
+  real browser feature called "Document Picture-in-Picture" (supported in
+  Chrome and Edge) to pop the captions out into their own small always-on-
+  top window that Windows/macOS treats like any other floating window —
+  you can then drag it next to (or over) your meeting window. If your
+  browser doesn't support that (Firefox and Safari currently don't), the
+  captions simply stay inside this tab, and you'll want to keep this tab
+  visible (e.g. side-by-side with your meeting) instead.
+
+  WHAT "SPEAKER" LABELS MEAN
+  True speaker identification ("this voice belongs to Priya") needs a kind
+  of AI model (speaker diarization) that isn't available for free from a
+  browser with no backend. What this app does instead is a simple, honest
+  guess: it watches for gaps of silence in the audio, and whenever it hears
+  a long-enough pause, it assumes a new person may have started talking and
+  moves on to the next generic label ("Speaker A", "Speaker B", ...). It
+  will sometimes be wrong (two sentences from the same person can get
+  split, or a quick interjection can get merged into someone else's turn).
+  Click any speaker label in the transcript to rename it once you know who
+  it was — every line with that label (past and future, for the rest of
+  the session) updates to match, which makes the Minutes of Meeting much
+  more useful even though the underlying guess is rough.
+
+  BROWSER SUPPORT
+  Tab/screen audio capture (getDisplayMedia with audio) works in Chrome,
+  Edge, and other Chromium browsers, and in current Firefox. Safari's
+  support is inconsistent at the time of writing. The floating pop-out
+  window needs Chrome/Edge specifically. The app checks for these features
+  on load and tells you plainly if something isn't available, rather than
+  failing silently.
+
+  HOW TO DEPLOY
+  Upload this single file to a GitHub Pages repo (or any static host) as
+  index.html. That's it — no build step, no npm install, no server config.
+==================================================================================
+-->
 
 <style>
-  :root {
-    --navy: #014C8E;
-    --navy-dark: #013461;
-    --navy-tint: #EAF1F8;
-    --orange: #F38A30;
-    --orange-dark: #D9711C;
-    --orange-tint: #FDF0E2;
-    --bg: #F3F5F8;
-    --card: #FFFFFF;
-    --border: #E3E8EF;
-    --text-primary: #16232F;
-    --text-secondary: #5C6B79;
-    --text-tertiary: #8B97A3;
-    --sans: 'Inter', -apple-system, 'Segoe UI', system-ui, sans-serif;
-    --mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
-    --radius: 14px;
-    --shadow: 0 1px 2px rgba(16,35,53,0.04), 0 8px 24px rgba(16,35,53,0.06);
-  }
-
-  * { box-sizing: border-box; }
-
-  html, body {
-    margin: 0;
-    padding: 0;
-    background: var(--bg);
-    background-image:
-      radial-gradient(1100px 420px at 15% -10%, rgba(1,76,142,0.07), transparent 60%),
-      radial-gradient(900px 380px at 100% 0%, rgba(243,138,48,0.07), transparent 55%);
-    font-family: var(--sans);
-    color: var(--text-primary);
-    -webkit-font-smoothing: antialiased;
-  }
-
-  .page {
-    max-width: 860px;
-    margin: 0 auto;
-    padding: 32px 20px 56px;
-  }
-
-  /* ===================== Top bar ===================== */
-
-  .topbar {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding-bottom: 22px;
-    margin-bottom: 26px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .topbar img {
-    height: 42px;
-    width: auto;
-    display: block;
-  }
-
-  .topbar-divider {
-    width: 1px;
-    height: 34px;
-    background: var(--border);
-  }
-
-  .topbar-text-eyebrow {
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.14em;
-    color: var(--orange-dark);
-    text-transform: uppercase;
-  }
-
-  .topbar-text-title {
-    font-size: 19px;
-    font-weight: 700;
-    color: var(--navy);
-    letter-spacing: -0.01em;
-    margin-top: 2px;
-  }
-
-  /* ===================== Tabs ===================== */
-
-  .tabs {
-    display: flex;
-    gap: 6px;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 5px;
-    margin-bottom: 20px;
-    box-shadow: var(--shadow);
-  }
-
-  .tab-btn {
-    flex: 1;
-    background: transparent;
-    border: none;
-    color: var(--text-secondary);
-    font-family: var(--sans);
-    font-size: 13.5px;
-    font-weight: 600;
-    padding: 11px 10px;
-    cursor: pointer;
-    border-radius: 8px;
-    transition: all 0.15s ease;
-  }
-
-  .tab-btn:hover { color: var(--navy); background: var(--navy-tint); }
-
-  .tab-btn.active {
-    color: #fff;
-    background: var(--navy);
-  }
-
-  .screen { display: none; }
-  .screen.active { display: flex; flex-direction: column; gap: 16px; }
-
-  /* ===================== Panels ===================== */
-
-  .panel {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 20px 22px;
-    box-shadow: var(--shadow);
-  }
-
-  .panel-label {
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--navy);
-    margin-bottom: 14px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .panel-label-count {
-    color: var(--text-tertiary);
-    text-transform: none;
-    letter-spacing: 0;
-    font-weight: 500;
-    font-size: 12px;
-  }
-
-  .field { margin-bottom: 14px; }
-  .field:last-child { margin-bottom: 0; }
-
-  .field label {
-    display: block;
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text-secondary);
-    margin-bottom: 6px;
-  }
-
-  .field input {
-    width: 100%;
-    background: #FAFBFC;
-    border: 1.5px solid var(--border);
-    border-radius: 9px;
-    padding: 10px 12px;
-    color: var(--text-primary);
-    font-family: var(--mono);
-    font-size: 14.5px;
-    font-weight: 500;
-    outline: none;
-    transition: border-color 0.15s ease, background 0.15s ease;
-  }
-
-  .field input:focus {
-    border-color: var(--orange);
-    background: #fff;
-  }
-
-  .field-note {
-    font-size: 12px;
-    color: var(--text-tertiary);
-    margin-top: 5px;
-  }
-
-  /* ===================== Result panel ===================== */
-
-  .result-panel {
-    background: linear-gradient(135deg, var(--navy) 0%, var(--navy-dark) 100%);
-    border: none;
-    color: #fff;
-  }
-
-  .result-panel .panel-label {
-    color: rgba(255,255,255,0.75);
-  }
-
-  .result-readout {
-    font-family: var(--mono);
-    font-size: 38px;
-    font-weight: 700;
-    color: #fff;
-    letter-spacing: -0.01em;
-    line-height: 1.1;
-  }
-
-  .result-sub {
-    font-size: 13.5px;
-    color: rgba(255,255,255,0.82);
-    margin-top: 8px;
-  }
-
-  .result-bottleneck {
-    display: inline-block;
-    font-size: 12px;
-    font-family: var(--mono);
-    color: var(--navy-dark);
-    background: var(--orange);
-    padding: 4px 10px;
-    border-radius: 20px;
-    margin-top: 10px;
-    font-weight: 600;
-  }
-
-  /* ===================== Gauge ===================== */
-
-  .gauge-track {
-    position: relative;
-    height: 10px;
-    background: #EDF1F5;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    overflow: hidden;
-  }
-
-  .gauge-fill {
-    height: 100%;
-    width: 0%;
-    background: var(--navy);
-    transition: width 0.2s ease, background 0.2s ease;
-  }
-
-  .gauge-threshold {
-    position: absolute;
-    top: -1px;
-    bottom: -1px;
-    left: 50%;
-    width: 2px;
-    background: var(--text-tertiary);
-  }
-
-  .gauge-labels {
-    display: flex;
-    justify-content: space-between;
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--text-tertiary);
-    margin-top: 6px;
-  }
-
-  .gauge-threshold-label { transform: translateX(45%); }
-
-  .gauge-note {
-    font-size: 12.5px;
-    margin-top: 10px;
-    color: var(--text-secondary);
-  }
-
-  .gauge-note.warn {
-    color: var(--orange-dark);
-    font-weight: 600;
-  }
-
-  /* ===================== Dynamic rows ===================== */
-
-  .row-list { display: flex; flex-direction: column; gap: 10px; }
-
-  .row-item {
-    background: #FAFBFC;
-    border: 1.5px solid var(--border);
-    border-radius: 10px;
-    padding: 14px;
-  }
-
-  .row-item-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-  }
-
-  .row-item-name {
-    font-family: var(--mono);
-    font-size: 11.5px;
-    font-weight: 600;
-    color: var(--navy);
-    letter-spacing: 0.03em;
-  }
-
-  .row-remove {
-    background: #fff;
-    border: 1.5px solid var(--border);
-    color: var(--text-tertiary);
-    font-size: 13px;
-    border-radius: 7px;
-    width: 24px;
-    height: 24px;
-    line-height: 1;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.15s ease;
-  }
-
-  .row-remove:hover {
-    color: #fff;
-    background: var(--orange-dark);
-    border-color: var(--orange-dark);
-  }
-
-  .row-fields {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-  }
-
-  .row-fields .field { margin-bottom: 0; }
-  .row-fields label { font-size: 11.5px; margin-bottom: 4px; }
-  .row-fields input { padding: 8px 10px; font-size: 13px; }
-
-  .add-btn {
-    width: 100%;
-    margin-top: 12px;
-    background: var(--orange-tint);
-    border: 1.5px dashed var(--orange);
-    color: var(--orange-dark);
-    font-family: var(--sans);
-    font-size: 13px;
-    font-weight: 700;
-    padding: 10px;
-    border-radius: 9px;
-    cursor: pointer;
-    transition: background 0.15s ease;
-  }
-
-  .add-btn:hover { background: #FCE3C6; }
-
-  /* ===================== Breakdown ===================== */
-
-  .breakdown-note {
-    font-size: 12px;
-    color: var(--text-tertiary);
-    line-height: 1.55;
-    margin-bottom: 14px;
-    padding: 10px 12px;
-    background: var(--navy-tint);
-    border-radius: 8px;
-  }
-
-  .breakdown-list { display: flex; flex-direction: column; gap: 8px; }
-
-  .breakdown-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    padding: 10px 13px;
-    background: #FAFBFC;
-    border: 1.5px solid var(--border);
-    border-radius: 9px;
-  }
-
-  .breakdown-row-name {
-    font-family: var(--mono);
-    font-size: 12.5px;
-    font-weight: 600;
-    color: var(--text-secondary);
-  }
-
-  .breakdown-row-value {
-    font-family: var(--mono);
-    font-size: 13.5px;
-    font-weight: 700;
-    color: var(--navy);
-    text-align: right;
-  }
-
-  .breakdown-row-value .sub {
-    display: block;
-    font-size: 10.5px;
-    font-weight: 500;
-    color: var(--text-tertiary);
-    margin-top: 2px;
-  }
-
-  .breakdown-empty {
-    font-size: 13px;
-    color: var(--text-tertiary);
-    padding: 10px 0;
-  }
-
-  /* ===================== Footer ===================== */
-
-  .foot-note {
-    font-size: 11.5px;
-    color: var(--text-tertiary);
-    line-height: 1.6;
-    padding: 14px 4px 0;
-    text-align: center;
-  }
-
-  .page-footer {
-    text-align: center;
-    font-size: 11.5px;
-    color: var(--text-tertiary);
-    margin-top: 30px;
-  }
-
-  .page-footer strong { color: var(--navy); }
-
-  /* ===================== Recommendation panel ===================== */
-
-  .recommend-panel {
-    border-top: 3px solid var(--orange);
-  }
-
-  .duration-inputs {
-    display: flex;
-    gap: 8px;
-  }
-
-  .duration-inputs input {
-    flex: 1;
-  }
-
-  .duration-inputs select {
-    flex: 1;
-    background: #FAFBFC;
-    border: 1.5px solid var(--border);
-    border-radius: 9px;
-    padding: 10px 10px;
-    color: var(--text-primary);
-    font-family: var(--sans);
-    font-size: 13.5px;
-    font-weight: 500;
-    outline: none;
-  }
-
-  .duration-inputs select:focus {
-    border-color: var(--orange);
-  }
-
-  .recommend-readout {
-    font-family: var(--mono);
-    font-size: 30px;
-    font-weight: 700;
-    color: var(--orange-dark);
-    letter-spacing: -0.01em;
-    margin-top: 4px;
-  }
-
-  .recommend-sub {
-    font-size: 13px;
-    color: var(--text-secondary);
-    margin-top: 6px;
-    line-height: 1.5;
-  }
-
-  .recommend-verdict {
-    font-size: 12.5px;
-    font-weight: 600;
-    margin-top: 10px;
-    padding: 8px 12px;
-    border-radius: 8px;
-  }
-
-  .recommend-verdict.ok {
-    color: #1C7A4E;
-    background: #E9F7EF;
-  }
-
-  .recommend-verdict.needs-increase {
-    color: var(--orange-dark);
-    background: var(--orange-tint);
-  }
-
-  .gauge-percent {
-    font-family: var(--mono);
-    font-size: 22px;
-    font-weight: 700;
-    color: var(--navy);
-    margin-bottom: 8px;
-  }
-
-  .gauge-percent.warn { color: var(--orange-dark); }
-
-  .recommend-percent {
-    font-family: var(--mono);
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text-secondary);
-    margin-top: 6px;
-  }
-
-  .vendor-tx-effective {
-    background: var(--navy-tint);
-    padding: 9px 11px;
-    border-radius: 8px;
-    color: var(--navy);
-    font-weight: 500;
-    margin-top: 4px;
-  }
-
-  .toggle-group {
-    display: flex;
-    border: 1.5px solid var(--border);
-    border-radius: 9px;
-    overflow: hidden;
-    margin-top: 8px;
-  }
-
-  .toggle-btn {
-    flex: 1;
-    background: #FAFBFC;
-    color: var(--text-secondary);
-    border: none;
-    padding: 8px 6px;
-    font-family: var(--sans);
-    font-size: 11.5px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.15s ease, color 0.15s ease;
-  }
-
-  .toggle-btn + .toggle-btn {
-    border-left: 1.5px solid var(--border);
-  }
-
-  .toggle-btn.active {
-    background: var(--navy);
-    color: #fff;
-  }
-
-  .toggle-btn:hover:not(.active) {
-    background: var(--navy-tint);
-  }
-
-  @media (max-width: 480px) {
-    .result-readout { font-size: 30px; }
-    .row-fields { grid-template-columns: 1fr; }
-    .recommend-readout { font-size: 24px; }
-  }
+/* ================================================================
+   SECTION: VISUAL DESIGN — CSS custom properties (design tokens)
+   ================================================================
+   Design idea: this tool's whole job is to put captions in front of you
+   while you're on a call, so the visual language borrows from classic
+   closed-captioning — a dark, low-glare panel with warm "caption yellow"
+   for anything live/active, and a cool teal reserved only for translated
+   text, so your eye can tell "original" and "translation" apart at a
+   glance without reading a label every time. Everything else stays quiet
+   on purpose: this is a utility you glance at during a meeting, not a
+   marketing page.
+*/
+:root{
+  --bg:            #10141c;   /* page background: near-black navy, easy on the eyes in a dim room on a call */
+  --panel:         #171c27;   /* card / panel background */
+  --panel-raised:  #1e2431;   /* slightly lighter panel, for nested boxes */
+  --border:        #2a3140;
+  --text:          #e9ecf3;
+  --text-muted:    #8b93a7;
+  --accent:        #e8b34a;   /* "caption yellow" — live indicator, primary buttons, focus rings */
+  --accent-ink:    #241a04;   /* dark text to sit on top of the yellow accent */
+  --translate:     #4fd1c5;   /* teal, used only for translated text so it's visually distinct */
+  --success:       #4caf82;
+  --error:         #e5484d;
+  --error-bg:      #3a1618;
+  --radius:        10px;
+  --font-ui:       -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono:      ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+}
+
+*{ box-sizing: border-box; }
+
+html, body{
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+a{ color: var(--accent); }
+
+/* Visible keyboard focus everywhere — important since this app is used while
+   half-attending a meeting, sometimes navigated by keyboard alone. */
+button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, [tabindex]:focus-visible{
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* -------------------- App shell -------------------- */
+.app{
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px 16px 60px;
+}
+
+.app-header{
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+
+.app-header h1{
+  font-size: 20px;
+  margin: 0;
+  letter-spacing: 0.2px;
+}
+
+.app-header h1 .dot{
+  color: var(--accent);
+}
+
+.app-header p{
+  margin: 2px 0 0;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+/* -------------------- Browser-support banner -------------------- */
+.support-banner{
+  border: 1px solid var(--error);
+  background: var(--error-bg);
+  color: #ffd7d8;
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  font-size: 13.5px;
+  margin-bottom: 16px;
+  display: none; /* shown by JS only if a required feature is missing */
+}
+
+/* -------------------- Tabs -------------------- */
+.tabs{
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 18px;
+}
+
+.tab-btn{
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  padding: 10px 14px;
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+
+.tab-btn:hover{ color: var(--text); }
+
+.tab-btn.active{
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.tab-panel{ display: none; }
+.tab-panel.active{ display: block; }
+
+/* -------------------- Generic panel / card -------------------- */
+.card{
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.card h2{
+  font-size: 15px;
+  margin: 0 0 10px;
+  color: var(--text);
+}
+
+.card h2 .sub{
+  color: var(--text-muted);
+  font-weight: 400;
+  font-size: 12.5px;
+  margin-left: 6px;
+}
+
+.field-row{
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.field{
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.field label{
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+.field .hint{
+  font-size: 11.5px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+input[type="text"], input[type="password"], input[type="number"], select, textarea{
+  background: var(--panel-raised);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 13.5px;
+}
+
+textarea{ resize: vertical; }
+
+/* -------------------- Buttons -------------------- */
+button{
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.btn{
+  background: var(--panel-raised);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 9px 16px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  transition: background 0.15s ease, transform 0.05s ease;
+}
+.btn:hover{ background: #262d3c; }
+.btn:active{ transform: translateY(1px); }
+.btn:disabled{ opacity: 0.45; cursor: not-allowed; }
+
+.btn-primary{
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 600;
+}
+.btn-primary:hover{ background: #f0bf63; }
+
+.btn-danger{
+  background: transparent;
+  border-color: var(--error);
+  color: #ff9a9d;
+}
+.btn-danger:hover{ background: var(--error-bg); }
+
+.btn-small{
+  padding: 5px 10px;
+  font-size: 12px;
+}
+
+/* -------------------- Status banner (errors / info / success) -------------------- */
+#statusBanner{
+  display: none;
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  font-size: 13.5px;
+  margin-bottom: 14px;
+  border: 1px solid transparent;
+}
+#statusBanner.status-error{
+  display: block;
+  background: var(--error-bg);
+  border-color: var(--error);
+  color: #ffd7d8;
+}
+#statusBanner.status-info{
+  display: block;
+  background: #182233;
+  border-color: #2c3c58;
+  color: #cfe0ff;
+}
+#statusBanner.status-success{
+  display: block;
+  background: #10241c;
+  border-color: var(--success);
+  color: #b9f2d7;
+}
+
+/* -------------------- Capture tab specifics -------------------- */
+.live-dot{
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--accent);
+  display: inline-block;
+  margin-right: 6px;
+  animation: pulse 1.4s ease-in-out infinite;
+}
+@keyframes pulse{
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(232,179,74,0.5); }
+  50% { opacity: 0.55; box-shadow: 0 0 0 5px rgba(232,179,74,0); }
+}
+@media (prefers-reduced-motion: reduce){
+  .live-dot{ animation: none; }
+}
+
+.volume-meter{
+  height: 6px;
+  border-radius: 3px;
+  background: var(--panel-raised);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  margin-top: 6px;
+}
+.volume-meter-fill{
+  height: 100%;
+  width: 0%;
+  background: var(--accent);
+  transition: width 0.08s linear;
+}
+
+.transcript-log{
+  max-height: 360px;
+  overflow-y: auto;
+  background: var(--panel-raised);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 14px;
+}
+
+.transcript-line{
+  margin-bottom: 10px;
+}
+
+.speaker-chip{
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 12px;
+  padding: 1px 7px;
+  border-radius: 20px;
+  margin-right: 6px;
+  cursor: pointer;
+}
+.speaker-chip:hover{ background: #2a2410; }
+
+.line-time{
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-right: 6px;
+}
+
+.line-original{ color: var(--text); }
+.line-translated{
+  color: var(--translate);
+  margin-top: 2px;
+  margin-left: 20px;
+  font-style: italic;
+}
+
+.empty-state{
+  color: var(--text-muted);
+  font-size: 13.5px;
+  padding: 10px 2px;
+}
+
+.callout{
+  background: var(--panel-raised);
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 12.5px;
+  color: var(--text-muted);
+  margin-bottom: 14px;
+}
+.callout strong{ color: var(--text); }
+
+/* -------------------- Floating in-tab caption overlay -------------------- */
+/* This is the fallback overlay used when Document Picture-in-Picture isn't
+   available. It's an ordinary position:fixed box — see the big note at the
+   top of the file about why this can't float over OTHER applications. */
+#overlayWrapper{
+  position: fixed;
+  top: 80px;
+  left: 24px;
+  width: 340px;
+  height: 200px;
+  min-width: 240px;
+  min-height: 120px;
+  background: rgba(16, 20, 28, 0.94);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  display: none; /* toggled by JS */
+  flex-direction: column;
+  z-index: 9999;
+  resize: both;
+  overflow: hidden;
+}
+#overlayWrapper.visible{ display: flex; }
+
+#overlayDragHandle{
+  background: var(--panel-raised);
+  border-bottom: 1px solid var(--border);
+  padding: 6px 10px;
+  font-size: 12px;
+  color: var(--text-muted);
+  cursor: move;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  user-select: none;
+}
+
+#overlayCloseBtn{
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0 4px;
+}
+#overlayCloseBtn:hover{ color: var(--text); }
+
+#overlayContent{
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 12px;
+  font-size: 13.5px;
+}
+
+/* Shared styles for the caption list itself — used both inside the in-tab
+   overlay AND inside the pop-out Picture-in-Picture window (we literally
+   copy this stylesheet into that window's document, see JS). */
+.caption-line{ margin-bottom: 8px; }
+.caption-line .speaker{ color: var(--accent); font-weight: 600; font-size: 12px; margin-right: 5px; }
+.caption-line .original{ color: var(--text); }
+.caption-line .translated{ color: var(--translate); font-style: italic; display:block; margin-left: 14px; font-size: 12.5px; }
+
+/* -------------------- Minutes tab -------------------- */
+.session-list-item{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 4px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+}
+.session-list-item:last-child{ border-bottom: none; }
+.session-list-item:hover{ background: var(--panel-raised); }
+.session-list-item .meta{ color: var(--text-muted); font-size: 12px; }
+
+.mom-section{ margin-bottom: 16px; }
+.mom-section h3{
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--accent);
+  margin: 0 0 8px;
+}
+.mom-section ul{ margin: 0; padding-left: 20px; }
+.mom-section li{ margin-bottom: 5px; }
+.action-owner{
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.export-row{ display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+
+/* -------------------- Settings tab -------------------- */
+.settings-grid{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 16px;
+}
+@media (max-width: 620px){
+  .settings-grid{ grid-template-columns: 1fr; }
+}
+
+.key-input-row{ display: flex; gap: 6px; }
+.key-input-row input{ flex: 1; }
+
+hr.divider{
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 16px 0;
+}
 </style>
 </head>
 <body>
 
-<div class="page">
+<div class="app">
 
-  <header class="topbar">
-    <img src="data:image/png;base64,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" alt="Globe Teleservices" />
-    <div class="topbar-divider"></div>
+  <div class="app-header">
     <div>
-      <div class="topbar-text-eyebrow">Capacity Planning Tool</div>
-      <div class="topbar-text-title">TPS &amp; Queue Calculator</div>
+      <h1><span class="dot">●</span> Live Meeting Assist</h1>
+      <p>Live captions, rough speaker turns, optional translation, and auto-generated minutes — all running in this browser tab.</p>
     </div>
-  </header>
+  </div>
 
-  <nav class="tabs">
-    <button class="tab-btn active" data-screen="standard">Standard</button>
-    <button class="tab-btn" data-screen="variable">Variable Calculation</button>
-  </nav>
+  <!-- Filled in by JS on load if a required browser feature is missing -->
+  <div id="supportBanner" class="support-banner"></div>
 
-  <main>
+  <!-- General-purpose status line: permission errors, API errors, confirmations -->
+  <div id="statusBanner"></div>
 
-    <!-- ===================== STANDARD SCREEN ===================== -->
-    <div id="screen-standard" class="screen active">
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="capture">Capture</button>
+    <button class="tab-btn" data-tab="minutes">Minutes</button>
+    <button class="tab-btn" data-tab="settings">Settings</button>
+  </div>
 
-      <section class="panel">
-        <div class="panel-label">Queue</div>
-        <div class="field">
-          <label for="queueSize">Messages waiting in queue</label>
-          <input type="text" inputmode="numeric" id="queueSize" value="2500000" />
-          <div class="field-note" id="queueSizeWords">25,00,000 &middot; 25 lakh</div>
-        </div>
-      </section>
+  <!-- ============================== CAPTURE TAB ============================== -->
+  <div class="tab-panel active" id="tab-capture">
 
-      <section class="panel">
-        <div class="panel-label">Throttling inputs</div>
-        <div class="field">
-          <label for="clientCount">Active clients (round-robin)</label>
-          <input type="text" inputmode="numeric" id="clientCount" value="1" />
-        </div>
-        <div class="field">
-          <label for="perClientCap">Per-client TPS cap</label>
-          <input type="text" inputmode="numeric" id="perClientCap" value="1000" />
-          <div class="field-note">Default 1,000 for API &middot; configurable for SMPP</div>
-          <div class="toggle-group" id="clientTxToggle" data-value="tx">
-            <button type="button" class="toggle-btn active" data-mode="tx">TX only</button>
-            <button type="button" class="toggle-btn" data-mode="combined">TX+RX combined</button>
-          </div>
-        </div>
-        <div class="field">
-          <label for="operatorCap">Operator / vendor submission TPS limit</label>
-          <input type="text" inputmode="numeric" id="operatorCap" value="5000" />
-          <div class="field-note">Total quoted vendor capacity</div>
-          <div class="toggle-group" id="vendorTxToggle" data-value="combined">
-            <button type="button" class="toggle-btn" data-mode="tx">TX only</button>
-            <button type="button" class="toggle-btn active" data-mode="combined">TX+RX combined</button>
-          </div>
-        </div>
-        <div class="field-note vendor-tx-effective" id="vendorTxEffective">—</div>
-      </section>
+    <div class="callout">
+      <strong>Before you start:</strong> click "Start sharing audio" below, then in the
+      picker choose the meeting's browser tab (best option) or a window/screen, and make
+      sure you tick "Share tab audio" / "Share system audio". Without that checkbox
+      ticked, the browser won't hand this page any sound to transcribe.
+    </div>
 
-      <section class="panel result-panel">
-        <div class="panel-label">Time to clear</div>
-        <div class="result-readout" id="resultTime">—</div>
-        <div class="result-sub" id="resultThroughput">—</div>
-        <div class="result-bottleneck" id="resultBottleneck">—</div>
-      </section>
+    <div class="card">
+      <h2>Capture</h2>
 
-      <section class="panel">
-        <div class="panel-label">Queue level</div>
-        <div class="field">
-          <label for="threshold">Slowdown threshold (messages)</label>
-          <input type="text" inputmode="numeric" id="threshold" value="10000000" />
-          <div class="field-note">Default 1 crore (10M) — edit to match your actual Redis-backed capacity</div>
-        </div>
-        <div class="gauge-percent" id="gaugePercent">—</div>
-        <div class="gauge">
-          <div class="gauge-track">
-            <div class="gauge-fill" id="gaugeFill"></div>
-            <div class="gauge-threshold"></div>
-          </div>
-          <div class="gauge-labels">
-            <span>0</span>
-            <span class="gauge-threshold-label" id="gaugeThresholdLabel">1 crore (10M)</span>
-          </div>
-        </div>
-        <div class="gauge-note" id="gaugeNote"></div>
-      </section>
-
-      <section class="panel recommend-panel">
-        <div class="panel-label">Recommended queue size</div>
-        <div class="field">
-          <label for="trafficTPS">Expected traffic volume (TPS)</label>
-          <input type="text" inputmode="numeric" id="trafficTPS" value="5000" />
-          <div class="field-note">e.g. a 4,000–5,000 TPS campaign</div>
-        </div>
-        <div class="field duration-row">
-          <label for="durationValue">Sustain duration</label>
-          <div class="duration-inputs">
-            <input type="text" inputmode="numeric" id="durationValue" value="30" />
-            <select id="durationUnit">
-              <option value="60" selected>minutes</option>
-              <option value="1">seconds</option>
-              <option value="3600">hours</option>
-            </select>
-          </div>
-          <div class="field-note">How long you need to safely absorb this traffic at peak</div>
-        </div>
-        <div class="recommend-readout" id="recommendSize">—</div>
-        <div class="recommend-sub" id="recommendExplain">—</div>
-        <div class="recommend-percent" id="recommendPercent">—</div>
-        <div class="recommend-verdict" id="recommendVerdict"></div>
-      </section>
-
-      <div class="foot-note">
-        Reference benchmarks: 10,000 TPS acceptance-only &middot; 5,000 TPS accept + submit combined.
-        Two queues exist (acceptance + vendor submission) — this tool models the submission side, which is the real constraint.
+      <div class="field">
+        <label for="meetingNameInput">Meeting name (optional, just for your own records)</label>
+        <input type="text" id="meetingNameInput" placeholder="e.g. Weekly sync with Rajiv">
       </div>
 
-    </div>
-
-    <!-- ===================== VARIABLE CALCULATION SCREEN ===================== -->
-    <div id="screen-variable" class="screen">
-
-      <section class="panel">
-        <div class="panel-label">Clients <span class="panel-label-count" id="clientCountLabel"></span></div>
-        <div id="clientRows" class="row-list"></div>
-        <button class="add-btn" id="addClientBtn">+ Add client</button>
-        <div class="field" style="margin-top: 12px;">
-          <label>Client TPS bind type</label>
-          <div class="toggle-group" id="clientTxToggleVar" data-value="tx">
-            <button type="button" class="toggle-btn active" data-mode="tx">TX only</button>
-            <button type="button" class="toggle-btn" data-mode="combined">TX+RX combined</button>
-          </div>
-          <div class="field-note">Applies to all client caps above</div>
-        </div>
-      </section>
-
-      <section class="panel">
-        <div class="panel-label">Vendors / Operators <span class="panel-label-count" id="vendorCountLabel"></span></div>
-        <div id="vendorRows" class="row-list"></div>
-        <button class="add-btn" id="addVendorBtn">+ Add vendor</button>
-        <div class="field" style="margin-top: 12px;">
-          <label>Vendor TPS bind type</label>
-          <div class="toggle-group" id="vendorTxToggleVar" data-value="combined">
-            <button type="button" class="toggle-btn" data-mode="tx">TX only</button>
-            <button type="button" class="toggle-btn active" data-mode="combined">TX+RX combined</button>
-          </div>
-          <div class="field-note">Applies to all vendor caps above</div>
-        </div>
-        <div class="field-note vendor-tx-effective" id="vendorTxEffectiveVar">—</div>
-      </section>
-
-      <section class="panel result-panel">
-        <div class="panel-label">Aggregate time to clear</div>
-        <div class="result-readout" id="varResultTime">—</div>
-        <div class="result-sub" id="varResultThroughput">—</div>
-        <div class="result-bottleneck" id="varResultBottleneck">—</div>
-      </section>
-
-      <section class="panel">
-        <div class="panel-label">Queue level</div>
-        <div class="field">
-          <label for="thresholdVar">Slowdown threshold (messages)</label>
-          <input type="text" inputmode="numeric" id="thresholdVar" value="10000000" />
-        </div>
-        <div class="gauge-percent" id="gaugePercentVar">—</div>
-        <div class="gauge">
-          <div class="gauge-track">
-            <div class="gauge-fill" id="gaugeFillVar"></div>
-            <div class="gauge-threshold"></div>
-          </div>
-          <div class="gauge-labels">
-            <span>0</span>
-            <span class="gauge-threshold-label" id="gaugeThresholdLabelVar">1 crore (10M)</span>
-          </div>
-        </div>
-        <div class="gauge-note" id="gaugeNoteVar"></div>
-      </section>
-
-      <section class="panel">
-        <div class="panel-label">Per-client breakdown</div>
-        <div class="breakdown-note">Weighted-fair-share estimate — each client's slice of the effective throughput is proportional to its own TPS cap, capped at that value. Not an exact round-robin simulation.</div>
-        <div id="breakdownList" class="breakdown-list"></div>
-      </section>
-
-      <section class="panel recommend-panel">
-        <div class="panel-label">Recommended queue size</div>
-        <div class="field">
-          <label for="trafficTPSVar">Expected traffic volume (TPS)</label>
-          <input type="text" inputmode="numeric" id="trafficTPSVar" value="5000" />
-          <div class="field-note">Total inbound traffic to plan for — independent of the client caps above</div>
-        </div>
-        <div class="field duration-row">
-          <label for="durationValueVar">Sustain duration</label>
-          <div class="duration-inputs">
-            <input type="text" inputmode="numeric" id="durationValueVar" value="30" />
-            <select id="durationUnitVar">
-              <option value="60" selected>minutes</option>
-              <option value="1">seconds</option>
-              <option value="3600">hours</option>
-            </select>
-          </div>
-          <div class="field-note">How long you need to safely absorb this traffic at peak</div>
-        </div>
-        <div class="recommend-readout" id="recommendSizeVar">—</div>
-        <div class="recommend-sub" id="recommendExplainVar">—</div>
-        <div class="recommend-percent" id="recommendPercentVar">—</div>
-        <div class="recommend-verdict" id="recommendVerdictVar"></div>
-      </section>
-
-      <div class="foot-note">
-        Total queue and total capacities are summed across every client / vendor row. Effective throughput = min(total client capacity, total vendor capacity).
+      <div class="field-row">
+        <button class="btn btn-primary" id="startBtn">Start sharing audio</button>
+        <button class="btn btn-danger" id="stopBtn" disabled>Stop</button>
+        <button class="btn" id="popoutBtn" disabled title="Pop captions out into their own floating window">Pop out captions</button>
+        <span id="captureState" class="empty-state"></span>
       </div>
 
+      <div class="volume-meter" id="volumeMeterWrap" style="display:none;">
+        <div class="volume-meter-fill" id="volumeMeterFill"></div>
+      </div>
+
+      <div class="field-row" style="margin-top: 10px;">
+        <label style="display:flex; align-items:center; gap:6px; font-size:13px; color: var(--text-muted);">
+          <input type="checkbox" id="translateToggle"> Translate live
+        </label>
+        <select id="translateLangSelect" disabled>
+          <option value="">Choose a language…</option>
+          <option value="Spanish">Spanish</option>
+          <option value="French">French</option>
+          <option value="German">German</option>
+          <option value="Hindi">Hindi</option>
+          <option value="Mandarin Chinese">Mandarin Chinese</option>
+          <option value="Japanese">Japanese</option>
+          <option value="Korean">Korean</option>
+          <option value="Arabic">Arabic</option>
+          <option value="Portuguese">Portuguese</option>
+          <option value="Russian">Russian</option>
+          <option value="Italian">Italian</option>
+          <option value="English">English (plain / simplified)</option>
+          <option value="__other__">Other…</option>
+        </select>
+        <input type="text" id="translateLangOther" placeholder="Type a language" style="display:none; width: 160px;">
+      </div>
     </div>
 
-  </main>
+    <div class="card">
+      <h2>Live transcript <span class="sub">this tab always shows it, even if the pop-out window is open</span></h2>
+      <div class="transcript-log" id="transcriptLog">
+        <div class="empty-state">Nothing yet — start sharing audio to begin.</div>
+      </div>
+    </div>
+  </div>
 
-  <div class="page-footer">
-    <strong>Globe Teleservices</strong> &middot; Internal capacity planning tool &middot; runs entirely in your browser, no data leaves this page
+  <!-- ============================== MINUTES TAB ============================== -->
+  <div class="tab-panel" id="tab-minutes">
+
+    <div class="card" id="sessionListCard">
+      <h2>Saved meetings</h2>
+      <div id="sessionList"><div class="empty-state">No saved meetings yet. They appear here automatically after you stop a capture.</div></div>
+    </div>
+
+    <div class="card" id="sessionDetailCard" style="display:none;">
+      <div class="field-row" style="justify-content: space-between;">
+        <h2 id="sessionDetailTitle" style="margin:0;">Meeting</h2>
+        <button class="btn btn-small" id="backToListBtn">← Back to list</button>
+      </div>
+
+      <div class="field-row">
+        <button class="btn btn-primary" id="generateMomBtn">Generate minutes</button>
+        <span id="momStatus" class="empty-state"></span>
+      </div>
+
+      <div id="momContainer"></div>
+
+      <hr class="divider">
+
+      <h2>Full transcript</h2>
+      <div class="transcript-log" id="sessionTranscriptLog" style="max-height: 300px;"></div>
+
+      <div class="export-row">
+        <button class="btn" id="exportTxtBtn">Export transcript (.txt)</button>
+        <button class="btn" id="exportJsonBtn">Export everything (.json)</button>
+        <button class="btn" id="exportRtfBtn">Export minutes for Word (.rtf)</button>
+        <button class="btn btn-danger" id="deleteSessionBtn">Delete this meeting</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================== SETTINGS TAB ============================== -->
+  <div class="tab-panel" id="tab-settings">
+
+    <div class="card">
+      <h2>AI provider</h2>
+      <div class="callout">
+        Model names change fairly often as providers release new versions.
+        The boxes below are free-text (with a dropdown of current suggestions)
+        so you can just type in a new model name later if one stops working —
+        you don't need to edit any code. Check the provider's own docs if a
+        model you're using gets retired.
+      </div>
+
+      <div class="field">
+        <label for="providerSelect">Use this provider for transcription &amp; text tasks</label>
+        <select id="providerSelect">
+          <option value="groq">Groq (fast, free-tier Whisper + Llama/GPT-OSS models)</option>
+          <option value="gemini">Google Gemini (one model family handles audio + text)</option>
+        </select>
+      </div>
+
+      <div class="settings-grid">
+        <div>
+          <div class="field">
+            <label for="groqKeyInput">Groq API key</label>
+            <div class="key-input-row">
+              <input type="password" id="groqKeyInput" placeholder="gsk_...">
+              <button class="btn btn-small" type="button" data-toggle-visibility="groqKeyInput">show</button>
+            </div>
+            <div class="hint">Get a free key at console.groq.com → API Keys.</div>
+          </div>
+          <div class="field-row" style="margin-top:-6px;">
+            <button class="btn btn-small" type="button" id="refreshGroqModelsBtn">Refresh model list</button>
+            <span id="groqModelsStatus" class="hint"></span>
+          </div>
+          <div class="field">
+            <label for="groqTranscribeModel">Groq transcription model</label>
+            <input type="text" id="groqTranscribeModel" list="groqTranscribeModelList">
+            <datalist id="groqTranscribeModelList">
+              <option value="whisper-large-v3">
+              <option value="whisper-large-v3-turbo">
+            </datalist>
+            <select id="groqTranscribeModelPicker" style="display:none; margin-top:6px;"></select>
+            <div class="hint">whisper-large-v3 is slower but more accurate than the "turbo" variant — worth using if captions are coming out garbled on accented speech.</div>
+          </div>
+          <div class="field">
+            <label for="groqTextModel">Groq text model (translation &amp; minutes)</label>
+            <input type="text" id="groqTextModel" list="groqTextModelList">
+            <datalist id="groqTextModelList">
+              <option value="openai/gpt-oss-20b">
+              <option value="openai/gpt-oss-120b">
+              <option value="llama-3.3-70b-versatile">
+              <option value="llama-3.1-8b-instant">
+            </datalist>
+            <select id="groqTextModelPicker" style="display:none; margin-top:6px;"></select>
+          </div>
+        </div>
+
+        <div>
+          <div class="field">
+            <label for="geminiKeyInput">Google Gemini API key</label>
+            <div class="key-input-row">
+              <input type="password" id="geminiKeyInput" placeholder="AIza...">
+              <button class="btn btn-small" type="button" data-toggle-visibility="geminiKeyInput">show</button>
+            </div>
+            <div class="hint">Get a free key at aistudio.google.com → Get API key.</div>
+          </div>
+          <div class="field-row" style="margin-top:-6px;">
+            <button class="btn btn-small" type="button" id="refreshGeminiModelsBtn">Refresh model list</button>
+            <span id="geminiModelsStatus" class="hint"></span>
+          </div>
+          <div class="field">
+            <label for="geminiModel">Gemini model (handles both audio &amp; text)</label>
+            <input type="text" id="geminiModel" list="geminiModelList">
+            <datalist id="geminiModelList">
+              <option value="gemini-3.6-flash">
+              <option value="gemini-3.5-flash-lite">
+            </datalist>
+            <select id="geminiModelPicker" style="display:none; margin-top:6px;"></select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Capture behavior</h2>
+      <div class="field">
+        <label for="spokenLanguageSelect">Spoken language <span class="sub">optional, but recommended</span></label>
+        <select id="spokenLanguageSelect">
+          <option value="">Auto-detect</option>
+          <option value="en">English</option>
+          <option value="hi">Hindi</option>
+          <option value="es">Spanish</option>
+          <option value="fr">French</option>
+          <option value="de">German</option>
+          <option value="zh">Mandarin Chinese</option>
+          <option value="ja">Japanese</option>
+          <option value="ko">Korean</option>
+          <option value="ar">Arabic</option>
+          <option value="pt">Portuguese</option>
+          <option value="ru">Russian</option>
+          <option value="it">Italian</option>
+        </select>
+        <div class="hint">Left on auto-detect, the transcription model has to guess the language fresh on every short clip — on accented speech it sometimes guesses wrong, which is a common cause of garbled captions. If your meetings are mostly in one language, picking it here fixes most of that.</div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label for="chunkSecondsInput">Send audio for transcription every… (seconds)</label>
+          <input type="number" id="chunkSecondsInput" min="5" max="30" step="1" style="width:90px;">
+          <div class="hint">Shorter = captions appear faster but cost more API calls. 8–12s is a good balance.</div>
+        </div>
+        <div class="field">
+          <label for="maxExtendInput">Wait up to this long for a natural pause (seconds)</label>
+          <input type="number" id="maxExtendInput" min="0" max="10" step="1" style="width:90px;">
+          <div class="hint">Avoids cutting a sentence in half. Set to 0 to always cut exactly on schedule.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Data</h2>
+      <p class="hint">Saved meetings live in this browser's storage (IndexedDB) and settings live in local storage. Nothing is uploaded anywhere except the direct AI API calls you configure above.</p>
+      <button class="btn btn-danger" id="clearAllDataBtn">Clear all saved meetings &amp; settings</button>
+    </div>
+
+    <button class="btn btn-primary" id="saveSettingsBtn">Save settings</button>
+    <span id="settingsSavedMsg" class="empty-state"></span>
   </div>
 
 </div>
 
+<!-- Floating in-tab caption overlay (fallback when Document PiP isn't supported, or before it's opened) -->
+<div id="overlayWrapper">
+  <div id="overlayDragHandle">
+    <span><span class="live-dot" id="overlayLiveDot" style="display:none;"></span>Live captions</span>
+    <button id="overlayCloseBtn" title="Hide this window">✕</button>
+  </div>
+  <div id="overlayContent">
+    <div class="empty-state">Waiting for audio…</div>
+  </div>
+</div>
+
 <script>
-// ===================== Shared helpers =====================
+'use strict';
+/* ================================================================================
+   SECTION 1: CONFIGURATION & CONSTANTS
+   ================================================================================
+   Tunable numbers live here so they're easy to find. Anything a non-technical
+   user should be able to change is instead exposed in the Settings tab (see
+   SECTION 11) — these are the "under the hood" constants that are safe defaults
+   for most people.
+*/
 
-function parseNum(str) {
-  const n = parseFloat(String(str).replace(/[^0-9.]/g, ''));
-  return isNaN(n) || n < 0 ? 0 : n;
+// How loud the audio needs to be (0–1 scale, RMS of the waveform) before we
+// count it as "someone is talking" rather than background hiss/silence.
+// If your mic/system audio is quiet and captions aren't appearing, try
+// lowering this slightly in the code.
+const SILENCE_RMS_THRESHOLD = 0.02;
+
+// If we're past the target chunk length and there's been at least this much
+// continuous quiet, we treat it as a natural pause and cut the audio chunk
+// there (avoids slicing a word in half).
+const CUT_ON_PAUSE_MS = 400;
+
+// If there's been at least this much continuous quiet right before a new
+// chunk starts, we guess a new person has started talking and move the
+// speaker label on. This is deliberately longer than CUT_ON_PAUSE_MS: a
+// short breath shouldn't count as a turn change, but a real pause should.
+const NEW_SPEAKER_GAP_MS = 900;
+
+// Generic speaker labels we cycle through. Click any label in the UI to
+// rename it — renames apply retroactively and for the rest of the session.
+const SPEAKER_LABEL_POOL = ['Speaker A', 'Speaker B', 'Speaker C', 'Speaker D', 'Speaker E', 'Speaker F'];
+
+// How much of the recent transcript we feed back to the transcription model
+// as "context" so it keeps spelling names/terms consistently between chunks.
+const CONTEXT_TAIL_CHARS = 220;
+
+// IndexedDB database/store names + version. If you ever change the *shape*
+// of a saved session object in a way older saved data wouldn't match,
+// bump DB_VERSION and add an upgrade step in openDatabase().
+const DB_NAME = 'liveMeetingAssistDB';
+const DB_VERSION = 1;
+const SESSIONS_STORE = 'sessions';
+
+const SETTINGS_KEY = 'lma_settings_v1';
+
+
+/* ================================================================================
+   SECTION 2: STORAGE
+   ================================================================================
+   Two different browser storage systems are used on purpose:
+     - localStorage for SETTINGS: tiny amount of data, simple key/value, needs
+       to be read synchronously in a few places (easy API).
+     - IndexedDB for SESSIONS (transcripts + minutes): this can grow fairly
+       large over many long meetings, and localStorage has a small size cap
+       (~5MB total) that a few weeks of transcripts could realistically hit.
+       IndexedDB has no practical size limit and is the right tool for that.
+*/
+
+// ---- Settings (localStorage) ----------------------------------------------
+
+function getDefaultSettings(){
+  return {
+    provider: 'groq',
+    groqApiKey: '',
+    groqTranscribeModel: 'whisper-large-v3',
+    groqTextModel: 'openai/gpt-oss-20b',
+    geminiApiKey: '',
+    geminiModel: 'gemini-3.6-flash',
+    chunkSeconds: 10,
+    maxExtendSeconds: 3,
+    translateEnabled: false,
+    targetLanguage: '',
+    spokenLanguage: ''
+  };
 }
 
-function formatIndian(num) {
-  num = Math.round(num);
-  const s = Math.abs(num).toString();
-  if (s.length <= 3) return (num < 0 ? '-' : '') + s;
-  const last3 = s.slice(-3);
-  const rest = s.slice(0, -3);
-  const grouped = rest.replace(/\B(?=(\d{2})+(?!\d))/g, ',');
-  return (num < 0 ? '-' : '') + grouped + ',' + last3;
+function getSettings(){
+  try{
+    const raw = localStorage.getItem(SETTINGS_KEY);
+    if(!raw) return getDefaultSettings();
+    // Merge with defaults so new settings fields added in a future edit of
+    // this file don't come back as `undefined` for people with older saved
+    // settings already in their browser.
+    return Object.assign(getDefaultSettings(), JSON.parse(raw));
+  }catch(err){
+    console.error('Could not read saved settings, using defaults.', err);
+    return getDefaultSettings();
+  }
 }
 
-function describeIndianScale(num) {
-  if (num >= 10000000) return (num / 10000000).toFixed(2).replace(/\.00$/, '') + ' crore';
-  if (num >= 100000) return (num / 100000).toFixed(2).replace(/\.00$/, '') + ' lakh';
-  if (num >= 1000) return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
-  return num.toString();
+function saveSettingsToStorage(settings){
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
 }
 
-function formatDuration(totalSeconds) {
-  if (!isFinite(totalSeconds) || totalSeconds <= 0) return '0s';
-  if (totalSeconds < 1) return '<1s';
+// ---- Sessions (IndexedDB) --------------------------------------------------
 
-  const days = Math.floor(totalSeconds / 86400);
-  const hours = Math.floor((totalSeconds % 86400) / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  const seconds = Math.floor(totalSeconds % 60);
+let dbInstance = null;
 
-  const parts = [];
-  if (days > 0) parts.push(`${days}d`);
-  if (hours > 0 || days > 0) parts.push(`${hours}h`);
-  if (minutes > 0 || hours > 0 || days > 0) parts.push(`${minutes}m`);
-  if (days === 0) parts.push(`${seconds}s`);
-
-  return parts.join(' ');
+function openDatabase(){
+  return new Promise((resolve, reject) => {
+    if(dbInstance){ resolve(dbInstance); return; }
+    if(!('indexedDB' in window)){
+      reject(new Error('This browser does not support IndexedDB, so saved meetings cannot be stored.'));
+      return;
+    }
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
+    request.onupgradeneeded = (event) => {
+      const db = event.target.result;
+      if(!db.objectStoreNames.contains(SESSIONS_STORE)){
+        const store = db.createObjectStore(SESSIONS_STORE, { keyPath: 'id' });
+        store.createIndex('createdAt', 'createdAt', { unique: false });
+      }
+    };
+    request.onsuccess = (event) => { dbInstance = event.target.result; resolve(dbInstance); };
+    request.onerror = (event) => reject(event.target.error);
+  });
 }
 
-function thresholdLabelText(threshold) {
-  return `${describeIndianScale(threshold)}`;
+async function dbSaveSession(session){
+  const db = await openDatabase();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(SESSIONS_STORE, 'readwrite');
+    tx.objectStore(SESSIONS_STORE).put(session);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
 }
 
-// ===================== Tab switching =====================
+async function dbGetAllSessions(){
+  const db = await openDatabase();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(SESSIONS_STORE, 'readonly');
+    const request = tx.objectStore(SESSIONS_STORE).getAll();
+    request.onsuccess = () => {
+      const list = request.result || [];
+      list.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+      resolve(list);
+    };
+    request.onerror = () => reject(request.error);
+  });
+}
 
-const tabBtns = document.querySelectorAll('.tab-btn');
-const screens = document.querySelectorAll('.screen');
+async function dbGetSession(id){
+  const db = await openDatabase();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(SESSIONS_STORE, 'readonly');
+    const request = tx.objectStore(SESSIONS_STORE).get(id);
+    request.onsuccess = () => resolve(request.result || null);
+    request.onerror = () => reject(request.error);
+  });
+}
 
-tabBtns.forEach(btn => {
+async function dbDeleteSession(id){
+  const db = await openDatabase();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(SESSIONS_STORE, 'readwrite');
+    tx.objectStore(SESSIONS_STORE).delete(id);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+async function dbClearAllSessions(){
+  const db = await openDatabase();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(SESSIONS_STORE, 'readwrite');
+    tx.objectStore(SESSIONS_STORE).clear();
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+
+/* ================================================================================
+   SECTION 3: APP STATE
+   ================================================================================
+   Everything that changes while the app is running lives in this one object
+   graph (plus a few standalone `let` variables for capture internals below,
+   in SECTION 5). Keeping it in one place makes it much easier to reason
+   about what the UI is showing at any moment.
+*/
+
+const state = {
+  currentTab: 'capture',
+  isCapturing: false,
+  currentSession: null,      // the session object being recorded right now
+  viewingSessionId: null,    // which saved session is open in the Minutes tab
+  speakerIndex: 0,           // which label in SPEAKER_LABEL_POOL is "current"
+  speakerRenames: {}         // e.g. { "Speaker A": "Priya" } — applied on render + save
+};
+
+
+/* ================================================================================
+   SECTION 4: SMALL UI HELPERS
+   ================================================================================ */
+
+function showStatus(kind, message){
+  const el = document.getElementById('statusBanner');
+  el.textContent = message;
+  el.className = 'status-' + kind; // 'error' | 'info' | 'success'
+  if(kind !== 'error'){
+    // Auto-clear non-error banners after a few seconds so the UI doesn't
+    // stay cluttered with old confirmations. Errors stay until the next
+    // status update, since the person may have stepped away from the tab.
+    clearTimeout(showStatus._timer);
+    showStatus._timer = setTimeout(() => { el.className = ''; el.textContent = ''; }, 4000);
+  }
+}
+
+function switchTab(tabName){
+  state.currentTab = tabName;
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.tab === tabName);
+  });
+  document.querySelectorAll('.tab-panel').forEach(panel => {
+    panel.classList.toggle('active', panel.id === 'tab-' + tabName);
+  });
+  if(tabName === 'minutes'){ renderSessionList(); }
+}
+
+function formatTimestamp(totalSeconds){
+  const s = Math.max(0, Math.floor(totalSeconds));
+  const mm = String(Math.floor(s / 60)).padStart(2, '0');
+  const ss = String(s % 60).padStart(2, '0');
+  return mm + ':' + ss;
+}
+
+function escapeHtml(str){
+  const div = document.createElement('div');
+  div.textContent = str == null ? '' : String(str);
+  return div.innerHTML;
+}
+
+function downloadFile(filename, content, mimeType){
+  const blob = new Blob([content], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+}
+
+
+/* ================================================================================
+   SECTION 5: AUDIO CAPTURE & CHUNKING
+   ================================================================================
+   The core idea: instead of using MediaRecorder's built-in "give me a chunk
+   every N seconds" mode (whose middle chunks are NOT valid standalone audio
+   files for most codecs — a real gotcha), we start and stop a *brand new*
+   MediaRecorder for every chunk. Each one therefore produces exactly one
+   complete, independently-decodable audio file, which transcription APIs
+   need. The trade-off is a tiny (tens of milliseconds) gap between chunks
+   while one recorder stops and the next starts — imperceptible in practice
+   for meeting speech.
+*/
+
+let audioOnlyStream = null;
+let audioContext = null;
+let analyserNode = null;
+let analyserBuffer = null;
+let pollTimer = null;
+
+let chunkRecorder = null;
+let chunkChunks = [];
+let chunkStartTime = 0;
+let chunkHadSpeech = false;
+let lastSpeechAt = 0;
+let nextChunkIsNewTurn = true; // the very first chunk always starts a new "turn"
+
+let sessionStartEpochMs = 0;
+
+async function startCapture(){
+  if(state.isCapturing) return;
+
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia){
+    showStatus('error', "This browser doesn't support sharing tab/screen audio (getDisplayMedia). Try current Chrome or Edge.");
+    return;
+  }
+
+  let displayStream;
+  try{
+    // video:true is required here even though we don't want the video —
+    // most browsers only grant tab/system AUDIO capture when video capture
+    // is requested alongside it. We throw the video track away immediately
+    // below once we have the stream.
+    displayStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+  }catch(err){
+    if(err.name === 'NotAllowedError'){
+      showStatus('error', 'Screen/audio sharing was cancelled or denied, so nothing was captured. Click "Start sharing audio" to try again.');
+    }else{
+      showStatus('error', 'Could not start capture: ' + err.message);
+    }
+    return;
+  }
+
+  const audioTracks = displayStream.getAudioTracks();
+  if(audioTracks.length === 0){
+    displayStream.getTracks().forEach(t => t.stop());
+    showStatus('error', 'No audio track was shared. When the picker opens, make sure to tick "Share tab audio" / "Share system audio" — sharing video only does not give this app any sound to transcribe.');
+    return;
+  }
+
+  // We only need audio — stop the video track right away to save CPU/battery
+  // and to avoid pointlessly holding a live video capture open.
+  displayStream.getVideoTracks().forEach(t => t.stop());
+  audioOnlyStream = new MediaStream(audioTracks);
+
+  // If the person stops sharing from the browser's own "Stop sharing" bar
+  // (rather than our Stop button), the audio track fires 'ended' — catch
+  // that so the app's state doesn't get stuck thinking it's still capturing.
+  audioTracks[0].addEventListener('ended', () => {
+    if(state.isCapturing) stopCapture('The browser reported that sharing was stopped.');
+  });
+
+  // Validate the settings needed for transcription before we go any further,
+  // so the person gets a clear message instead of silent failures later.
+  const settings = getSettings();
+  const keyProblem = validateProviderKey(settings);
+  if(keyProblem){
+    displayStream.getTracks().forEach(t => t.stop());
+    showStatus('error', keyProblem + ' Open the Settings tab to fix this.');
+    return;
+  }
+
+  setupAnalyser(audioOnlyStream);
+
+  // Start a fresh session object to record into.
+  const nameInput = document.getElementById('meetingNameInput').value.trim();
+  sessionStartEpochMs = Date.now();
+  state.currentSession = {
+    id: 's_' + sessionStartEpochMs,
+    createdAt: new Date(sessionStartEpochMs).toISOString(),
+    name: nameInput || ('Meeting on ' + new Date(sessionStartEpochMs).toLocaleString()),
+    transcript: [],
+    mom: null,
+    durationSec: 0
+  };
+  state.speakerIndex = 0;
+  state.speakerRenames = {};
+  nextChunkIsNewTurn = true;
+
+  state.isCapturing = true;
+  document.getElementById('startBtn').disabled = true;
+  document.getElementById('stopBtn').disabled = false;
+  document.getElementById('popoutBtn').disabled = !documentPipSupported();
+  document.getElementById('volumeMeterWrap').style.display = 'block';
+  document.getElementById('overlayLiveDot').style.display = 'inline-block';
+  document.getElementById('captureState').textContent = 'Capturing…';
+  document.getElementById('transcriptLog').innerHTML = '';
+  renderOverlay();
+  showOverlay(true);
+
+  pollTimer = setInterval(pollAnalyser, 200);
+  startNewChunkRecorder();
+  showStatus('success', 'Capturing audio. Captions will appear a few seconds after each chunk is sent for transcription.');
+}
+
+function stopCapture(reason){
+  if(!state.isCapturing) return;
+  state.isCapturing = false;
+
+  clearInterval(pollTimer);
+  pollTimer = null;
+
+  // Ask the in-flight recorder to stop so its onstop handler flushes the
+  // last partial chunk (see startNewChunkRecorder — it checks
+  // state.isCapturing and will NOT start another recorder after this one).
+  if(chunkRecorder && chunkRecorder.state !== 'inactive'){
+    chunkRecorder.stop();
+  }
+
+  if(audioOnlyStream){
+    audioOnlyStream.getTracks().forEach(t => t.stop());
+    audioOnlyStream = null;
+  }
+  if(audioContext){
+    audioContext.close().catch(() => {});
+    audioContext = null;
+  }
+
+  document.getElementById('startBtn').disabled = false;
+  document.getElementById('stopBtn').disabled = true;
+  document.getElementById('popoutBtn').disabled = true;
+  document.getElementById('volumeMeterWrap').style.display = 'none';
+  document.getElementById('overlayLiveDot').style.display = 'none';
+  document.getElementById('captureState').textContent = 'Stopped.';
+
+  if(state.currentSession){
+    state.currentSession.durationSec = (Date.now() - sessionStartEpochMs) / 1000;
+    dbSaveSession(state.currentSession).catch(err => console.error('Could not save session', err));
+  }
+
+  showStatus(reason ? 'info' : 'success', reason || 'Capture stopped. The meeting was saved to the Minutes tab.');
+}
+
+function setupAnalyser(stream){
+  const AudioCtx = window.AudioContext || window.webkitAudioContext;
+  audioContext = new AudioCtx();
+  const source = audioContext.createMediaStreamSource(stream);
+  analyserNode = audioContext.createAnalyser();
+  analyserNode.fftSize = 512;
+  analyserBuffer = new Uint8Array(analyserNode.fftSize);
+  source.connect(analyserNode);
+  // Deliberately NOT connecting analyserNode to audioContext.destination —
+  // doing so would play the meeting's own audio back out of your speakers,
+  // causing an echo/feedback loop. We only ever read the data, never play it.
+}
+
+function pollAnalyser(){
+  if(!analyserNode) return;
+  analyserNode.getByteTimeDomainData(analyserBuffer);
+  let sumSquares = 0;
+  for(let i = 0; i < analyserBuffer.length; i++){
+    const normalized = (analyserBuffer[i] - 128) / 128;
+    sumSquares += normalized * normalized;
+  }
+  const rms = Math.sqrt(sumSquares / analyserBuffer.length);
+  document.getElementById('volumeMeterFill').style.width = Math.min(100, rms * 400) + '%';
+
+  const now = performance.now();
+  if(rms > SILENCE_RMS_THRESHOLD){
+    lastSpeechAt = now;
+    chunkHadSpeech = true;
+  }
+
+  const settings = getSettings();
+  const targetMs = settings.chunkSeconds * 1000;
+  const maxMs = targetMs + settings.maxExtendSeconds * 1000;
+  const elapsed = now - chunkStartTime;
+  const silentForMs = now - lastSpeechAt;
+
+  if(elapsed >= targetMs){
+    const naturalPause = silentForMs >= CUT_ON_PAUSE_MS;
+    const ranOutOfPatience = elapsed >= maxMs;
+    if(naturalPause || ranOutOfPatience){
+      if(chunkRecorder && chunkRecorder.state !== 'inactive'){
+        chunkRecorder.stop(); // onstop fires handleChunkFinished(), which starts the next chunk
+      }
+    }
+  }
+}
+
+function startNewChunkRecorder(){
+  const isNewTurnForThisChunk = nextChunkIsNewTurn;
+  nextChunkIsNewTurn = false; // will be recomputed in handleChunkFinished() based on the gap after THIS chunk
+
+  chunkChunks = [];
+  chunkHadSpeech = false;
+  chunkStartTime = performance.now();
+
+  let mimeType = 'audio/webm;codecs=opus';
+  if(!MediaRecorder.isTypeSupported(mimeType)) mimeType = ''; // let the browser choose a default
+
+  try{
+    chunkRecorder = new MediaRecorder(audioOnlyStream, mimeType ? { mimeType } : undefined);
+  }catch(err){
+    showStatus('error', 'Could not start audio recording: ' + err.message);
+    stopCapture('Recording failed to start.');
+    return;
+  }
+
+  chunkRecorder.ondataavailable = (e) => { if(e.data && e.data.size > 0) chunkChunks.push(e.data); };
+  chunkRecorder.onstop = () => handleChunkFinished(isNewTurnForThisChunk);
+  chunkRecorder.start(); // no timeslice argument: we want exactly ONE dataavailable event, containing the whole chunk
+}
+
+function handleChunkFinished(isNewTurnForThisChunk){
+  const blob = new Blob(chunkChunks, { type: 'audio/webm' });
+  const hadSpeech = chunkHadSpeech;
+
+  // Decide, right now, whether the gap since the last detected speech is
+  // long enough that the chunk about to start should be treated as a new
+  // speaker turn.
+  const gapNow = performance.now() - lastSpeechAt;
+  nextChunkIsNewTurn = gapNow >= NEW_SPEAKER_GAP_MS;
+
+  if(state.isCapturing){
+    startNewChunkRecorder(); // keep the pipeline running without a gap in coverage
+  }
+
+  // Skip chunks that never had any sound above the silence threshold — no
+  // point spending an API call transcribing silence.
+  if(hadSpeech && blob.size > 300){
+    processChunk(blob, isNewTurnForThisChunk).catch(err => {
+      showStatus('error', 'A transcription chunk failed: ' + friendlyNetworkErrorMessage(err) + ' (continuing with the rest of the meeting.)');
+    });
+  }
+}
+
+function documentPipSupported(){
+  return 'documentPictureInPicture' in window;
+}
+
+
+/* ================================================================================
+   SECTION 6: TRANSCRIPTION (Groq Whisper or Gemini audio understanding)
+   ================================================================================ */
+
+function validateProviderKey(settings){
+  if(settings.provider === 'groq' && !settings.groqApiKey){
+    return 'No Groq API key is set.';
+  }
+  if(settings.provider === 'gemini' && !settings.geminiApiKey){
+    return 'No Gemini API key is set.';
+  }
+  return null;
+}
+
+async function blobToBase64(blob){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(',')[1]); // strip the "data:...;base64," prefix
+    reader.onerror = () => reject(new Error('Could not read audio data.'));
+    reader.readAsDataURL(blob);
+  });
+}
+
+function getRecentTranscriptText(maxChars){
+  const t = state.currentSession ? state.currentSession.transcript : [];
+  const text = t.map(line => line.text).join(' ');
+  return text.slice(-maxChars);
+}
+
+async function transcribeChunk(blob, contextText){
+  const settings = getSettings();
+  if(settings.provider === 'groq'){
+    return transcribeWithGroq(blob, contextText, settings);
+  }
+  return transcribeWithGemini(blob, contextText, settings);
+}
+
+async function transcribeWithGroq(blob, contextText, settings){
+  const form = new FormData();
+  form.append('file', blob, 'chunk.webm');
+  form.append('model', settings.groqTranscribeModel);
+  form.append('response_format', 'json');
+  form.append('temperature', '0');
+  if(contextText) form.append('prompt', contextText);
+  // Pinning the language stops Whisper from re-guessing it on every short
+  // clip, which is where accented speech most often gets mis-detected as
+  // the wrong language (or garbled trying to fit it into one).
+  if(settings.spokenLanguage) form.append('language', settings.spokenLanguage);
+
+  const res = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + settings.groqApiKey },
+    body: form
+  });
+
+  if(!res.ok){
+    throw new Error(await describeApiError(res, 'Groq transcription'));
+  }
+  const data = await res.json();
+  return (data.text || '').trim();
+}
+
+async function transcribeWithGemini(blob, contextText, settings){
+  const base64Audio = await blobToBase64(blob);
+  const languageHint = settings.spokenLanguage
+    ? ('The speaker is expected to be speaking in language code "' + settings.spokenLanguage + '" — transcribe in that language rather than guessing from the accent, and do not translate.')
+    : '';
+  const instruction =
+    'You are transcribing one short clip of audio taken from a live business meeting. ' +
+    'Write ONLY the exact words spoken, in the language they were spoken in, as plain text ' +
+    'with normal punctuation. Do not add speaker names, timestamps, or any commentary. ' +
+    'If the clip is silent, music-only, or unintelligible, reply with an empty string.' +
+    (languageHint ? ('\n\n' + languageHint) : '') +
+    (contextText ? ('\n\nFor spelling consistency only (do not repeat it back), here is the end of the transcript so far: "' + contextText + '"') : '');
+
+  const body = {
+    contents: [{
+      parts: [
+        { text: instruction },
+        { inline_data: { mime_type: 'audio/webm', data: base64Audio } }
+      ]
+    }],
+    generationConfig: { temperature: 0 }
+  };
+
+  const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + encodeURIComponent(settings.geminiModel) + ':generateContent', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-goog-api-key': settings.geminiApiKey },
+    body: JSON.stringify(body)
+  });
+
+  if(!res.ok){
+    throw new Error(await describeApiError(res, 'Gemini transcription'));
+  }
+  const data = await res.json();
+  const text = data && data.candidates && data.candidates[0] && data.candidates[0].content &&
+               data.candidates[0].content.parts && data.candidates[0].content.parts[0] &&
+               data.candidates[0].content.parts[0].text;
+  return (text || '').trim();
+}
+
+async function describeApiError(res, whatFailed){
+  let bodyText = '';
+  try{ bodyText = await res.text(); }catch(e){ /* ignore */ }
+  if(res.status === 401 || res.status === 403){
+    return whatFailed + ' failed: the API key was rejected (' + res.status + '). Double-check it in Settings.';
+  }
+  if(res.status === 429){
+    return whatFailed + ' failed: rate limit reached (429). Free tiers allow a limited number of requests per minute — wait a bit or reduce how often chunks are sent in Settings.';
+  }
+  return whatFailed + ' failed (HTTP ' + res.status + '). ' + bodyText.slice(0, 200);
+}
+
+
+/* ================================================================================
+   SECTION 7: SPEAKER TURN LABELING
+   ================================================================================
+   See the big note at the top of the file: this is a pause-based GUESS, not
+   real speaker identification. Renaming (via renameSpeaker below) is the
+   escape hatch that makes the guess actually useful.
+*/
+
+function advanceSpeaker(){
+  state.speakerIndex = (state.speakerIndex + 1) % SPEAKER_LABEL_POOL.length;
+}
+
+function currentSpeakerLabel(){
+  const raw = SPEAKER_LABEL_POOL[state.speakerIndex];
+  return state.speakerRenames[raw] || raw;
+}
+
+function renameSpeaker(oldLabel){
+  const newLabel = prompt('Rename "' + oldLabel + '" to (this changes every line with this label, for the rest of the meeting):', oldLabel);
+  if(!newLabel || !newLabel.trim() || newLabel.trim() === oldLabel) return;
+  const cleaned = newLabel.trim();
+
+  // Renames are looked up by the ORIGINAL generic label (Speaker A, B, ...),
+  // not by whatever it's currently displayed as, so repeated renames of the
+  // same slot keep working correctly.
+  const rawKeyForOldLabel = Object.keys(state.speakerRenames).find(k => state.speakerRenames[k] === oldLabel) ||
+    (SPEAKER_LABEL_POOL.includes(oldLabel) ? oldLabel : null);
+  if(rawKeyForOldLabel){
+    state.speakerRenames[rawKeyForOldLabel] = cleaned;
+  }
+
+  // Apply retroactively to every stored line whose CURRENT rendered label
+  // matches oldLabel, by walking stored raw labels through the rename map.
+  if(state.currentSession){
+    state.currentSession.transcript.forEach(line => {
+      if((state.speakerRenames[line.speakerRaw] || line.speakerRaw) === cleaned || line.speakerRaw === rawKeyForOldLabel){
+        // nothing to mutate on the line itself — speakerRaw stays the same,
+        // display always goes through the rename map, see renderTranscriptLine()
+      }
+    });
+    dbSaveSession(state.currentSession).catch(() => {});
+  }
+  renderFullTranscript();
+  renderOverlay();
+}
+
+
+/* ================================================================================
+   SECTION 8: TRANSLATION
+   ================================================================================ */
+
+async function translateText(text, targetLanguage, settings){
+  const prompt =
+    'Translate the following excerpt from a live meeting transcript into ' + targetLanguage + '. ' +
+    'Keep the meaning natural and conversational. Keep numbers, names, and technical terms recognisable. ' +
+    'Reply with ONLY the translation, nothing else.\n\n' + text;
+
+  if(settings.provider === 'groq'){
+    return chatCompletionGroq(prompt, settings.groqTextModel, settings, false);
+  }
+  return chatCompletionGemini(prompt, settings.geminiModel, settings, false);
+}
+
+async function chatCompletionGroq(promptText, model, settings, wantJson){
+  const body = {
+    model: model,
+    messages: [{ role: 'user', content: promptText }],
+    temperature: 0.3
+  };
+  if(wantJson) body.response_format = { type: 'json_object' };
+
+  const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + settings.groqApiKey },
+    body: JSON.stringify(body)
+  });
+  if(!res.ok) throw new Error(await describeApiError(res, 'Groq text request'));
+  const data = await res.json();
+  return (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content || '').trim();
+}
+
+async function chatCompletionGemini(promptText, model, settings, wantJson){
+  const body = {
+    contents: [{ parts: [{ text: promptText }] }],
+    generationConfig: wantJson ? { temperature: 0.3, responseMimeType: 'application/json' } : { temperature: 0.3 }
+  };
+  const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + encodeURIComponent(model) + ':generateContent', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-goog-api-key': settings.geminiApiKey },
+    body: JSON.stringify(body)
+  });
+  if(!res.ok) throw new Error(await describeApiError(res, 'Gemini text request'));
+  const data = await res.json();
+  const text = data && data.candidates && data.candidates[0] && data.candidates[0].content &&
+               data.candidates[0].content.parts && data.candidates[0].content.parts[0] &&
+               data.candidates[0].content.parts[0].text;
+  return (text || '').trim();
+}
+
+
+/* ================================================================================
+   SECTION 9: PER-CHUNK PIPELINE (ties SECTIONS 6–8 together)
+   ================================================================================ */
+
+// "Failed to fetch" is the generic message Chrome/Edge/Firefox give for a
+// request that never got a response at all — most often a CORS block or no
+// network. The single most common cause for THIS app is opening the file
+// directly (file:///...) instead of serving it over http(s): a file:// page
+// sends "Origin: null", and most APIs (Groq included) reject that origin
+// before your API key is ever checked. We can't see the browser's own
+// console-only CORS message from JavaScript, but we can detect this exact
+// symptom and point at the fix instead of just repeating "Failed to fetch".
+function friendlyNetworkErrorMessage(err){
+  const isGenericNetworkError = err instanceof TypeError && /fetch/i.test(err.message);
+  if(isGenericNetworkError && location.protocol === 'file:'){
+    return 'Network request blocked. This page is open as a local file (file://), and APIs refuse requests from that origin. ' +
+           'Serve this file over http/https instead — e.g. deploy it to GitHub Pages, or run "python3 -m http.server" ' +
+           'in this folder and open it via http://localhost:8000/ — then try again.';
+  }
+  if(isGenericNetworkError){
+    return 'Network request blocked (Failed to fetch). This is usually a CORS restriction, an ad-blocker/privacy extension, or no internet connection — check the browser console (F12) for the exact reason.';
+  }
+  return err.message;
+}
+
+async function processChunk(blob, isNewTurn){
+  const settings = getSettings();
+  const contextText = getRecentTranscriptText(CONTEXT_TAIL_CHARS);
+  const text = await transcribeChunk(blob, contextText);
+  if(!text) return; // silence, noise, or the model decided there was nothing worth transcribing
+
+  if(isNewTurn) advanceSpeaker();
+  const speakerRaw = SPEAKER_LABEL_POOL[state.speakerIndex];
+
+  let translated = null;
+  if(settings.translateEnabled && settings.targetLanguage){
+    try{
+      translated = await translateText(text, settings.targetLanguage, settings);
+    }catch(err){
+      showStatus('error', 'Translation failed for one line: ' + friendlyNetworkErrorMessage(err) + ' (the original caption is still shown.)');
+    }
+  }
+
+  const line = {
+    speakerRaw: speakerRaw,
+    text: text,
+    translated: translated,
+    tOffsetSec: (Date.now() - sessionStartEpochMs) / 1000
+  };
+
+  if(state.currentSession){
+    state.currentSession.transcript.push(line);
+    // Save after every line rather than only at the end — if the browser
+    // tab crashes or the meeting app takes over full-screen unexpectedly,
+    // nothing recorded so far is lost.
+    dbSaveSession(state.currentSession).catch(err => console.error('Auto-save failed', err));
+  }
+
+  appendTranscriptLineToUi(line);
+}
+
+
+/* ================================================================================
+   SECTION 10: RENDERING — live transcript log + floating overlay
+   ================================================================================ */
+
+function speakerDisplayLabel(speakerRaw){
+  return state.speakerRenames[speakerRaw] || speakerRaw;
+}
+
+function buildLineHtml(line){
+  const label = escapeHtml(speakerDisplayLabel(line.speakerRaw));
+  const time = escapeHtml(formatTimestamp(line.tOffsetSec));
+  let html = '<div class="transcript-line">' +
+    '<span class="line-time">' + time + '</span>' +
+    '<button class="speaker-chip" data-speaker="' + escapeHtml(line.speakerRaw) + '">' + label + '</button>' +
+    '<span class="line-original">' + escapeHtml(line.text) + '</span>';
+  if(line.translated){
+    html += '<div class="line-translated">' + escapeHtml(line.translated) + '</div>';
+  }
+  html += '</div>';
+  return html;
+}
+
+function appendTranscriptLineToUi(line){
+  const log = document.getElementById('transcriptLog');
+  if(log.querySelector('.empty-state')) log.innerHTML = '';
+  log.insertAdjacentHTML('beforeend', buildLineHtml(line));
+  log.scrollTop = log.scrollHeight;
+
+  wireSpeakerChips(log);
+  renderOverlay();
+}
+
+function renderFullTranscript(){
+  const log = document.getElementById('transcriptLog');
+  if(!state.currentSession || state.currentSession.transcript.length === 0){
+    log.innerHTML = '<div class="empty-state">Nothing yet — start sharing audio to begin.</div>';
+    return;
+  }
+  log.innerHTML = state.currentSession.transcript.map(buildLineHtml).join('');
+  log.scrollTop = log.scrollHeight;
+  wireSpeakerChips(log);
+}
+
+function wireSpeakerChips(container){
+  container.querySelectorAll('.speaker-chip').forEach(btn => {
+    btn.onclick = () => renameSpeaker(speakerDisplayLabel(btn.dataset.speaker));
+  });
+}
+
+// ---- Floating overlay (in-tab fallback, and the content mirrored into the
+//      Document Picture-in-Picture window when that's available) ----------
+
+function renderOverlay(){
+  const html = buildOverlayInnerHtml();
+  const inTabContent = document.getElementById('overlayContent');
+  if(inTabContent) inTabContent.innerHTML = html;
+  if(pipContentEl) pipContentEl.innerHTML = html;
+
+  [inTabContent, pipContentEl].forEach(el => { if(el) el.scrollTop = el.scrollHeight; });
+}
+
+function buildOverlayInnerHtml(){
+  const lines = state.currentSession ? state.currentSession.transcript : [];
+  if(lines.length === 0) return '<div class="empty-state">Waiting for audio…</div>';
+  // Only render the most recent lines in the small overlay — the full
+  // history is always available in the main tab's transcript log.
+  const recent = lines.slice(-25);
+  return recent.map(line => {
+    const label = escapeHtml(speakerDisplayLabel(line.speakerRaw));
+    let html = '<div class="caption-line"><span class="speaker">' + label + '</span>' +
+      '<span class="original">' + escapeHtml(line.text) + '</span>';
+    if(line.translated) html += '<span class="translated">' + escapeHtml(line.translated) + '</span>';
+    html += '</div>';
+    return html;
+  }).join('');
+}
+
+function showOverlay(visible){
+  document.getElementById('overlayWrapper').classList.toggle('visible', visible);
+}
+
+
+/* ================================================================================
+   SECTION 10b: DOCUMENT PICTURE-IN-PICTURE (the real floating window)
+   ================================================================================
+   Document PiP (Chrome/Edge only, as of when this was written) opens a
+   genuine separate always-on-top OS window that can sit visually on top of
+   your meeting app — something an ordinary web page element can never do.
+   We move the same overlay content into that window's own document. A nice
+   side effect: browsers generally keep a page more "alive" (less throttled)
+   while it owns an open Picture-in-Picture window, which helps this app
+   keep transcribing promptly even if you switch away from this browser tab.
+*/
+
+let pipWindowRef = null;
+let pipContentEl = null;
+
+async function togglePopout(){
+  if(pipWindowRef){
+    pipWindowRef.close();
+    return;
+  }
+  if(!documentPipSupported()){
+    showStatus('error', "Your browser doesn't support pop-out floating windows (this needs a recent Chrome or Edge). Captions will keep showing in this tab's floating box and the transcript log instead.");
+    return;
+  }
+  try{
+    pipWindowRef = await documentPictureInPicture.requestWindow({ width: 380, height: 220 });
+  }catch(err){
+    showStatus('error', 'Could not open the floating window: ' + err.message);
+    return;
+  }
+
+  // Copy this page's stylesheet into the new window so the caption styling
+  // (colors, fonts) matches — the PiP window has a completely separate
+  // document and doesn't automatically inherit anything from this page.
+  document.querySelectorAll('style').forEach(styleEl => {
+    pipWindowRef.document.head.appendChild(styleEl.cloneNode(true));
+  });
+  pipWindowRef.document.body.style.margin = '0';
+  pipWindowRef.document.body.style.background = 'var(--bg)';
+  pipWindowRef.document.body.style.color = 'var(--text)';
+  pipWindowRef.document.body.style.fontFamily = 'var(--font-ui)';
+  pipWindowRef.document.body.style.padding = '10px 12px';
+
+  pipContentEl = pipWindowRef.document.createElement('div');
+  pipWindowRef.document.body.appendChild(pipContentEl);
+  renderOverlay();
+
+  // Hide the in-tab fallback overlay while the real floating window is open,
+  // so captions aren't shown twice.
+  showOverlay(false);
+  document.getElementById('popoutBtn').textContent = 'Close pop-out captions';
+
+  pipWindowRef.addEventListener('pagehide', () => {
+    pipWindowRef = null;
+    pipContentEl = null;
+    document.getElementById('popoutBtn').textContent = 'Pop out captions';
+    if(state.isCapturing) showOverlay(true);
+  });
+}
+
+
+/* ================================================================================
+   SECTION 10c: DRAGGING & RESIZING THE IN-TAB OVERLAY
+   ================================================================================
+   Resizing uses the browser's own native CSS `resize: both` handle (see the
+   #overlayWrapper rule in <style>) rather than custom JS — it's simpler,
+   more accessible, and behaves the way people already expect. Dragging is
+   the one thing CSS can't do alone, so a small amount of JS below handles
+   moving the box by its header bar, and remembers the last position.
+*/
+
+(function setupOverlayDragging(){
+  const wrapper = document.getElementById('overlayWrapper');
+  const handle = document.getElementById('overlayDragHandle');
+  let dragging = false;
+  let startX = 0, startY = 0, startLeft = 0, startTop = 0;
+
+  handle.addEventListener('mousedown', (e) => {
+    if(e.target.id === 'overlayCloseBtn') return;
+    dragging = true;
+    startX = e.clientX; startY = e.clientY;
+    const rect = wrapper.getBoundingClientRect();
+    startLeft = rect.left; startTop = rect.top;
+    e.preventDefault();
+  });
+
+  window.addEventListener('mousemove', (e) => {
+    if(!dragging) return;
+    const newLeft = Math.max(0, Math.min(window.innerWidth - 60, startLeft + (e.clientX - startX)));
+    const newTop = Math.max(0, Math.min(window.innerHeight - 40, startTop + (e.clientY - startY)));
+    wrapper.style.left = newLeft + 'px';
+    wrapper.style.top = newTop + 'px';
+  });
+
+  window.addEventListener('mouseup', () => { dragging = false; });
+
+  document.getElementById('overlayCloseBtn').addEventListener('click', () => showOverlay(false));
+})();
+
+
+/* ================================================================================
+   SECTION 11: MINUTES OF MEETING GENERATION
+   ================================================================================ */
+
+function buildMomPrompt(session){
+  const transcriptText = session.transcript
+    .map(l => '[' + formatTimestamp(l.tOffsetSec) + '] ' + speakerDisplayLabelForSession(session, l.speakerRaw) + ': ' + l.text)
+    .join('\n');
+
+  return 'You are an assistant that writes clear, professional Minutes of Meeting from a raw transcript. ' +
+    'The transcript below uses rough, sometimes-inaccurate speaker labels (guessed from pauses in the audio) — ' +
+    'use them as-is. Respond with ONLY a single JSON object (no markdown, no code fences) with exactly these fields:\n' +
+    '{\n' +
+    '  "summary": "a short paragraph summarizing the whole meeting",\n' +
+    '  "keyPoints": ["short bullet points of what was discussed"],\n' +
+    '  "decisions": ["short bullet points of decisions that were made"],\n' +
+    '  "actionItems": [{"item": "what needs to be done", "owner": "who, if it can be inferred, else empty string"}],\n' +
+    '  "speakerBreakdown": [{"speaker": "label", "summary": "what that speaker mainly said or contributed"}]\n' +
+    '}\n\n' +
+    'If a field genuinely has nothing to report, use an empty array (or empty string for summary), never invent content.\n\n' +
+    'TRANSCRIPT:\n' + transcriptText;
+}
+
+function speakerDisplayLabelForSession(session, speakerRaw){
+  // Minutes can be (re)generated later, potentially after renames happened
+  // in a different tab/session load, so this re-derives from state's rename
+  // map only when it's the session currently loaded; otherwise falls back
+  // to the raw label, which is always still meaningful on its own.
+  if(state.currentSession && state.currentSession.id === session.id){
+    return state.speakerRenames[speakerRaw] || speakerRaw;
+  }
+  return speakerRaw;
+}
+
+async function generateMinutes(session){
+  const settings = getSettings();
+  const keyProblem = validateProviderKey(settings);
+  if(keyProblem) throw new Error(keyProblem + ' Open the Settings tab to fix this.');
+
+  if(!session.transcript || session.transcript.length === 0){
+    throw new Error('This meeting has no transcribed lines to summarize.');
+  }
+
+  const prompt = buildMomPrompt(session);
+  let raw;
+  if(settings.provider === 'groq'){
+    raw = await chatCompletionGroq(prompt, settings.groqTextModel, settings, true);
+  }else{
+    raw = await chatCompletionGemini(prompt, settings.geminiModel, settings, true);
+  }
+
+  let parsed;
+  try{
+    // Models occasionally wrap JSON in a markdown code fence despite being
+    // asked not to — strip that defensively before parsing.
+    const cleaned = raw.replace(/^```json\s*/i, '').replace(/^```\s*/, '').replace(/```\s*$/, '').trim();
+    parsed = JSON.parse(cleaned);
+  }catch(err){
+    // Fail gracefully: still show SOMETHING useful rather than an error
+    // with no minutes at all.
+    parsed = {
+      summary: raw || '(The model did not return a parseable summary.)',
+      keyPoints: [], decisions: [], actionItems: [], speakerBreakdown: [],
+      parseFailed: true
+    };
+  }
+
+  parsed.generatedAt = new Date().toISOString();
+  session.mom = parsed;
+  await dbSaveSession(session);
+  return parsed;
+}
+
+
+/* ================================================================================
+   SECTION 12: MINUTES TAB — list, detail view, export
+   ================================================================================ */
+
+async function renderSessionList(){
+  const listEl = document.getElementById('sessionList');
+  let sessions;
+  try{
+    sessions = await dbGetAllSessions();
+  }catch(err){
+    listEl.innerHTML = '<div class="empty-state">Could not load saved meetings: ' + escapeHtml(err.message) + '</div>';
+    return;
+  }
+  if(sessions.length === 0){
+    listEl.innerHTML = '<div class="empty-state">No saved meetings yet. They appear here automatically after you stop a capture.</div>';
+    return;
+  }
+  listEl.innerHTML = sessions.map(s => {
+    const date = new Date(s.createdAt).toLocaleString();
+    const lineCount = (s.transcript || []).length;
+    return '<div class="session-list-item" data-id="' + escapeHtml(s.id) + '">' +
+      '<span>' + escapeHtml(s.name) + '</span>' +
+      '<span class="meta">' + escapeHtml(date) + ' · ' + lineCount + ' lines' + (s.mom ? ' · minutes ready' : '') + '</span>' +
+      '</div>';
+  }).join('');
+  listEl.querySelectorAll('.session-list-item').forEach(el => {
+    el.addEventListener('click', () => openSessionDetail(el.dataset.id));
+  });
+}
+
+async function openSessionDetail(id){
+  const session = await dbGetSession(id);
+  if(!session){ showStatus('error', 'Could not find that saved meeting.'); return; }
+  state.viewingSessionId = id;
+
+  document.getElementById('sessionListCard').style.display = 'none';
+  const detailCard = document.getElementById('sessionDetailCard');
+  detailCard.style.display = 'block';
+  document.getElementById('sessionDetailTitle').textContent = session.name;
+
+  document.getElementById('sessionTranscriptLog').innerHTML =
+    session.transcript.length
+      ? session.transcript.map(l => buildLineHtmlStatic(l)).join('')
+      : '<div class="empty-state">No transcript was recorded for this meeting.</div>';
+
+  renderMomForSession(session);
+
+  document.getElementById('generateMomBtn').onclick = async () => {
+    const btn = document.getElementById('generateMomBtn');
+    const statusEl = document.getElementById('momStatus');
+    btn.disabled = true;
+    statusEl.textContent = 'Generating…';
+    try{
+      await generateMinutes(session);
+      renderMomForSession(session);
+      renderSessionList();
+      statusEl.textContent = 'Done.';
+    }catch(err){
+      showStatus('error', 'Could not generate minutes: ' + friendlyNetworkErrorMessage(err));
+      statusEl.textContent = '';
+    }finally{
+      btn.disabled = false;
+    }
+  };
+
+  document.getElementById('exportTxtBtn').onclick = () => exportSessionTxt(session);
+  document.getElementById('exportJsonBtn').onclick = () => exportSessionJson(session);
+  document.getElementById('exportRtfBtn').onclick = () => exportMinutesRtf(session);
+  document.getElementById('deleteSessionBtn').onclick = () => deleteSessionWithConfirm(session);
+}
+
+function buildLineHtmlStatic(line){
+  // Same rendering as the live view but without relying on state.speakerRenames
+  // (a saved session that's not the one currently in memory should still
+  // display sensibly using whatever labels were stored with it).
+  const label = escapeHtml(line.speakerRaw);
+  const time = escapeHtml(formatTimestamp(line.tOffsetSec));
+  let html = '<div class="transcript-line">' +
+    '<span class="line-time">' + time + '</span>' +
+    '<span class="speaker-chip" style="cursor:default;">' + label + '</span>' +
+    '<span class="line-original">' + escapeHtml(line.text) + '</span>';
+  if(line.translated) html += '<div class="line-translated">' + escapeHtml(line.translated) + '</div>';
+  html += '</div>';
+  return html;
+}
+
+function renderMomForSession(session){
+  const container = document.getElementById('momContainer');
+  if(!session.mom){
+    container.innerHTML = '<div class="empty-state">No minutes generated yet — click "Generate minutes" above.</div>';
+    return;
+  }
+  const m = session.mom;
+  let html = '';
+  if(m.parseFailed){
+    html += '<div class="callout">The AI response could not be parsed into neat sections, so the raw reply is shown below as the summary.</div>';
+  }
+  html += '<div class="mom-section"><h3>Summary</h3><p>' + escapeHtml(m.summary || '(none)') + '</p></div>';
+  html += momListSection('Key discussion points', m.keyPoints);
+  html += momListSection('Decisions made', m.decisions);
+
+  html += '<div class="mom-section"><h3>Action items</h3>';
+  if(m.actionItems && m.actionItems.length){
+    html += '<ul>' + m.actionItems.map(a =>
+      '<li>' + escapeHtml(a.item) + (a.owner ? ' <span class="action-owner">— ' + escapeHtml(a.owner) + '</span>' : '') + '</li>'
+    ).join('') + '</ul>';
+  }else{
+    html += '<p class="empty-state">None identified.</p>';
+  }
+  html += '</div>';
+
+  html += '<div class="mom-section"><h3>Speaker breakdown</h3>';
+  if(m.speakerBreakdown && m.speakerBreakdown.length){
+    html += '<ul>' + m.speakerBreakdown.map(s =>
+      '<li><strong>' + escapeHtml(s.speaker) + ':</strong> ' + escapeHtml(s.summary) + '</li>'
+    ).join('') + '</ul>';
+  }else{
+    html += '<p class="empty-state">None identified.</p>';
+  }
+  html += '</div>';
+
+  container.innerHTML = html;
+}
+
+function momListSection(title, items){
+  let html = '<div class="mom-section"><h3>' + escapeHtml(title) + '</h3>';
+  if(items && items.length){
+    html += '<ul>' + items.map(i => '<li>' + escapeHtml(i) + '</li>').join('') + '</ul>';
+  }else{
+    html += '<p class="empty-state">None identified.</p>';
+  }
+  html += '</div>';
+  return html;
+}
+
+async function deleteSessionWithConfirm(session){
+  if(!confirm('Delete "' + session.name + '"? This cannot be undone.')) return;
+  await dbDeleteSession(session.id);
+  document.getElementById('sessionDetailCard').style.display = 'none';
+  document.getElementById('sessionListCard').style.display = 'block';
+  renderSessionList();
+}
+
+document.getElementById('backToListBtn').addEventListener('click', () => {
+  document.getElementById('sessionDetailCard').style.display = 'none';
+  document.getElementById('sessionListCard').style.display = 'block';
+});
+
+
+/* ================================================================================
+   SECTION 13: EXPORTS (.txt, .json, .rtf)
+   ================================================================================
+   No external library is used for exporting. .txt and .json are native
+   browser capabilities. For a Word-openable file we generate RTF by hand —
+   Word, Google Docs, and Pages all open .rtf natively, and unlike a real
+   .docx (which is a zip archive of XML files) it can be built as a plain
+   text string with no library at all — a good fit for a single, dependency
+   -free HTML file.
+*/
+
+function exportSessionTxt(session){
+  const lines = session.transcript.map(l =>
+    '[' + formatTimestamp(l.tOffsetSec) + '] ' + l.speakerRaw + ': ' + l.text +
+    (l.translated ? '\n    → ' + l.translated : '')
+  );
+  const content = session.name + '\n' + new Date(session.createdAt).toLocaleString() + '\n\n' + lines.join('\n');
+  downloadFile(sanitizeFilename(session.name) + '-transcript.txt', content, 'text/plain');
+}
+
+function exportSessionJson(session){
+  downloadFile(sanitizeFilename(session.name) + '.json', JSON.stringify(session, null, 2), 'application/json');
+}
+
+function escapeRtf(str){
+  return String(str)
+    .replace(/\\/g, '\\\\')
+    .replace(/\{/g, '\\{')
+    .replace(/\}/g, '\\}')
+    // Anything outside basic ASCII (accented names, non-Latin scripts, etc.)
+    // needs RTF's \uN escape so Word renders it correctly instead of mangling it.
+    .replace(/[\u0080-\uffff]/g, ch => '\\u' + ch.charCodeAt(0) + '?');
+}
+
+function exportMinutesRtf(session){
+  if(!session.mom){
+    showStatus('error', 'Generate minutes first, then export.');
+    return;
+  }
+  const m = session.mom;
+  const par = (text) => escapeRtf(text) + '\\par\n';
+  const heading = (text) => '{\\b\\fs28 ' + escapeRtf(text) + '}\\par\n';
+  const listItems = (items) => items && items.length
+    ? items.map(i => '\\bullet\\tab ' + escapeRtf(i) + '\\par\n').join('')
+    : par('(none identified)');
+
+  let body = '';
+  body += '{\\b\\fs36 ' + escapeRtf(session.name) + '}\\par\n';
+  body += par(new Date(session.createdAt).toLocaleString());
+  body += '\\par\n';
+  body += heading('Summary');
+  body += par(m.summary || '(none)');
+  body += '\\par\n';
+  body += heading('Key discussion points');
+  body += listItems(m.keyPoints);
+  body += '\\par\n';
+  body += heading('Decisions made');
+  body += listItems(m.decisions);
+  body += '\\par\n';
+  body += heading('Action items');
+  body += (m.actionItems && m.actionItems.length)
+    ? m.actionItems.map(a => '\\bullet\\tab ' + escapeRtf(a.item) + (a.owner ? '  —  ' + escapeRtf(a.owner) : '') + '\\par\n').join('')
+    : par('(none identified)');
+  body += '\\par\n';
+  body += heading('Speaker breakdown');
+  body += (m.speakerBreakdown && m.speakerBreakdown.length)
+    ? m.speakerBreakdown.map(s => '{\\b ' + escapeRtf(s.speaker) + ':}  ' + escapeRtf(s.summary) + '\\par\n').join('')
+    : par('(none identified)');
+
+  const rtf = '{\\rtf1\\ansi\\deff0{\\fonttbl{\\f0 Calibri;}}\\f0\\fs22\n' + body + '}';
+  downloadFile(sanitizeFilename(session.name) + '-minutes.rtf', rtf, 'application/rtf');
+}
+
+function sanitizeFilename(name){
+  return (name || 'meeting').replace(/[^a-z0-9\-_ ]/gi, '').trim().replace(/\s+/g, '-').slice(0, 60) || 'meeting';
+}
+
+
+/* ================================================================================
+   SECTION 14: SETTINGS TAB
+   ================================================================================ */
+
+function loadSettingsIntoForm(){
+  const s = getSettings();
+  document.getElementById('providerSelect').value = s.provider;
+  document.getElementById('groqKeyInput').value = s.groqApiKey;
+  document.getElementById('groqTranscribeModel').value = s.groqTranscribeModel;
+  document.getElementById('groqTextModel').value = s.groqTextModel;
+  document.getElementById('geminiKeyInput').value = s.geminiApiKey;
+  document.getElementById('geminiModel').value = s.geminiModel;
+  document.getElementById('chunkSecondsInput').value = s.chunkSeconds;
+  document.getElementById('maxExtendInput').value = s.maxExtendSeconds;
+  document.getElementById('spokenLanguageSelect').value = s.spokenLanguage || '';
+  document.getElementById('translateToggle').checked = s.translateEnabled;
+  document.getElementById('translateLangSelect').disabled = !s.translateEnabled;
+
+  const knownLanguages = Array.from(document.getElementById('translateLangSelect').options).map(o => o.value);
+  if(s.targetLanguage && !knownLanguages.includes(s.targetLanguage)){
+    document.getElementById('translateLangSelect').value = '__other__';
+    document.getElementById('translateLangOther').style.display = 'inline-block';
+    document.getElementById('translateLangOther').value = s.targetLanguage;
+  }else{
+    document.getElementById('translateLangSelect').value = s.targetLanguage || '';
+  }
+}
+
+function readSettingsFromForm(){
+  let targetLanguage = document.getElementById('translateLangSelect').value;
+  if(targetLanguage === '__other__'){
+    targetLanguage = document.getElementById('translateLangOther').value.trim();
+  }
+  return {
+    provider: document.getElementById('providerSelect').value,
+    groqApiKey: document.getElementById('groqKeyInput').value.trim(),
+    groqTranscribeModel: document.getElementById('groqTranscribeModel').value.trim() || getDefaultSettings().groqTranscribeModel,
+    groqTextModel: document.getElementById('groqTextModel').value.trim() || getDefaultSettings().groqTextModel,
+    geminiApiKey: document.getElementById('geminiKeyInput').value.trim(),
+    geminiModel: document.getElementById('geminiModel').value.trim() || getDefaultSettings().geminiModel,
+    chunkSeconds: Math.max(5, Math.min(30, Number(document.getElementById('chunkSecondsInput').value) || 10)),
+    maxExtendSeconds: Math.max(0, Math.min(10, Number(document.getElementById('maxExtendInput').value) || 3)),
+    spokenLanguage: document.getElementById('spokenLanguageSelect').value,
+    translateEnabled: document.getElementById('translateToggle').checked,
+    targetLanguage: targetLanguage
+  };
+}
+
+document.getElementById('translateToggle').addEventListener('change', (e) => {
+  document.getElementById('translateLangSelect').disabled = !e.target.checked;
+});
+
+document.getElementById('translateLangSelect').addEventListener('change', (e) => {
+  document.getElementById('translateLangOther').style.display = e.target.value === '__other__' ? 'inline-block' : 'none';
+});
+
+document.getElementById('saveSettingsBtn').addEventListener('click', () => {
+  const settings = readSettingsFromForm();
+  if(settings.translateEnabled && !settings.targetLanguage){
+    showStatus('error', 'Live translation is on but no target language is set — pick one, or turn translation off.');
+    return;
+  }
+  saveSettingsToStorage(settings);
+  const msg = document.getElementById('settingsSavedMsg');
+  msg.textContent = 'Saved.';
+  setTimeout(() => { msg.textContent = ''; }, 2500);
+});
+
+document.querySelectorAll('[data-toggle-visibility]').forEach(btn => {
   btn.addEventListener('click', () => {
-    tabBtns.forEach(b => b.classList.remove('active'));
-    screens.forEach(s => s.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById(`screen-${btn.dataset.screen}`).classList.add('active');
+    const input = document.getElementById(btn.dataset.toggleVisibility);
+    const showing = input.type === 'text';
+    input.type = showing ? 'password' : 'text';
+    btn.textContent = showing ? 'show' : 'hide';
   });
 });
 
-// ===================== STANDARD SCREEN =====================
+document.getElementById('clearAllDataBtn').addEventListener('click', async () => {
+  if(!confirm('This deletes every saved meeting AND your saved settings/API keys from this browser. Continue?')) return;
+  await dbClearAllSessions().catch(() => {});
+  localStorage.removeItem(SETTINGS_KEY);
+  loadSettingsIntoForm();
+  renderSessionList();
+  showStatus('success', 'All local data cleared.');
+});
 
-const std = {
-  queueSize: document.getElementById('queueSize'),
-  queueSizeWords: document.getElementById('queueSizeWords'),
-  clientCount: document.getElementById('clientCount'),
-  perClientCap: document.getElementById('perClientCap'),
-  operatorCap: document.getElementById('operatorCap'),
-  clientTxToggle: document.getElementById('clientTxToggle'),
-  vendorTxToggle: document.getElementById('vendorTxToggle'),
-  vendorTxEffective: document.getElementById('vendorTxEffective'),
-  threshold: document.getElementById('threshold'),
-  resultTime: document.getElementById('resultTime'),
-  resultThroughput: document.getElementById('resultThroughput'),
-  resultBottleneck: document.getElementById('resultBottleneck'),
-  gaugeFill: document.getElementById('gaugeFill'),
-  gaugeNote: document.getElementById('gaugeNote'),
-  gaugeThresholdLabel: document.getElementById('gaugeThresholdLabel'),
-  gaugePercent: document.getElementById('gaugePercent'),
-};
+// ---- Live model list lookup --------------------------------------------
+// Provider free-tier line-ups change often, so rather than keep guessing
+// model names in this file, these buttons ask the provider directly (using
+// whatever key is currently typed into the field above — it doesn't need
+// to be saved first) and replace the dropdown suggestions with whatever is
+// actually available right now. This needs the page to be served over
+// http/https, same as transcription — see the file:// note earlier in
+// this file if the request gets blocked.
 
-// Fixed 50/50 split: a "TX+RX combined" TPS number is halved to get actual send (TX) capacity.
-// A "TX only" number is used as-is (already pure send capacity, e.g. how clients typically quote TPS).
-const FIXED_TX_RATIO = 0.5;
+function populateDatalist(datalistId, values){
+  const dl = document.getElementById(datalistId);
+  dl.innerHTML = values.map(v => '<option value="' + escapeHtml(v) + '">').join('');
+}
 
-function setupToggle(containerId, onChange) {
-  const container = document.getElementById(containerId);
-  const buttons = container.querySelectorAll('.toggle-btn');
-  buttons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      buttons.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      container.dataset.value = btn.dataset.mode;
-      onChange();
+// The native <datalist> dropdown only suggests options matching whatever
+// text is ALREADY in the box, which is confusing once a field already has
+// a value in it (clicking it seems to show "only one option"). A real
+// <select> next to the field sidesteps that — it always shows the full
+// list — and choosing from it just writes the value into the text field.
+function populatePicker(pickerId, textFieldId, values){
+  const picker = document.getElementById(pickerId);
+  picker.innerHTML = '<option value="">— pick a model from the ' + values.length + ' loaded —</option>' +
+    values.map(v => '<option value="' + escapeHtml(v) + '">' + escapeHtml(v) + '</option>').join('');
+  picker.style.display = values.length ? 'block' : 'none';
+  picker.onchange = () => {
+    if(picker.value) document.getElementById(textFieldId).value = picker.value;
+  };
+}
+
+async function refreshGroqModels(){
+  const statusEl = document.getElementById('groqModelsStatus');
+  const key = document.getElementById('groqKeyInput').value.trim();
+  if(!key){ statusEl.textContent = 'Enter a Groq API key above first.'; return; }
+  statusEl.textContent = 'Loading…';
+  try{
+    const res = await fetch('https://api.groq.com/openai/v1/models', {
+      headers: { 'Authorization': 'Bearer ' + key }
     });
-  });
-  return container;
-}
-
-function getEffectiveCapacity(rawValue, mode) {
-  return mode === 'combined' ? rawValue * FIXED_TX_RATIO : rawValue;
-}
-
-function renderQueuePercent(el, queueValue, threshold) {
-  const pct = (queueValue / threshold) * 100;
-  const display = pct >= 1000 ? Math.round(pct) : pct.toFixed(1);
-  el.textContent = `${display}% of threshold`;
-  el.classList.toggle('warn', pct >= 100);
-}
-
-function calculateStandard() {
-  const queueSize = parseNum(std.queueSize.value);
-  const clientCount = Math.max(1, parseNum(std.clientCount.value));
-  const perClientCapRaw = Math.max(0, parseNum(std.perClientCap.value));
-  const operatorCapRaw = Math.max(0, parseNum(std.operatorCap.value));
-  const clientMode = std.clientTxToggle.dataset.value;
-  const vendorMode = std.vendorTxToggle.dataset.value;
-  const threshold = Math.max(1, parseNum(std.threshold.value));
-
-  std.queueSizeWords.textContent = `${formatIndian(queueSize)} \u00b7 ${describeIndianScale(queueSize)}`;
-  std.gaugeThresholdLabel.textContent = thresholdLabelText(threshold);
-
-  const perClientTX = getEffectiveCapacity(perClientCapRaw, clientMode);
-  const vendorTX = getEffectiveCapacity(operatorCapRaw, vendorMode);
-  const clientSideCapacity = clientCount * perClientTX;
-  const effectiveTPS = Math.min(clientSideCapacity, vendorTX);
-
-  const clientNote = clientMode === 'combined'
-    ? `Client: ${formatIndian(perClientCapRaw)} TPS combined \u2192 ${formatIndian(perClientTX)} TPS TX`
-    : `Client: ${formatIndian(perClientCapRaw)} TPS TX (as quoted)`;
-  const vendorNote = vendorMode === 'combined'
-    ? `Vendor: ${formatIndian(operatorCapRaw)} TPS combined \u2192 ${formatIndian(vendorTX)} TPS TX`
-    : `Vendor: ${formatIndian(operatorCapRaw)} TPS TX (as quoted)`;
-  std.vendorTxEffective.textContent = `${clientNote}  \u00b7  ${vendorNote}`;
-
-  if (effectiveTPS <= 0) {
-    std.resultTime.textContent = '—';
-    std.resultThroughput.textContent = 'Set a TPS cap greater than 0';
-    std.resultBottleneck.textContent = '';
-  } else {
-    const seconds = queueSize / effectiveTPS;
-    std.resultTime.textContent = formatDuration(seconds);
-    std.resultThroughput.textContent = `at ${formatIndian(effectiveTPS)} effective TPS`;
-
-    const bottleneck = clientSideCapacity <= vendorTX
-      ? `bound by client-side TX cap (${clientCount} \u00d7 ${formatIndian(perClientTX)} TPS)`
-      : `bound by operator/vendor TX limit (${formatIndian(vendorTX)} TPS)`;
-    std.resultBottleneck.textContent = bottleneck;
-  }
-
-  renderQueuePercent(std.gaugePercent, queueSize, threshold);
-
-  const gaugeRatio = Math.min(queueSize / (threshold * 2), 1);
-  std.gaugeFill.style.width = `${gaugeRatio * 100}%`;
-
-  if (queueSize >= threshold) {
-    std.gaugeFill.style.background = 'var(--orange)';
-    std.gaugeNote.textContent = `Queue is at or beyond your ${thresholdLabelText(threshold)} threshold — Redis-based queue storage is reported to slow significantly past this point, independent of the TPS math above.`;
-    std.gaugeNote.classList.add('warn');
-  } else {
-    std.gaugeFill.style.background = 'var(--navy)';
-    std.gaugeNote.textContent = 'Within normal holding capacity.';
-    std.gaugeNote.classList.remove('warn');
+    if(!res.ok) throw new Error(await describeApiError(res, 'Groq model list'));
+    const data = await res.json();
+    const allIds = (data.data || []).map(m => m.id).sort();
+    // Groq's /models endpoint lists every model type together with no
+    // explicit "kind" field, so we sort them by name into the two buckets
+    // this app actually uses: speech-to-text ("whisper..."), and everything
+    // else usable for chat/text, while filtering out obviously non-chat
+    // models (text-to-speech, moderation/guard classifiers) that would just
+    // clutter the text-model dropdown.
+    const transcribeIds = allIds.filter(id => id.startsWith('whisper'));
+    const textIds = allIds.filter(id => !id.startsWith('whisper') && !/guard|orpheus|tts/i.test(id));
+    populateDatalist('groqTranscribeModelList', transcribeIds);
+    populateDatalist('groqTextModelList', textIds);
+    populatePicker('groqTranscribeModelPicker', 'groqTranscribeModel', transcribeIds);
+    populatePicker('groqTextModelPicker', 'groqTextModel', textIds);
+    statusEl.textContent = 'Loaded ' + allIds.length + ' models — pick one from the dropdown that appeared below each field.';
+  }catch(err){
+    statusEl.textContent = friendlyNetworkErrorMessage(err);
   }
 }
 
-setupToggle('clientTxToggle', () => { calculateStandard(); calculateRecommendationStandard(); });
-setupToggle('vendorTxToggle', () => { calculateStandard(); calculateRecommendationStandard(); });
-
-[std.queueSize, std.clientCount, std.perClientCap, std.operatorCap, std.threshold].forEach(el => {
-  el.addEventListener('input', calculateStandard);
-});
-
-// ---- Recommended queue size (Standard) ----
-
-const rec = {
-  trafficTPS: document.getElementById('trafficTPS'),
-  durationValue: document.getElementById('durationValue'),
-  durationUnit: document.getElementById('durationUnit'),
-  size: document.getElementById('recommendSize'),
-  explain: document.getElementById('recommendExplain'),
-  percent: document.getElementById('recommendPercent'),
-  verdict: document.getElementById('recommendVerdict'),
-};
-
-function computeRecommendedSize(trafficTPS, durationSeconds, effectiveTPS) {
-  const netRate = trafficTPS - effectiveTPS;
-  let backlog, mode;
-  if (netRate > 0) {
-    backlog = netRate * durationSeconds;
-    mode = 'sustained';
-  } else {
-    backlog = trafficTPS * 60; // 1-minute burst buffer heuristic when throughput already covers traffic
-    mode = 'burst';
-  }
-  const recommended = Math.ceil(backlog * 1.2); // +20% safety margin
-  return { recommended, mode };
-}
-
-function renderRecommendation(recommended, mode, effectiveTPS, trafficTPS, durationSeconds, threshold, els) {
-  els.size.textContent = `${formatIndian(recommended)} msgs \u00b7 ${describeIndianScale(recommended)}`;
-
-  if (mode === 'sustained') {
-    els.explain.textContent = `Traffic (${formatIndian(trafficTPS)} TPS) exceeds effective throughput (${formatIndian(effectiveTPS)} TPS) — over ${formatDuration(durationSeconds)}, backlog accumulates. Includes a 20% safety margin.`;
-  } else {
-    els.explain.textContent = `Effective throughput (${formatIndian(effectiveTPS)} TPS) already covers this traffic in real time. Recommendation is a 1-minute burst buffer + 20% safety margin, not a sustained backlog.`;
-  }
-
-  const pct = (recommended / threshold) * 100;
-  const pctDisplay = pct >= 1000 ? Math.round(pct) : pct.toFixed(1);
-  els.percent.textContent = `= ${pctDisplay}% of your current threshold`;
-
-  if (recommended > threshold) {
-    els.verdict.textContent = `Exceeds your current threshold (${formatIndian(threshold)}) — increase Redis-backed capacity to at least ${formatIndian(recommended)} to safely support this traffic.`;
-    els.verdict.className = 'recommend-verdict needs-increase';
-  } else {
-    els.verdict.textContent = `Comfortably within your current threshold (${formatIndian(threshold)}).`;
-    els.verdict.className = 'recommend-verdict ok';
-  }
-}
-
-function calculateRecommendationStandard() {
-  const clientCount = Math.max(1, parseNum(std.clientCount.value));
-  const perClientCapRaw = Math.max(0, parseNum(std.perClientCap.value));
-  const operatorCapRaw = Math.max(0, parseNum(std.operatorCap.value));
-  const clientMode = std.clientTxToggle.dataset.value;
-  const vendorMode = std.vendorTxToggle.dataset.value;
-  const threshold = Math.max(1, parseNum(std.threshold.value));
-  const perClientTX = getEffectiveCapacity(perClientCapRaw, clientMode);
-  const vendorTX = getEffectiveCapacity(operatorCapRaw, vendorMode);
-  const effectiveTPS = Math.min(clientCount * perClientTX, vendorTX);
-
-  const trafficTPS = Math.max(0, parseNum(rec.trafficTPS.value));
-  const durationSeconds = Math.max(1, parseNum(rec.durationValue.value)) * parseNum(rec.durationUnit.value);
-
-  const { recommended, mode } = computeRecommendedSize(trafficTPS, durationSeconds, effectiveTPS);
-  renderRecommendation(recommended, mode, effectiveTPS, trafficTPS, durationSeconds, threshold, rec);
-}
-
-[std.queueSize, std.clientCount, std.perClientCap, std.operatorCap, std.threshold,
- rec.trafficTPS, rec.durationValue, rec.durationUnit].forEach(el => {
-  el.addEventListener('input', calculateRecommendationStandard);
-  el.addEventListener('change', calculateRecommendationStandard);
-});
-
-// ===================== VARIABLE CALCULATION SCREEN =====================
-
-let clientRowId = 0;
-let vendorRowId = 0;
-
-const clientRowsEl = document.getElementById('clientRows');
-const vendorRowsEl = document.getElementById('vendorRows');
-const clientCountLabel = document.getElementById('clientCountLabel');
-const vendorCountLabel = document.getElementById('vendorCountLabel');
-
-function makeClientRow(queueSize, tpsCap) {
-  clientRowId += 1;
-  const id = clientRowId;
-  const row = document.createElement('div');
-  row.className = 'row-item';
-  row.dataset.id = id;
-  row.innerHTML = `
-    <div class="row-item-top">
-      <span class="row-item-name">CLIENT ${id}</span>
-      <button class="row-remove" title="Remove client">&times;</button>
-    </div>
-    <div class="row-fields">
-      <div class="field">
-        <label>Queue size (messages)</label>
-        <input type="text" inputmode="numeric" class="client-queue" value="${queueSize}" />
-      </div>
-      <div class="field">
-        <label>TPS cap</label>
-        <input type="text" inputmode="numeric" class="client-cap" value="${tpsCap}" />
-      </div>
-    </div>
-  `;
-  row.querySelector('.row-remove').addEventListener('click', () => {
-    row.remove();
-    calculateVariable();
-  });
-  row.querySelectorAll('input').forEach(inp => inp.addEventListener('input', calculateVariable));
-  clientRowsEl.appendChild(row);
-}
-
-function makeVendorRow(tpsLimit) {
-  vendorRowId += 1;
-  const id = vendorRowId;
-  const row = document.createElement('div');
-  row.className = 'row-item';
-  row.dataset.id = id;
-  row.innerHTML = `
-    <div class="row-item-top">
-      <span class="row-item-name">VENDOR ${id}</span>
-      <button class="row-remove" title="Remove vendor">&times;</button>
-    </div>
-    <div class="row-fields" style="grid-template-columns: 1fr;">
-      <div class="field">
-        <label>TPS limit</label>
-        <input type="text" inputmode="numeric" class="vendor-cap" value="${tpsLimit}" />
-      </div>
-    </div>
-  `;
-  row.querySelector('.row-remove').addEventListener('click', () => {
-    row.remove();
-    calculateVariable();
-  });
-  row.querySelectorAll('input').forEach(inp => inp.addEventListener('input', calculateVariable));
-  vendorRowsEl.appendChild(row);
-}
-
-document.getElementById('addClientBtn').addEventListener('click', () => {
-  makeClientRow(500000, 1000);
-  calculateVariable();
-});
-
-document.getElementById('addVendorBtn').addEventListener('click', () => {
-  makeVendorRow(2000);
-  calculateVariable();
-});
-
-// seed with a starting example
-makeClientRow(1500000, 1000);
-makeClientRow(800000, 2000);
-makeVendorRow(5000);
-
-const varEls = {
-  threshold: document.getElementById('thresholdVar'),
-  clientTxToggle: document.getElementById('clientTxToggleVar'),
-  vendorTxToggle: document.getElementById('vendorTxToggleVar'),
-  vendorTxEffective: document.getElementById('vendorTxEffectiveVar'),
-  resultTime: document.getElementById('varResultTime'),
-  resultThroughput: document.getElementById('varResultThroughput'),
-  resultBottleneck: document.getElementById('varResultBottleneck'),
-  gaugeFill: document.getElementById('gaugeFillVar'),
-  gaugeNote: document.getElementById('gaugeNoteVar'),
-  gaugeThresholdLabel: document.getElementById('gaugeThresholdLabelVar'),
-  gaugePercent: document.getElementById('gaugePercentVar'),
-  breakdownList: document.getElementById('breakdownList'),
-};
-
-setupToggle('clientTxToggleVar', () => { calculateVariable(); calculateRecommendationVariable(); });
-setupToggle('vendorTxToggleVar', () => { calculateVariable(); calculateRecommendationVariable(); });
-
-varEls.threshold.addEventListener('input', calculateVariable);
-
-function calculateVariable() {
-  const clientRowEls = Array.from(clientRowsEl.querySelectorAll('.row-item'));
-  const vendorRowEls = Array.from(vendorRowsEl.querySelectorAll('.row-item'));
-
-  clientCountLabel.textContent = clientRowEls.length ? `(${clientRowEls.length})` : '';
-  vendorCountLabel.textContent = vendorRowEls.length ? `(${vendorRowEls.length})` : '';
-
-  const clientMode = varEls.clientTxToggle.dataset.value;
-  const vendorMode = varEls.vendorTxToggle.dataset.value;
-
-  const clients = clientRowEls.map(row => {
-    const capRaw = parseNum(row.querySelector('.client-cap').value);
-    return {
-      id: row.dataset.id,
-      queue: parseNum(row.querySelector('.client-queue').value),
-      capRaw,
-      cap: getEffectiveCapacity(capRaw, clientMode),
-    };
-  });
-
-  const vendors = vendorRowEls.map(row => {
-    const capRaw = parseNum(row.querySelector('.vendor-cap').value);
-    return {
-      id: row.dataset.id,
-      capRaw,
-      cap: getEffectiveCapacity(capRaw, vendorMode),
-    };
-  });
-
-  const threshold = Math.max(1, parseNum(varEls.threshold.value));
-  varEls.gaugeThresholdLabel.textContent = thresholdLabelText(threshold);
-
-  const totalQueue = clients.reduce((sum, c) => sum + c.queue, 0);
-  const totalClientCapRaw = clients.reduce((sum, c) => sum + c.capRaw, 0);
-  const totalClientCap = clients.reduce((sum, c) => sum + c.cap, 0);
-  const totalVendorCapRaw = vendors.reduce((sum, v) => sum + v.capRaw, 0);
-  const totalVendorCap = vendors.reduce((sum, v) => sum + v.cap, 0);
-  const effectiveTPS = Math.min(totalClientCap, totalVendorCap);
-
-  const clientNote = clientMode === 'combined'
-    ? `Clients: ${formatIndian(totalClientCapRaw)} TPS combined \u2192 ${formatIndian(totalClientCap)} TPS TX`
-    : `Clients: ${formatIndian(totalClientCapRaw)} TPS TX (as quoted)`;
-  const vendorNote = vendorMode === 'combined'
-    ? `Vendors: ${formatIndian(totalVendorCapRaw)} TPS combined \u2192 ${formatIndian(totalVendorCap)} TPS TX`
-    : `Vendors: ${formatIndian(totalVendorCapRaw)} TPS TX (as quoted)`;
-  varEls.vendorTxEffective.textContent = `${clientNote}  \u00b7  ${vendorNote}`;
-
-  if (effectiveTPS <= 0 || clients.length === 0 || vendors.length === 0) {
-    varEls.resultTime.textContent = '—';
-    varEls.resultThroughput.textContent = clients.length === 0
-      ? 'Add at least one client'
-      : (vendors.length === 0 ? 'Add at least one vendor' : 'Set caps greater than 0');
-    varEls.resultBottleneck.textContent = '';
-    varEls.breakdownList.innerHTML = '<div class="breakdown-empty">Add clients and vendors to see a breakdown.</div>';
-  } else {
-    const seconds = totalQueue / effectiveTPS;
-    varEls.resultTime.textContent = formatDuration(seconds);
-    varEls.resultThroughput.textContent = `at ${formatIndian(effectiveTPS)} effective TPS across ${clients.length} client(s) / ${vendors.length} vendor(s)`;
-
-    const bottleneck = totalClientCap <= totalVendorCap
-      ? `bound by combined client TX caps (${formatIndian(totalClientCap)} TPS)`
-      : `bound by combined vendor/operator TX limits (${formatIndian(totalVendorCap)} TPS)`;
-    varEls.resultBottleneck.textContent = bottleneck;
-
-    varEls.breakdownList.innerHTML = '';
-    clients.forEach(c => {
-      const weight = totalClientCap > 0 ? c.cap / totalClientCap : 0;
-      const allocatedTPS = effectiveTPS * weight;
-      const clientSeconds = allocatedTPS > 0 ? c.queue / allocatedTPS : Infinity;
-
-      const rowEl = document.createElement('div');
-      rowEl.className = 'breakdown-row';
-      rowEl.innerHTML = `
-        <span class="breakdown-row-name">CLIENT ${c.id} &middot; ${formatIndian(c.queue)} msgs</span>
-        <span class="breakdown-row-value">${formatDuration(clientSeconds)}
-          <span class="sub">${formatIndian(allocatedTPS)} TPS allocated</span>
-        </span>
-      `;
-      varEls.breakdownList.appendChild(rowEl);
+async function refreshGeminiModels(){
+  const statusEl = document.getElementById('geminiModelsStatus');
+  const key = document.getElementById('geminiKeyInput').value.trim();
+  if(!key){ statusEl.textContent = 'Enter a Gemini API key above first.'; return; }
+  statusEl.textContent = 'Loading…';
+  try{
+    const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models', {
+      headers: { 'x-goog-api-key': key }
     });
-  }
-
-  renderQueuePercent(varEls.gaugePercent, totalQueue, threshold);
-
-  const gaugeRatio = Math.min(totalQueue / (threshold * 2), 1);
-  varEls.gaugeFill.style.width = `${gaugeRatio * 100}%`;
-
-  if (totalQueue >= threshold) {
-    varEls.gaugeFill.style.background = 'var(--orange)';
-    varEls.gaugeNote.textContent = `Combined queue is at or beyond your ${thresholdLabelText(threshold)} threshold — expect slowdown independent of the TPS math above.`;
-    varEls.gaugeNote.classList.add('warn');
-  } else {
-    varEls.gaugeFill.style.background = 'var(--navy)';
-    varEls.gaugeNote.textContent = 'Within normal holding capacity.';
-    varEls.gaugeNote.classList.remove('warn');
+    if(!res.ok) throw new Error(await describeApiError(res, 'Gemini model list'));
+    const data = await res.json();
+    // Only keep models that support generateContent — that's the single
+    // endpoint this app uses for both audio transcription and text tasks,
+    // so anything that doesn't support it isn't usable here.
+    const ids = (data.models || [])
+      .filter(m => (m.supportedGenerationMethods || []).includes('generateContent'))
+      .map(m => m.name.replace(/^models\//, ''))
+      .sort();
+    populateDatalist('geminiModelList', ids);
+    populatePicker('geminiModelPicker', 'geminiModel', ids);
+    statusEl.textContent = 'Loaded ' + ids.length + ' models — pick one from the dropdown that appeared below the field.';
+  }catch(err){
+    statusEl.textContent = friendlyNetworkErrorMessage(err);
   }
 }
 
-// ---- Recommended queue size (Variable Calculation) ----
+document.getElementById('refreshGroqModelsBtn').addEventListener('click', refreshGroqModels);
+document.getElementById('refreshGeminiModelsBtn').addEventListener('click', refreshGeminiModels);
 
-const recVar = {
-  trafficTPS: document.getElementById('trafficTPSVar'),
-  durationValue: document.getElementById('durationValueVar'),
-  durationUnit: document.getElementById('durationUnitVar'),
-  size: document.getElementById('recommendSizeVar'),
-  explain: document.getElementById('recommendExplainVar'),
-  percent: document.getElementById('recommendPercentVar'),
-  verdict: document.getElementById('recommendVerdictVar'),
-};
 
-function calculateRecommendationVariable() {
-  const clientRowEls = Array.from(clientRowsEl.querySelectorAll('.row-item'));
-  const vendorRowEls = Array.from(vendorRowsEl.querySelectorAll('.row-item'));
+/* ================================================================================
+   SECTION 15: STARTUP WIRING
+   ================================================================================ */
 
-  const clientMode = varEls.clientTxToggle.dataset.value;
-  const vendorMode = varEls.vendorTxToggle.dataset.value;
-
-  const totalClientCap = clientRowEls.reduce((sum, row) => sum + getEffectiveCapacity(parseNum(row.querySelector('.client-cap').value), clientMode), 0);
-  const totalVendorCap = vendorRowEls.reduce((sum, row) => sum + getEffectiveCapacity(parseNum(row.querySelector('.vendor-cap').value), vendorMode), 0);
-  const effectiveTPS = Math.min(totalClientCap, totalVendorCap);
-  const threshold = Math.max(1, parseNum(varEls.threshold.value));
-
-  const trafficTPS = Math.max(0, parseNum(recVar.trafficTPS.value));
-  const durationSeconds = Math.max(1, parseNum(recVar.durationValue.value)) * parseNum(recVar.durationUnit.value);
-
-  const { recommended, mode } = computeRecommendedSize(trafficTPS, durationSeconds, effectiveTPS);
-  renderRecommendation(recommended, mode, effectiveTPS, trafficTPS, durationSeconds, threshold, recVar);
+function checkBrowserSupport(){
+  const problems = [];
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia){
+    problems.push('Sharing tab/screen audio is not supported in this browser — capture will not work here. Try current Chrome or Edge.');
+  }
+  if(!window.MediaRecorder){
+    problems.push('Audio recording (MediaRecorder) is not supported in this browser.');
+  }
+  if(!('indexedDB' in window)){
+    problems.push('This browser cannot save meetings locally (no IndexedDB support).');
+  }
+  if(!documentPipSupported()){
+    problems.push('The floating pop-out captions window needs Chrome or Edge; captions will stay inside this tab instead.');
+  }
+  if(problems.length){
+    const banner = document.getElementById('supportBanner');
+    banner.style.display = 'block';
+    banner.innerHTML = '<strong>Heads up:</strong> ' + problems.join(' ');
+  }
 }
 
-[recVar.trafficTPS, recVar.durationValue, recVar.durationUnit, varEls.threshold].forEach(el => {
-  el.addEventListener('input', calculateRecommendationVariable);
-  el.addEventListener('change', calculateRecommendationVariable);
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => switchTab(btn.dataset.tab));
 });
 
-document.getElementById('addClientBtn').addEventListener('click', calculateRecommendationVariable);
-document.getElementById('addVendorBtn').addEventListener('click', calculateRecommendationVariable);
-clientRowsEl.addEventListener('input', calculateRecommendationVariable);
-vendorRowsEl.addEventListener('input', calculateRecommendationVariable);
-clientRowsEl.addEventListener('click', () => setTimeout(calculateRecommendationVariable, 0));
-vendorRowsEl.addEventListener('click', () => setTimeout(calculateRecommendationVariable, 0));
+document.getElementById('startBtn').addEventListener('click', startCapture);
+document.getElementById('stopBtn').addEventListener('click', () => stopCapture());
+document.getElementById('popoutBtn').addEventListener('click', togglePopout);
 
-// ===================== Init =====================
+// Warn before leaving the tab while a capture is running, so a meeting
+// in progress isn't accidentally lost.
+window.addEventListener('beforeunload', (e) => {
+  if(state.isCapturing){
+    e.preventDefault();
+    e.returnValue = '';
+  }
+});
 
-calculateStandard();
-calculateVariable();
-calculateRecommendationStandard();
-calculateRecommendationVariable();
+checkBrowserSupport();
+loadSettingsIntoForm();
+renderSessionList();
 </script>
-
 </body>
 </html>
