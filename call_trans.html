@@ -1068,7 +1068,21 @@ function switchTab(tabName){
   document.querySelectorAll('.tab-panel').forEach(panel => {
     panel.classList.toggle('active', panel.id === 'tab-' + tabName);
   });
-  if(tabName === 'minutes'){ renderSessionList(); }
+  if(tabName === 'minutes'){ renderSessionList(); syncMomModelDefaults(); }
+}
+
+// Keeps the Minutes tab's "generate with" provider/model fields matching
+// whatever is currently saved in Settings. Called once when a meeting's
+// detail view is first opened, and again every time the Minutes tab is
+// switched to — the second call is what makes a model change in Settings
+// actually show up here without needing to close and reopen the meeting.
+function syncMomModelDefaults(){
+  const providerSelect = document.getElementById('momProviderSelect');
+  const modelInput = document.getElementById('momModelInput');
+  if(!providerSelect || !modelInput) return;
+  const settings = getSettings();
+  providerSelect.value = settings.provider;
+  modelInput.value = settings.provider === 'groq' ? settings.groqTextModel : settings.geminiModel;
 }
 
 function formatTimestamp(totalSeconds){
@@ -1130,6 +1144,12 @@ async function startCapture(){
 
   if(!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia){
     showStatus('error', "This browser doesn't support sharing tab/screen audio (getDisplayMedia). Try current Chrome or Edge.");
+    return;
+  }
+
+  const preflightSettings = getSettings();
+  if(preflightSettings.translateEnabled && !preflightSettings.targetLanguage){
+    showStatus('error', '"Translate live" is on but no language is selected — pick one from the dropdown, or untick the box, then try again.');
     return;
   }
 
@@ -1589,15 +1609,37 @@ async function chatCompletionGroq(promptText, model, settings, wantJson){
   const body = {
     model: model,
     messages: [{ role: 'user', content: promptText }],
-    temperature: 0.3
+    temperature: 0.3,
+    max_tokens: 2000 // generous headroom for a full Minutes of Meeting; also avoids
+                      // a response getting cut off mid-JSON, which itself can look
+                      // like a "broken JSON" failure further down the pipeline.
   };
   if(wantJson) body.response_format = { type: 'json_object' };
 
-  const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+  let res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + settings.groqApiKey },
     body: JSON.stringify(body)
   });
+
+  if(!res.ok && wantJson){
+    // Some Groq models reject strict "JSON mode" outright (HTTP 400,
+    // code "json_validate_failed") even though they're perfectly capable
+    // chat models otherwise. Rather than fail the whole request, retry once
+    // without forcing JSON mode — the prompt already asks for JSON output,
+    // and the caller already knows how to cope with a slightly-messy reply
+    // (see the markdown-fence-stripping in generateMinutes/cleanUpSpeakersWithAi).
+    const bodyText = await res.clone().text().catch(() => '');
+    if(bodyText.includes('json_validate_failed')){
+      delete body.response_format;
+      res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + settings.groqApiKey },
+        body: JSON.stringify(body)
+      });
+    }
+  }
+
   if(!res.ok) throw new Error(await describeApiError(res, 'Groq text request'));
   const data = await res.json();
   return (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content || '').trim();
@@ -1606,7 +1648,10 @@ async function chatCompletionGroq(promptText, model, settings, wantJson){
 async function chatCompletionGemini(promptText, model, settings, wantJson){
   const body = {
     contents: [{ parts: [{ text: promptText }] }],
-    generationConfig: wantJson ? { temperature: 0.3, responseMimeType: 'application/json' } : { temperature: 0.3 }
+    generationConfig: Object.assign(
+      { temperature: 0.3, maxOutputTokens: 2000 },
+      wantJson ? { responseMimeType: 'application/json' } : {}
+    )
   };
   const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + encodeURIComponent(model) + ':generateContent', {
     method: 'POST',
@@ -1982,13 +2027,15 @@ async function openSessionDetail(id){
 
   // Pre-fill the "generate with" model override from current Settings, so
   // regenerating with a different model is a one-field change rather than
-  // requiring a trip to the Settings tab.
-  const settings = getSettings();
-  document.getElementById('momProviderSelect').value = settings.provider;
-  document.getElementById('momModelInput').value = settings.provider === 'groq' ? settings.groqTextModel : settings.geminiModel;
+  // requiring a trip to the Settings tab. This also gets called again
+  // every time the Minutes tab is revisited (see switchTab) — otherwise,
+  // changing your model in Settings while a meeting was already open here
+  // would silently keep showing the old one.
+  syncMomModelDefaults();
   document.getElementById('momProviderSelect').onchange = () => {
+    const s = getSettings();
     const p = document.getElementById('momProviderSelect').value;
-    document.getElementById('momModelInput').value = p === 'groq' ? settings.groqTextModel : settings.geminiModel;
+    document.getElementById('momModelInput').value = p === 'groq' ? s.groqTextModel : s.geminiModel;
   };
 
   renderSessionTranscript(session);
@@ -2296,13 +2343,33 @@ function readSettingsFromForm(){
   };
 }
 
+// The translate checkbox + language picker live on the Capture tab (where
+// you'd actually use them, right before starting a call) but they're part
+// of the same saved settings the Settings tab edits. Earlier this only got
+// written to storage when you visited Settings and clicked "Save settings"
+// — checking the box here did nothing until you did that, silently. These
+// controls now save themselves the moment you change them, so turning
+// translation on right before "Start sharing audio" actually takes effect.
+function saveTranslatePrefsImmediately(){
+  const settings = getSettings();
+  settings.translateEnabled = document.getElementById('translateToggle').checked;
+  let targetLanguage = document.getElementById('translateLangSelect').value;
+  if(targetLanguage === '__other__') targetLanguage = document.getElementById('translateLangOther').value.trim();
+  settings.targetLanguage = targetLanguage;
+  saveSettingsToStorage(settings);
+}
+
 document.getElementById('translateToggle').addEventListener('change', (e) => {
   document.getElementById('translateLangSelect').disabled = !e.target.checked;
+  saveTranslatePrefsImmediately();
 });
 
 document.getElementById('translateLangSelect').addEventListener('change', (e) => {
   document.getElementById('translateLangOther').style.display = e.target.value === '__other__' ? 'inline-block' : 'none';
+  saveTranslatePrefsImmediately();
 });
+
+document.getElementById('translateLangOther').addEventListener('input', saveTranslatePrefsImmediately);
 
 document.getElementById('saveSettingsBtn').addEventListener('click', () => {
   const settings = readSettingsFromForm();
