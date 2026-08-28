@@ -514,6 +514,33 @@ button{
   font-size: 12px;
 }
 
+.mom-two-col{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 24px;
+}
+@media (max-width: 620px){
+  .mom-two-col{ grid-template-columns: 1fr; }
+}
+.mom-action-list{ list-style: none; padding-left: 0; }
+.mom-action-list li{
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+.mom-action-list li::before{
+  content: "✓";
+  color: var(--success);
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.mom-footer{
+  color: var(--text-muted);
+  font-size: 11.5px;
+  font-family: var(--font-mono);
+  margin-top: 4px;
+}
+
 .export-row{ display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
 
 /* -------------------- Settings tab -------------------- */
@@ -636,6 +663,13 @@ hr.divider{
 
       <div class="field-row">
         <button class="btn btn-primary" id="generateMomBtn">Generate minutes</button>
+        <label style="font-size:12.5px; color:var(--text-muted); margin-left:6px;">using
+          <select id="momProviderSelect" style="margin:0 4px;">
+            <option value="groq">Groq</option>
+            <option value="gemini">Gemini</option>
+          </select>
+          <input type="text" id="momModelInput" style="width:170px;">
+        </label>
         <span id="momStatus" class="empty-state"></span>
       </div>
 
@@ -643,10 +677,20 @@ hr.divider{
 
       <hr class="divider">
 
-      <h2>Full transcript</h2>
+      <div class="field-row" style="justify-content: space-between;">
+        <h2 style="margin:0;">Full transcript</h2>
+        <div>
+          <button class="btn btn-small" id="cleanUpSpeakersBtn">Clean up speaker labels (AI)</button>
+          <span id="speakerCleanupStatus" class="empty-state"></span>
+        </div>
+      </div>
+      <div class="callout" style="margin-top:8px;">
+        This app can't do real voice-based speaker identification without a backend server (see the note at the top of the file for why). "Clean up" instead re-reads the conversation itself and asks the AI to merge labels that were probably the same person — a text-based guess, not audio analysis. Click any speaker name below to rename it directly instead.
+      </div>
       <div class="transcript-log" id="sessionTranscriptLog" style="max-height: 300px;"></div>
 
       <div class="export-row">
+        <button class="btn" id="copyMomBtn">Copy minutes</button>
         <button class="btn" id="exportTxtBtn">Export transcript (.txt)</button>
         <button class="btn" id="exportJsonBtn">Export everything (.json)</button>
         <button class="btn" id="exportRtfBtn">Export minutes for Word (.rtf)</button>
@@ -760,6 +804,11 @@ hr.divider{
         </select>
         <div class="hint">Left on auto-detect, the transcription model has to guess the language fresh on every short clip — on accented speech it sometimes guesses wrong, which is a common cause of garbled captions. If your meetings are mostly in one language, picking it here fixes most of that.</div>
       </div>
+      <div class="field">
+        <label for="speakerGapInput">Pause length that suggests a new speaker (seconds)</label>
+        <input type="number" id="speakerGapInput" min="0.5" max="4" step="0.1" style="width:90px;">
+        <div class="hint">If one person's own thinking-pauses keep getting split into new "Speaker" labels, raise this. If quick back-and-forth exchanges are getting merged into a single speaker, lower it. This is a rough guess either way — see "Clean up speaker labels" on a saved meeting for a better fix after the call.</div>
+      </div>
       <div class="field-row">
         <div class="field">
           <label for="chunkSecondsInput">Send audio for transcription every… (seconds)</label>
@@ -823,7 +872,9 @@ const CUT_ON_PAUSE_MS = 400;
 // chunk starts, we guess a new person has started talking and move the
 // speaker label on. This is deliberately longer than CUT_ON_PAUSE_MS: a
 // short breath shouldn't count as a turn change, but a real pause should.
-const NEW_SPEAKER_GAP_MS = 900;
+// The live value is settings.speakerGapSeconds (Settings tab); this is
+// only the fallback used before settings have loaded.
+const NEW_SPEAKER_GAP_MS_DEFAULT = 1600;
 
 // Generic speaker labels we cycle through. Click any label in the UI to
 // rename it — renames apply retroactively and for the rest of the session.
@@ -867,6 +918,7 @@ function getDefaultSettings(){
     geminiModel: 'gemini-3.6-flash',
     chunkSeconds: 10,
     maxExtendSeconds: 3,
+    speakerGapSeconds: 1.6,
     translateEnabled: false,
     targetLanguage: '',
     spokenLanguage: ''
@@ -985,7 +1037,9 @@ const state = {
   currentSession: null,      // the session object being recorded right now
   viewingSessionId: null,    // which saved session is open in the Minutes tab
   speakerIndex: 0,           // which label in SPEAKER_LABEL_POOL is "current"
-  speakerRenames: {}         // e.g. { "Speaker A": "Priya" } — applied on render + save
+  speakerRenames: {}         // LIVE CAPTURE ONLY: maps a generic pool slot (e.g. "Speaker A") to
+                              // its current rename, so new lines from that slot keep the chosen
+                              // name. Saved sessions don't need this — see SECTION 7.
 };
 
 
@@ -1274,7 +1328,9 @@ function handleChunkFinished(isNewTurnForThisChunk){
   // long enough that the chunk about to start should be treated as a new
   // speaker turn.
   const gapNow = performance.now() - lastSpeechAt;
-  nextChunkIsNewTurn = gapNow >= NEW_SPEAKER_GAP_MS;
+  const settings = getSettings();
+  const speakerGapMs = (Number(settings.speakerGapSeconds) || NEW_SPEAKER_GAP_MS_DEFAULT / 1000) * 1000;
+  nextChunkIsNewTurn = gapNow >= speakerGapMs;
 
   if(state.isCapturing){
     startNewChunkRecorder(); // keep the pipeline running without a gap in coverage
@@ -1412,46 +1468,104 @@ async function describeApiError(res, whatFailed){
    SECTION 7: SPEAKER TURN LABELING
    ================================================================================
    See the big note at the top of the file: this is a pause-based GUESS, not
-   real speaker identification. Renaming (via renameSpeaker below) is the
-   escape hatch that makes the guess actually useful.
+   real speaker identification. Renaming (via renameSpeakerInSession below) is
+   the escape hatch that makes the guess actually useful — and it works both
+   on a meeting that's currently being recorded AND on one you've reopened
+   later from the Minutes tab, by directly rewriting the stored label on
+   every matching line (rather than keeping a separate "display name" layer
+   that only the live view knew about — an earlier version of this file had
+   that bug: renames silently did nothing once you reopened a saved meeting).
 */
 
 function advanceSpeaker(){
   state.speakerIndex = (state.speakerIndex + 1) % SPEAKER_LABEL_POOL.length;
 }
 
-function currentSpeakerLabel(){
+// While actively recording, new lines start out using whatever label the
+// pause-cycling landed on — UNLESS that generic slot has already been
+// renamed earlier in this same call, in which case new lines keep using
+// the name you chose rather than reverting to "Speaker A" etc.
+function currentSpeakerLabelForNewLine(){
   const raw = SPEAKER_LABEL_POOL[state.speakerIndex];
   return state.speakerRenames[raw] || raw;
 }
 
-function renameSpeaker(oldLabel){
-  const newLabel = prompt('Rename "' + oldLabel + '" to (this changes every line with this label, for the rest of the meeting):', oldLabel);
+function renameSpeakerInSession(session, oldLabel, onDone){
+  const newLabel = prompt('Rename "' + oldLabel + '" to (this updates every line with this label and is saved with the meeting):', oldLabel);
   if(!newLabel || !newLabel.trim() || newLabel.trim() === oldLabel) return;
   const cleaned = newLabel.trim();
 
-  // Renames are looked up by the ORIGINAL generic label (Speaker A, B, ...),
-  // not by whatever it's currently displayed as, so repeated renames of the
-  // same slot keep working correctly.
-  const rawKeyForOldLabel = Object.keys(state.speakerRenames).find(k => state.speakerRenames[k] === oldLabel) ||
-    (SPEAKER_LABEL_POOL.includes(oldLabel) ? oldLabel : null);
-  if(rawKeyForOldLabel){
-    state.speakerRenames[rawKeyForOldLabel] = cleaned;
+  session.transcript.forEach(line => {
+    if(line.speakerRaw === oldLabel) line.speakerRaw = cleaned;
+  });
+
+  // If this is the meeting currently being recorded, also remember the
+  // rename against whichever generic pool slot currently resolves to
+  // oldLabel, so that when the pause heuristic later cycles back to that
+  // same slot, the NEW line it creates uses the chosen name too.
+  if(state.isCapturing && state.currentSession && state.currentSession.id === session.id){
+    const poolKey = SPEAKER_LABEL_POOL.find(p => (state.speakerRenames[p] || p) === oldLabel);
+    if(poolKey) state.speakerRenames[poolKey] = cleaned;
   }
 
-  // Apply retroactively to every stored line whose CURRENT rendered label
-  // matches oldLabel, by walking stored raw labels through the rename map.
-  if(state.currentSession){
-    state.currentSession.transcript.forEach(line => {
-      if((state.speakerRenames[line.speakerRaw] || line.speakerRaw) === cleaned || line.speakerRaw === rawKeyForOldLabel){
-        // nothing to mutate on the line itself — speakerRaw stays the same,
-        // display always goes through the rename map, see renderTranscriptLine()
-      }
-    });
-    dbSaveSession(state.currentSession).catch(() => {});
+  dbSaveSession(session).catch(err => console.error('Could not save rename', err));
+  if(onDone) onDone();
+}
+
+// "AI speaker cleanup" — a free, text-only alternative to real audio
+// diarization (see the note in the Minutes tab UI for why this app can't
+// do genuine voice-based diarization without a backend). This re-reads the
+// already-transcribed dialogue and asks the configured text model to guess
+// which of the generic labels are probably the same real person, based on
+// how the conversation reads — not by analysing any audio.
+async function cleanUpSpeakersWithAi(session){
+  const settings = getSettings();
+  const keyProblem = validateProviderKey(settings);
+  if(keyProblem) throw new Error(keyProblem);
+
+  const labelsPresent = Array.from(new Set(session.transcript.map(l => l.speakerRaw)));
+  if(labelsPresent.length <= 1){
+    throw new Error('Only one speaker label is present — nothing to clean up.');
   }
-  renderFullTranscript();
-  renderOverlay();
+
+  const transcriptText = session.transcript
+    .map(l => l.speakerRaw + ': ' + l.text)
+    .join('\n');
+
+  const prompt =
+    'The transcript below was auto-labeled by guessing a "new speaker" every time there was a long pause in the audio, ' +
+    'so the same real person may appear under several different labels, and quick interruptions may have been merged into ' +
+    'the wrong label. Read the conversation itself (who answers what, who introduces themselves, who is asked a question ' +
+    'and responds, repeated phrasing/topics) and work out the most likely REAL number of distinct people and which labels ' +
+    'belong to the same person. Be conservative: only merge two labels if the conversation content makes it fairly clear ' +
+    'they are the same person — if genuinely unsure, leave them separate rather than guessing.\n\n' +
+    'Respond with ONLY a JSON object of the form {"mapping": {"<original label>": "<cleaned label>", ...}} covering EVERY ' +
+    'label in this list: ' + JSON.stringify(labelsPresent) + '. Use "Person 1", "Person 2", etc. for the cleaned labels ' +
+    'unless someone\'s real name is clearly stated in the transcript, in which case use that name instead.\n\n' +
+    'TRANSCRIPT:\n' + transcriptText;
+
+  let raw;
+  if(settings.provider === 'groq'){
+    raw = await chatCompletionGroq(prompt, settings.groqTextModel, settings, true);
+  }else{
+    raw = await chatCompletionGemini(prompt, settings.geminiModel, settings, true);
+  }
+
+  let mapping;
+  try{
+    const cleaned = raw.replace(/^```json\s*/i, '').replace(/^```\s*/, '').replace(/```\s*$/, '').trim();
+    mapping = JSON.parse(cleaned).mapping || {};
+  }catch(err){
+    throw new Error('The model\'s response could not be understood as a label mapping — try again, or try a different model in Settings.');
+  }
+
+  session.transcript.forEach(line => {
+    if(mapping[line.speakerRaw]) line.speakerRaw = mapping[line.speakerRaw];
+  });
+  await dbSaveSession(session);
+
+  const newCount = new Set(session.transcript.map(l => l.speakerRaw)).size;
+  return { before: labelsPresent.length, after: newCount };
 }
 
 
@@ -1540,7 +1654,7 @@ async function processChunk(blob, isNewTurn){
   if(!text) return; // silence, noise, or the model decided there was nothing worth transcribing
 
   if(isNewTurn) advanceSpeaker();
-  const speakerRaw = SPEAKER_LABEL_POOL[state.speakerIndex];
+  const speakerRaw = currentSpeakerLabelForNewLine();
 
   let translated = null;
   if(settings.translateEnabled && settings.targetLanguage){
@@ -1574,12 +1688,10 @@ async function processChunk(blob, isNewTurn){
    SECTION 10: RENDERING — live transcript log + floating overlay
    ================================================================================ */
 
-function speakerDisplayLabel(speakerRaw){
-  return state.speakerRenames[speakerRaw] || speakerRaw;
-}
-
 function buildLineHtml(line){
-  const label = escapeHtml(speakerDisplayLabel(line.speakerRaw));
+  // line.speakerRaw IS the current display label now (renaming mutates it
+  // directly — see SECTION 7), so no lookup/alias step is needed here.
+  const label = escapeHtml(line.speakerRaw);
   const time = escapeHtml(formatTimestamp(line.tOffsetSec));
   let html = '<div class="transcript-line">' +
     '<span class="line-time">' + time + '</span>' +
@@ -1598,7 +1710,7 @@ function appendTranscriptLineToUi(line){
   log.insertAdjacentHTML('beforeend', buildLineHtml(line));
   log.scrollTop = log.scrollHeight;
 
-  wireSpeakerChips(log);
+  wireSpeakerChips(log, state.currentSession, renderFullTranscript);
   renderOverlay();
 }
 
@@ -1610,12 +1722,20 @@ function renderFullTranscript(){
   }
   log.innerHTML = state.currentSession.transcript.map(buildLineHtml).join('');
   log.scrollTop = log.scrollHeight;
-  wireSpeakerChips(log);
+  wireSpeakerChips(log, state.currentSession, renderFullTranscript);
+  renderOverlay();
 }
 
-function wireSpeakerChips(container){
+// Clicking any speaker chip renames that label wherever it appears in
+// `session` (see renameSpeakerInSession, SECTION 7). `onDone` re-renders
+// whichever view called this — the live Capture tab or a saved meeting's
+// detail view in the Minutes tab both use this same function.
+function wireSpeakerChips(container, session, onDone){
   container.querySelectorAll('.speaker-chip').forEach(btn => {
-    btn.onclick = () => renameSpeaker(speakerDisplayLabel(btn.dataset.speaker));
+    btn.onclick = () => {
+      if(!session) return;
+      renameSpeakerInSession(session, btn.dataset.speaker, onDone);
+    };
   });
 }
 
@@ -1638,7 +1758,7 @@ function buildOverlayInnerHtml(){
   // history is always available in the main tab's transcript log.
   const recent = lines.slice(-25);
   return recent.map(line => {
-    const label = escapeHtml(speakerDisplayLabel(line.speakerRaw));
+    const label = escapeHtml(line.speakerRaw);
     let html = '<div class="caption-line"><span class="speaker">' + label + '</span>' +
       '<span class="original">' + escapeHtml(line.text) + '</span>';
     if(line.translated) html += '<span class="translated">' + escapeHtml(line.translated) + '</span>';
@@ -1758,50 +1878,43 @@ async function togglePopout(){
 
 function buildMomPrompt(session){
   const transcriptText = session.transcript
-    .map(l => '[' + formatTimestamp(l.tOffsetSec) + '] ' + speakerDisplayLabelForSession(session, l.speakerRaw) + ': ' + l.text)
+    .map(l => '[' + formatTimestamp(l.tOffsetSec) + '] ' + l.speakerRaw + ': ' + l.text)
     .join('\n');
 
-  return 'You are an assistant that writes clear, professional Minutes of Meeting from a raw transcript. ' +
-    'The transcript below uses rough, sometimes-inaccurate speaker labels (guessed from pauses in the audio) — ' +
-    'use them as-is. Respond with ONLY a single JSON object (no markdown, no code fences) with exactly these fields:\n' +
+  return 'You are an experienced executive assistant writing professional Minutes of Meeting from a raw transcript, ' +
+    'for the meeting titled "' + session.name + '" held on ' + new Date(session.createdAt).toLocaleDateString() + '. ' +
+    'The transcript uses rough, sometimes-inaccurate speaker labels (guessed from pauses in the audio, or cleaned up ' +
+    'afterwards) — use them as-is. Write the way a sharp, concise human assistant would: specific and concrete rather ' +
+    'than generic ("Agreed to move the Q3 launch to October pending legal sign-off", not "discussed the launch"). ' +
+    'Only include a decision or action item if the transcript actually supports it — never invent one to fill a section.\n\n' +
+    'Respond with ONLY a single JSON object (no markdown, no code fences) with exactly these fields:\n' +
     '{\n' +
-    '  "summary": "a short paragraph summarizing the whole meeting",\n' +
-    '  "keyPoints": ["short bullet points of what was discussed"],\n' +
-    '  "decisions": ["short bullet points of decisions that were made"],\n' +
-    '  "actionItems": [{"item": "what needs to be done", "owner": "who, if it can be inferred, else empty string"}],\n' +
-    '  "speakerBreakdown": [{"speaker": "label", "summary": "what that speaker mainly said or contributed"}]\n' +
+    '  "summary": "2-4 sentences a busy exec could read in place of the whole transcript",\n' +
+    '  "keyPoints": ["specific, concrete bullet points of what was discussed — not vague topic labels"],\n' +
+    '  "decisions": ["specific decisions that were actually made or agreed, if any"],\n' +
+    '  "actionItems": [{"item": "a specific, actionable task", "owner": "who, if it can be inferred from the transcript, else empty string"}],\n' +
+    '  "speakerBreakdown": [{"speaker": "label", "summary": "one concrete sentence on what that person specifically contributed, not a restatement of their label"}]\n' +
     '}\n\n' +
-    'If a field genuinely has nothing to report, use an empty array (or empty string for summary), never invent content.\n\n' +
+    'If a field genuinely has nothing to report, use an empty array (or empty string for summary) rather than inventing content.\n\n' +
     'TRANSCRIPT:\n' + transcriptText;
 }
 
-function speakerDisplayLabelForSession(session, speakerRaw){
-  // Minutes can be (re)generated later, potentially after renames happened
-  // in a different tab/session load, so this re-derives from state's rename
-  // map only when it's the session currently loaded; otherwise falls back
-  // to the raw label, which is always still meaningful on its own.
-  if(state.currentSession && state.currentSession.id === session.id){
-    return state.speakerRenames[speakerRaw] || speakerRaw;
-  }
-  return speakerRaw;
-}
-
-async function generateMinutes(session){
+async function generateMinutes(session, overrideProvider, overrideModel){
   const settings = getSettings();
-  const keyProblem = validateProviderKey(settings);
-  if(keyProblem) throw new Error(keyProblem + ' Open the Settings tab to fix this.');
+  const provider = overrideProvider || settings.provider;
+  const model = overrideModel || (provider === 'groq' ? settings.groqTextModel : settings.geminiModel);
+
+  const keyMissing = provider === 'groq' ? !settings.groqApiKey : !settings.geminiApiKey;
+  if(keyMissing) throw new Error('No ' + (provider === 'groq' ? 'Groq' : 'Gemini') + ' API key is set. Open the Settings tab to fix this.');
 
   if(!session.transcript || session.transcript.length === 0){
     throw new Error('This meeting has no transcribed lines to summarize.');
   }
 
   const prompt = buildMomPrompt(session);
-  let raw;
-  if(settings.provider === 'groq'){
-    raw = await chatCompletionGroq(prompt, settings.groqTextModel, settings, true);
-  }else{
-    raw = await chatCompletionGemini(prompt, settings.geminiModel, settings, true);
-  }
+  const raw = provider === 'groq'
+    ? await chatCompletionGroq(prompt, model, settings, true)
+    : await chatCompletionGemini(prompt, model, settings, true);
 
   let parsed;
   try{
@@ -1820,6 +1933,7 @@ async function generateMinutes(session){
   }
 
   parsed.generatedAt = new Date().toISOString();
+  parsed.generatedWith = provider + ': ' + model;
   session.mom = parsed;
   await dbSaveSession(session);
   return parsed;
@@ -1866,20 +1980,29 @@ async function openSessionDetail(id){
   detailCard.style.display = 'block';
   document.getElementById('sessionDetailTitle').textContent = session.name;
 
-  document.getElementById('sessionTranscriptLog').innerHTML =
-    session.transcript.length
-      ? session.transcript.map(l => buildLineHtmlStatic(l)).join('')
-      : '<div class="empty-state">No transcript was recorded for this meeting.</div>';
+  // Pre-fill the "generate with" model override from current Settings, so
+  // regenerating with a different model is a one-field change rather than
+  // requiring a trip to the Settings tab.
+  const settings = getSettings();
+  document.getElementById('momProviderSelect').value = settings.provider;
+  document.getElementById('momModelInput').value = settings.provider === 'groq' ? settings.groqTextModel : settings.geminiModel;
+  document.getElementById('momProviderSelect').onchange = () => {
+    const p = document.getElementById('momProviderSelect').value;
+    document.getElementById('momModelInput').value = p === 'groq' ? settings.groqTextModel : settings.geminiModel;
+  };
 
+  renderSessionTranscript(session);
   renderMomForSession(session);
 
   document.getElementById('generateMomBtn').onclick = async () => {
     const btn = document.getElementById('generateMomBtn');
     const statusEl = document.getElementById('momStatus');
     btn.disabled = true;
-    statusEl.textContent = 'Generating…';
+    statusEl.textContent = session.mom ? 'Regenerating…' : 'Generating…';
     try{
-      await generateMinutes(session);
+      const provider = document.getElementById('momProviderSelect').value;
+      const model = document.getElementById('momModelInput').value.trim();
+      await generateMinutes(session, provider, model || undefined);
       renderMomForSession(session);
       renderSessionList();
       statusEl.textContent = 'Done.';
@@ -1891,29 +2014,48 @@ async function openSessionDetail(id){
     }
   };
 
+  document.getElementById('cleanUpSpeakersBtn').onclick = async () => {
+    const btn = document.getElementById('cleanUpSpeakersBtn');
+    const statusEl = document.getElementById('speakerCleanupStatus');
+    btn.disabled = true;
+    statusEl.textContent = 'Reading the conversation…';
+    try{
+      const result = await cleanUpSpeakersWithAi(session);
+      renderSessionTranscript(session);
+      renderSessionList();
+      statusEl.textContent = result.after < result.before
+        ? ('Reduced ' + result.before + ' labels to ' + result.after + '.')
+        : 'No confident merges found — labels left as-is.';
+    }catch(err){
+      showStatus('error', 'Could not clean up speaker labels: ' + friendlyNetworkErrorMessage(err));
+      statusEl.textContent = '';
+    }finally{
+      btn.disabled = false;
+    }
+  };
+
+  document.getElementById('copyMomBtn').onclick = () => copyMinutesToClipboard(session);
   document.getElementById('exportTxtBtn').onclick = () => exportSessionTxt(session);
   document.getElementById('exportJsonBtn').onclick = () => exportSessionJson(session);
   document.getElementById('exportRtfBtn').onclick = () => exportMinutesRtf(session);
   document.getElementById('deleteSessionBtn').onclick = () => deleteSessionWithConfirm(session);
 }
 
-function buildLineHtmlStatic(line){
-  // Same rendering as the live view but without relying on state.speakerRenames
-  // (a saved session that's not the one currently in memory should still
-  // display sensibly using whatever labels were stored with it).
-  const label = escapeHtml(line.speakerRaw);
-  const time = escapeHtml(formatTimestamp(line.tOffsetSec));
-  let html = '<div class="transcript-line">' +
-    '<span class="line-time">' + time + '</span>' +
-    '<span class="speaker-chip" style="cursor:default;">' + label + '</span>' +
-    '<span class="line-original">' + escapeHtml(line.text) + '</span>';
-  if(line.translated) html += '<div class="line-translated">' + escapeHtml(line.translated) + '</div>';
-  html += '</div>';
-  return html;
+function renderSessionTranscript(session){
+  const log = document.getElementById('sessionTranscriptLog');
+  if(!session.transcript.length){
+    log.innerHTML = '<div class="empty-state">No transcript was recorded for this meeting.</div>';
+    return;
+  }
+  log.innerHTML = session.transcript.map(buildLineHtml).join('');
+  wireSpeakerChips(log, session, () => renderSessionTranscript(session));
 }
 
 function renderMomForSession(session){
   const container = document.getElementById('momContainer');
+  const generateBtn = document.getElementById('generateMomBtn');
+  generateBtn.textContent = session.mom ? 'Regenerate minutes' : 'Generate minutes';
+
   if(!session.mom){
     container.innerHTML = '<div class="empty-state">No minutes generated yet — click "Generate minutes" above.</div>';
     return;
@@ -1921,21 +2063,24 @@ function renderMomForSession(session){
   const m = session.mom;
   let html = '';
   if(m.parseFailed){
-    html += '<div class="callout">The AI response could not be parsed into neat sections, so the raw reply is shown below as the summary.</div>';
+    html += '<div class="callout">The AI response could not be parsed into neat sections, so the raw reply is shown below as the summary. Try regenerating, possibly with a different model.</div>';
   }
   html += '<div class="mom-section"><h3>Summary</h3><p>' + escapeHtml(m.summary || '(none)') + '</p></div>';
-  html += momListSection('Key discussion points', m.keyPoints);
-  html += momListSection('Decisions made', m.decisions);
 
+  html += '<div class="mom-two-col">';
+  html += momListSection('Key points', m.keyPoints);
   html += '<div class="mom-section"><h3>Action items</h3>';
   if(m.actionItems && m.actionItems.length){
-    html += '<ul>' + m.actionItems.map(a =>
-      '<li>' + escapeHtml(a.item) + (a.owner ? ' <span class="action-owner">— ' + escapeHtml(a.owner) + '</span>' : '') + '</li>'
+    html += '<ul class="mom-action-list">' + m.actionItems.map(a =>
+      '<li>' + escapeHtml(a.item) + (a.owner ? ' <span class="action-owner">(' + escapeHtml(a.owner) + ')</span>' : '') + '</li>'
     ).join('') + '</ul>';
   }else{
     html += '<p class="empty-state">None identified.</p>';
   }
   html += '</div>';
+  html += '</div>';
+
+  html += momListSection('Decisions made', m.decisions);
 
   html += '<div class="mom-section"><h3>Speaker breakdown</h3>';
   if(m.speakerBreakdown && m.speakerBreakdown.length){
@@ -1946,6 +2091,10 @@ function renderMomForSession(session){
     html += '<p class="empty-state">None identified.</p>';
   }
   html += '</div>';
+
+  if(m.generatedWith){
+    html += '<div class="mom-footer">generated with ' + escapeHtml(m.generatedWith) + '</div>';
+  }
 
   container.innerHTML = html;
 }
@@ -1985,6 +2134,50 @@ document.getElementById('backToListBtn').addEventListener('click', () => {
    text string with no library at all — a good fit for a single, dependency
    -free HTML file.
 */
+
+function formatMinutesAsPlainText(session){
+  const m = session.mom;
+  if(!m) return '';
+  const lines = [];
+  lines.push(session.name);
+  lines.push(new Date(session.createdAt).toLocaleString());
+  lines.push('');
+  lines.push('SUMMARY');
+  lines.push(m.summary || '(none)');
+  lines.push('');
+  lines.push('KEY POINTS');
+  lines.push(...(m.keyPoints && m.keyPoints.length ? m.keyPoints.map(p => '- ' + p) : ['(none identified)']));
+  lines.push('');
+  lines.push('DECISIONS MADE');
+  lines.push(...(m.decisions && m.decisions.length ? m.decisions.map(d => '- ' + d) : ['(none identified)']));
+  lines.push('');
+  lines.push('ACTION ITEMS');
+  lines.push(...(m.actionItems && m.actionItems.length
+    ? m.actionItems.map(a => '- ' + a.item + (a.owner ? ' (' + a.owner + ')' : ''))
+    : ['(none identified)']));
+  lines.push('');
+  lines.push('SPEAKER BREAKDOWN');
+  lines.push(...(m.speakerBreakdown && m.speakerBreakdown.length
+    ? m.speakerBreakdown.map(s => '- ' + s.speaker + ': ' + s.summary)
+    : ['(none identified)']));
+  return lines.join('\n');
+}
+
+async function copyMinutesToClipboard(session){
+  if(!session.mom){
+    showStatus('error', 'Generate minutes first, then copy.');
+    return;
+  }
+  const text = formatMinutesAsPlainText(session);
+  try{
+    await navigator.clipboard.writeText(text);
+    showStatus('success', 'Minutes copied — paste them wherever you need.');
+  }catch(err){
+    // Clipboard access can be blocked by browser permissions in some
+    // contexts. Fall back to the .txt/.rtf export buttons, which always work.
+    showStatus('error', "Couldn't copy automatically (browser blocked clipboard access) — use one of the export buttons instead.");
+  }
+}
 
 function exportSessionTxt(session){
   const lines = session.transcript.map(l =>
@@ -2067,6 +2260,7 @@ function loadSettingsIntoForm(){
   document.getElementById('geminiModel').value = s.geminiModel;
   document.getElementById('chunkSecondsInput').value = s.chunkSeconds;
   document.getElementById('maxExtendInput').value = s.maxExtendSeconds;
+  document.getElementById('speakerGapInput').value = s.speakerGapSeconds;
   document.getElementById('spokenLanguageSelect').value = s.spokenLanguage || '';
   document.getElementById('translateToggle').checked = s.translateEnabled;
   document.getElementById('translateLangSelect').disabled = !s.translateEnabled;
@@ -2095,6 +2289,7 @@ function readSettingsFromForm(){
     geminiModel: document.getElementById('geminiModel').value.trim() || getDefaultSettings().geminiModel,
     chunkSeconds: Math.max(5, Math.min(30, Number(document.getElementById('chunkSecondsInput').value) || 10)),
     maxExtendSeconds: Math.max(0, Math.min(10, Number(document.getElementById('maxExtendInput').value) || 3)),
+    speakerGapSeconds: Math.max(0.5, Math.min(4, Number(document.getElementById('speakerGapInput').value) || 1.6)),
     spokenLanguage: document.getElementById('spokenLanguageSelect').value,
     translateEnabled: document.getElementById('translateToggle').checked,
     targetLanguage: targetLanguage
