@@ -593,7 +593,10 @@ hr.divider{
       <strong>Before you start:</strong> click "Start sharing audio" below, then in the
       picker choose the meeting's browser tab (best option) or a window/screen, and make
       sure you tick "Share tab audio" / "Share system audio". Without that checkbox
-      ticked, the browser won't hand this page any sound to transcribe.
+      ticked, the browser won't hand this page any sound to transcribe. Right after that,
+      if "Also include my microphone" is on below, your browser will separately ask for
+      microphone permission — allow it if you want your own side of the conversation
+      transcribed too, not just what other participants say.
     </div>
 
     <div class="card">
@@ -602,6 +605,19 @@ hr.divider{
       <div class="field">
         <label for="meetingNameInput">Meeting name (optional, just for your own records)</label>
         <input type="text" id="meetingNameInput" placeholder="e.g. Weekly sync with Rajiv">
+      </div>
+
+      <div class="field-row">
+        <label style="display:flex; align-items:center; gap:6px; font-size:13px; color: var(--text-muted);">
+          <input type="checkbox" id="includeMicToggle" checked> Also include my microphone
+        </label>
+      </div>
+      <div class="hint" style="margin: -6px 0 12px;">
+        Sharing a tab/screen only captures what's being played OUT of it — i.e. the other
+        participants, as your meeting app plays them back to you. It can't see your own
+        voice at all, since that normally doesn't get looped back through your speakers.
+        Leave this on to also grab your microphone and mix it in, so your side of the
+        conversation gets transcribed too.
       </div>
 
       <div class="field-row">
@@ -617,7 +633,7 @@ hr.divider{
 
       <div class="field-row" style="margin-top: 10px;">
         <label style="display:flex; align-items:center; gap:6px; font-size:13px; color: var(--text-muted);">
-          <input type="checkbox" id="translateToggle"> Translate live
+          <input type="checkbox" id="translateToggle"> Translate captions into:
         </label>
         <select id="translateLangSelect" disabled>
           <option value="">Choose a language…</option>
@@ -636,6 +652,12 @@ hr.divider{
           <option value="__other__">Other…</option>
         </select>
         <input type="text" id="translateLangOther" placeholder="Type a language" style="display:none; width: 160px;">
+      </div>
+      <div class="hint" style="margin-top: 4px;">
+        This is the language captions get translated INTO for display — it's separate from
+        what language the meeting is actually spoken in. If the meeting isn't in English and
+        the original captions themselves look wrong (regardless of this setting), that's
+        controlled in Settings → "Meeting's spoken language" instead.
       </div>
     </div>
 
@@ -786,7 +808,7 @@ hr.divider{
     <div class="card">
       <h2>Capture behavior</h2>
       <div class="field">
-        <label for="spokenLanguageSelect">Spoken language <span class="sub">optional, but recommended</span></label>
+        <label for="spokenLanguageSelect">Meeting's spoken language <span class="sub">optional, but recommended — improves transcription accuracy</span></label>
         <select id="spokenLanguageSelect">
           <option value="">Auto-detect</option>
           <option value="en">English</option>
@@ -802,7 +824,7 @@ hr.divider{
           <option value="ru">Russian</option>
           <option value="it">Italian</option>
         </select>
-        <div class="hint">Left on auto-detect, the transcription model has to guess the language fresh on every short clip — on accented speech it sometimes guesses wrong, which is a common cause of garbled captions. If your meetings are mostly in one language, picking it here fixes most of that.</div>
+        <div class="hint">This is what language people in the meeting are actually SPEAKING — it makes the original transcript more accurate, especially on accented speech. It has nothing to do with translation; for that, use "Translate captions into" on the Capture tab instead.</div>
       </div>
       <div class="field">
         <label for="speakerGapInput">Pause length that suggests a new speaker (seconds)</label>
@@ -1125,6 +1147,8 @@ function downloadFile(filename, content, mimeType){
 */
 
 let audioOnlyStream = null;
+let displayStreamRef = null;
+let micStream = null;
 let audioContext = null;
 let analyserNode = null;
 let analyserBuffer = null;
@@ -1149,7 +1173,7 @@ async function startCapture(){
 
   const preflightSettings = getSettings();
   if(preflightSettings.translateEnabled && !preflightSettings.targetLanguage){
-    showStatus('error', '"Translate live" is on but no language is selected — pick one from the dropdown, or untick the box, then try again.');
+    showStatus('error', '"Translate captions into" is on but no language is selected — pick one from the dropdown, or untick the box, then try again.');
     return;
   }
 
@@ -1179,12 +1203,29 @@ async function startCapture(){
   // We only need audio — stop the video track right away to save CPU/battery
   // and to avoid pointlessly holding a live video capture open.
   displayStream.getVideoTracks().forEach(t => t.stop());
-  audioOnlyStream = new MediaStream(audioTracks);
+
+  // getDisplayMedia's audio is ONLY what's being played OUT of the shared
+  // tab/screen — i.e. the other participants, as the meeting app plays them
+  // back to you. It was never able to pick up your own microphone; your own
+  // voice normally isn't looped back through your speakers, so there's
+  // nothing for tab-audio capture to see. To transcribe your side of the
+  // conversation too, we separately ask for microphone access and mix the
+  // two audio sources together below. If mic access is skipped or denied,
+  // capture still proceeds with just the other participants' audio.
+  micStream = null;
+  if(document.getElementById('includeMicToggle').checked){
+    try{
+      micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    }catch(err){
+      showStatus('info', "Couldn't access your microphone (" + err.message + ") — continuing with just the other participants' audio.");
+      micStream = null;
+    }
+  }
 
   // If the person stops sharing from the browser's own "Stop sharing" bar
   // (rather than our Stop button), the audio track fires 'ended' — catch
   // that so the app's state doesn't get stuck thinking it's still capturing.
-  audioTracks[0].addEventListener('ended', () => {
+  displayStream.getAudioTracks()[0].addEventListener('ended', () => {
     if(state.isCapturing) stopCapture('The browser reported that sharing was stopped.');
   });
 
@@ -1194,11 +1235,13 @@ async function startCapture(){
   const keyProblem = validateProviderKey(settings);
   if(keyProblem){
     displayStream.getTracks().forEach(t => t.stop());
+    if(micStream) micStream.getTracks().forEach(t => t.stop());
     showStatus('error', keyProblem + ' Open the Settings tab to fix this.');
     return;
   }
 
-  setupAnalyser(audioOnlyStream);
+  audioOnlyStream = setupAudioPipeline(displayStream.getAudioTracks(), micStream);
+  displayStreamRef = displayStream;
 
   // Start a fresh session object to record into.
   const nameInput = document.getElementById('meetingNameInput').value.trim();
@@ -1249,6 +1292,18 @@ function stopCapture(reason){
     audioOnlyStream.getTracks().forEach(t => t.stop());
     audioOnlyStream = null;
   }
+  // audioOnlyStream (above) is the synthetic "mixer output" built in
+  // setupAudioPipeline — stopping it does NOT stop the underlying capture.
+  // The actual screen/tab-share and microphone captures (and the browser's
+  // "you are sharing" indicator bar) are only released by stopping THESE.
+  if(displayStreamRef){
+    displayStreamRef.getTracks().forEach(t => t.stop());
+    displayStreamRef = null;
+  }
+  if(micStream){
+    micStream.getTracks().forEach(t => t.stop());
+    micStream = null;
+  }
   if(audioContext){
     audioContext.close().catch(() => {});
     audioContext = null;
@@ -1269,17 +1324,37 @@ function stopCapture(reason){
   showStatus(reason ? 'info' : 'success', reason || 'Capture stopped. The meeting was saved to the Minutes tab.');
 }
 
-function setupAnalyser(stream){
+// Builds the actual audio stream used for both recording and the volume
+// meter. When a microphone stream is supplied, it's mixed together with the
+// shared tab/system audio using the Web Audio API (a MediaStreamDestination
+// node acts as a virtual "mixer output") so that both sides of the
+// conversation end up in the same recording — getDisplayMedia alone only
+// ever contains the other participants, never you (see the note where this
+// is called in startCapture).
+function setupAudioPipeline(displayAudioTracks, micStreamToMix){
   const AudioCtx = window.AudioContext || window.webkitAudioContext;
   audioContext = new AudioCtx();
-  const source = audioContext.createMediaStreamSource(stream);
+
+  const destinationNode = audioContext.createMediaStreamDestination();
   analyserNode = audioContext.createAnalyser();
   analyserNode.fftSize = 512;
   analyserBuffer = new Uint8Array(analyserNode.fftSize);
-  source.connect(analyserNode);
-  // Deliberately NOT connecting analyserNode to audioContext.destination —
-  // doing so would play the meeting's own audio back out of your speakers,
-  // causing an echo/feedback loop. We only ever read the data, never play it.
+
+  const displaySource = audioContext.createMediaStreamSource(new MediaStream(displayAudioTracks));
+  displaySource.connect(destinationNode);
+  displaySource.connect(analyserNode);
+
+  if(micStreamToMix){
+    const micSource = audioContext.createMediaStreamSource(micStreamToMix);
+    micSource.connect(destinationNode);
+    micSource.connect(analyserNode);
+  }
+
+  // Deliberately NOT connecting anything to audioContext.destination (your
+  // speakers) — doing so would play the meeting's own audio (and your own
+  // mic) back out loud, causing an echo/feedback loop. Everything above
+  // only ever feeds the recorder and the volume meter, never your speakers.
+  return destinationNode.stream;
 }
 
 function pollAnalyser(){
